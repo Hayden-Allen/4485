@@ -20,8 +20,8 @@ jobs:
         with:
           path: node_modules
           key: ${{ runner.os }}-modules
-      - if: steps.cache-modules.outputs.cache-hit != 'true'
-        run: npm ci
+      # install whatever wasn't cached
+      - run: npm ci
 
       # build everything
       - run: npm run build

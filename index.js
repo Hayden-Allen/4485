@@ -1,3 +1,3 @@
-var s3SimpleDeploy = require("s3-simple-deploy");
+import { padZero } from "pad-zero";
 
-console.log("TEST4");
+console.log(`TEST${padZero(4, 5)}`);

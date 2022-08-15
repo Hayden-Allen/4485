@@ -20,8 +20,7 @@ jobs:
           path: build
           key: ${{ runner.os }}-build
       - if: steps.cache-build.outputs.cache-hit != "true"
-        run: npm ci
-        run: npm run build
+        run: npm ci && npm run build
 
       # copy build result to S3
       - uses: shallwefootball/s3-upload-action@master

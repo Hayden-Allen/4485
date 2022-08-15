@@ -14,8 +14,15 @@ jobs:
         with:
           node-version: "16"
       # TODO cache
-      - run: npm ci
-      - run: npm run build
+      - uses: actions/cache@v3
+        id: cache-build
+        with:
+          path: build
+          key: ${{ runner.os }}-build
+      - if: steps.cache-build.outputs.cache-hit != "true"
+        run: npm ci
+        run: npm run build
+
       # copy build result to S3
       - uses: shallwefootball/s3-upload-action@master
         name: Upload S3
@@ -26,6 +33,7 @@ jobs:
           aws_bucket: ${{ secrets.AWS_BUCKET }}
           source_dir: "build"
           destination_dir: "4485/"
+
       # invalidate CloudFront distribution automatically
       - uses: chetan/invalidate-cloudfront-action@v2
         env:

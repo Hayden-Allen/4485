@@ -1,3 +1,3 @@
 import { padZero } from "pad-zero";
 
-console.log(`TEST${padZero(4, 5)}`);
+console.log(`TEST${padZero(4, 6)}`);

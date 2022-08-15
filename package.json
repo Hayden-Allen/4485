@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha",
     "start": "snowpack dev",
-    "build": "snowpack build"
+    "build": "snowpack build",
+    "deploy": "s3-simple-deploy --public-root ./build --bucket ci-test --acl public-read"
   },
   "author": "",
   "license": "ISC",

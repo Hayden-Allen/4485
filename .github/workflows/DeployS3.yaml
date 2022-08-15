@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - staging
 
 jobs:
   build:
@@ -19,8 +20,9 @@ jobs:
         id: cache-modules
         with:
           path: node_modules
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref_name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref_name }}-
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
@@ -40,8 +42,8 @@ jobs:
           aws_key_id: ${{ secrets.AWS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
-          source_dir: "build"
-          destination_dir: "4485/"
+          source_dir: build
+          destination_dir: 4485/${{ github.ref_name }}
 
       # invalidate CloudFront distribution automatically
       - uses: chetan/invalidate-cloudfront-action@v2

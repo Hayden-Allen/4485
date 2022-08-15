@@ -19,7 +19,7 @@ jobs:
         with:
           path: build
           key: ${{ runner.os }}-build
-      - if: steps.cache-build.outputs.cache-hit != "true"
+      - if: steps.cache-build.outputs.cache-hit != 'true'
         run: npm ci && npm run build
 
       # copy build result to S3

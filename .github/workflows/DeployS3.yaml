@@ -19,9 +19,15 @@ jobs:
         id: cache-modules
         with:
           path: node_modules
-          key: ${{ runner.os }}-modules
-      # install whatever wasn't cached
-      - run: npm ci
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      # install if necessary
+      - if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
 
       # build everything
       - run: npm run build

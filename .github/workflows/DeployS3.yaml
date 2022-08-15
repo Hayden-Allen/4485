@@ -13,14 +13,18 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: "16"
-      # TODO cache
+
+      # use cached node_modules if available
       - uses: actions/cache@v3
-        id: cache-build
+        id: cache-modules
         with:
-          path: build
-          key: ${{ runner.os }}-build
-      - if: steps.cache-build.outputs.cache-hit != 'true'
-        run: npm ci && npm run build
+          path: node_modules
+          key: ${{ runner.os }}-modules
+      - if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      # build everything
+      - run: npm run build
 
       # copy build result to S3
       - uses: shallwefootball/s3-upload-action@master

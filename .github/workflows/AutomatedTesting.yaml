@@ -10,6 +10,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: "16"
-      # TODO cache
-      - run: npm ci
+
+      # use cached node_modules if available
+      - uses: actions/cache@v3
+        id: cache-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-modules
+      - if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
       - run: npm run test

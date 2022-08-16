@@ -10,13 +10,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
 
       # use cached node_modules if available
-      - uses: actions/cache@v3
+      - name: Getting Cached Modules
+        uses: actions/cache@v3
         id: cache-modules
         with:
           path: node_modules
@@ -28,16 +31,17 @@ jobs:
             ${{ runner.os }}-
 
       # install if necessary
-      - if: steps.cache-modules.outputs.cache-hit != 'true'
+      - name: Installing Modules
+        if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       # build everything
-      - run: npm run build
+      - name: Build Project
+        run: npm run build
 
       # copy build result to S3
-      - uses: shallwefootball/s3-upload-action@master
-        name: Upload S3
-        id: S3
+      - name: Deploy to S3 (4485/${{ github.ref_name }})
+        uses: shallwefootball/s3-upload-action@master
         with:
           aws_key_id: ${{ secrets.AWS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
@@ -46,7 +50,8 @@ jobs:
           destination_dir: 4485/${{ github.ref_name }}
 
       # invalidate CloudFront distribution automatically
-      - uses: chetan/invalidate-cloudfront-action@v2
+      - name: Invalidate CloudFront Distribution
+        uses: chetan/invalidate-cloudfront-action@v2
         env:
           DISTRIBUTION: ${{ secrets.DISTRIBUTION }}
           PATHS: /4485/${{ github.ref_name }}/*

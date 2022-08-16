@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "start": "snowpack dev",
-    "build": "snowpack build"
+    "start": "npx snowpack dev",
+    "build": "npx snowpack build"
   },
   "author": "",
   "license": "ISC",

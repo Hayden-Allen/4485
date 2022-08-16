@@ -1,21 +1,19 @@
 {
-  "name": "ci",
+  "name": "4485",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "mocha",
     "start": "snowpack dev",
-    "build": "snowpack build",
-    "deploy": "s3-simple-deploy --public-root ./build --bucket ci-test --acl public-read"
+    "build": "snowpack build"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@snowpack/plugin-svelte": "^3.7.0",
     "mocha": "^10.0.0",
-    "pad-zero": "^1.0.8",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "snowpack": "^3.8.8"
+    "snowpack": "^3.8.8",
+    "svelte": "^3.49.0"
   }
 }

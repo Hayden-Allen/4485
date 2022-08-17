@@ -12,7 +12,10 @@
   "license": "ISC",
   "devDependencies": {
     "@snowpack/plugin-svelte": "^3.7.0",
+    "dotenv": "^16.0.1",
     "mocha": "^10.0.0",
+    "mongodb": "^4.8.1",
+    "mongoose": "^6.5.2",
     "snowpack": "^3.8.8",
     "svelte": "^3.49.0"
   }

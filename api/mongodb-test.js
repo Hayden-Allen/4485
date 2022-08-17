@@ -27,10 +27,8 @@ export default async (req, res) => {
   // } catch (err) {
   //   res.status(500).json(err);
   // }
-  res
-    .status(200)
-    .json({
-      user: process.env.MONGODB_USERNAME,
-      pw: process.env.MONGODB_PASSWORD,
-    });
+  res.status(200).send({
+    user: process.env.MONGODB_USERNAME,
+    pw: process.env.MONGODB_PASSWORD,
+  });
 };

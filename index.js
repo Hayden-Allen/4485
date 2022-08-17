@@ -2,10 +2,8 @@ console.log("TEST0014");
 
 console.log(`Fetching '${window.location.origin}/api/mongodb-test'...`);
 
-try {
-  const req = await window.fetch(`${window.location.origin}/api/mongodb-test`);
+const req = await window.fetch(`${window.location.origin}/api/mongodb-test`);
+if (req.ok) {
   console.log(await req.json());
-} catch (err) {
-  console.log(err);
-}
-console.log("Finished");
+  console.log("Finished");
+} else console.log("ERROR");

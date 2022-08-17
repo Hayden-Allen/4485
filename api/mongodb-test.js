@@ -15,11 +15,7 @@ async function main() {
   const Kitten = mongoose.model("Kitten", kittenSchema);
 
   const test = new Kitten({ name: "Test" });
-  try {
-    await test.save();
-  } catch (err) {
-    return err;
-  }
+  await test.save();
 
   return await Kitten.find();
 }
@@ -27,8 +23,8 @@ async function main() {
 export default async (req, res) => {
   try {
     const kittens = await main();
-    res.status(200).json(kittens);
+    res.status(200).json({ num: kittens.length });
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).send("Error");
   }
 };

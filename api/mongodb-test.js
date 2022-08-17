@@ -6,6 +6,7 @@ async function main() {
     `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@test.1fkmuj4.mongodb.net/test`
   );
 
+  return {};
   // const Schema = mongoose.Schema;
 
   // const kittenSchema = new Schema({ name: String });

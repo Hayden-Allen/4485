@@ -18,16 +18,14 @@ async function main() {
   const test = new Kitten({ name: "Test" });
   await test.save();
 
-  const kittens = await Kitten.find();
-  console.log(kittens);
+  return await Kitten.find();
 }
 
 export default async (req, res) => {
-  main().catch((err) => console.log(err));
-  res
-    .status(200)
-    .send({
-      env: process.env,
-      url: `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@test.1fkmuj4.mongodb.net/test`,
-    });
+  try {
+    const kittens = await main();
+    res.status(200).send(kittens);
+  } catch (err) {
+    res.status(500).send(err);
+  }
 };

@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
+console.log("mongodb-test");
 main().catch((err) => console.log(err));
 
 async function main() {

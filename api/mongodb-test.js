@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 async function main() {
-  console.log(process.env);
   await mongoose.connect(
     `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@test.1fkmuj4.mongodb.net/test`
   );
@@ -24,8 +23,8 @@ async function main() {
 export default async (req, res) => {
   try {
     const kittens = await main();
-    res.status(200).send(kittens);
+    res.status(200).json(kittens);
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).json(err);
   }
 };

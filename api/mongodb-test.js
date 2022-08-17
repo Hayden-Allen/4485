@@ -25,6 +25,6 @@ export default async (req, res) => {
     const kittens = await main();
     res.status(200).json(kittens);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).send(err);
   }
 };

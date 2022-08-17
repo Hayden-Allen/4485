@@ -15,7 +15,7 @@ async function main() {
   const Kitten = mongoose.model("Kitten", kittenSchema);
 
   const test = new Kitten({ name: "Test" });
-  await test.save();
+  // await test.save();
 
   return await Kitten.find();
 }

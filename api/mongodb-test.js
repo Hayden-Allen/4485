@@ -3,7 +3,7 @@ require("dotenv").config();
 
 export default async (req, res) => {
   try {
-    await mongoose.connect(
+    const conn = mongoose.createConnection(
       `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@test.1fkmuj4.mongodb.net/test`
     );
 
@@ -13,7 +13,7 @@ export default async (req, res) => {
     kittenSchema.methods.speak = function speak() {
       console.log(this.name);
     };
-    const Kitten = mongoose.model("Kitten", kittenSchema);
+    const Kitten = conn.model("Kitten", kittenSchema);
 
     const test = new Kitten({ name: "Test" });
     await test.save();

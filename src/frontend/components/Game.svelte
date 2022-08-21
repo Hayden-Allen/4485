@@ -8,7 +8,7 @@
   import { global } from '%engine/Global.js'
   import { Window } from '%window/Window.js'
   import { UILayer } from '%window/Layer.js'
-  import { EditorLayer } from '%engine/editor/EditorLayer.js'
+  import { GameLayer } from '%engine/game/GameLayer.js'
 
   let canvas = undefined
 
@@ -53,35 +53,11 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    var window = new Window(canvas, '#00f')
-    window.pushLayer(new EditorLayer(game))
+    var window = new Window(canvas, '#000')
+    window.pushLayer(new GameLayer(game))
     window.pushLayer(new UILayer())
     window.run()
   })
 </script>
 
-<div
-  class="w-full h-full p-1 flex flex-col space-y-1 bg-gray-900 overflow-hidden"
->
-  <div class="grow shrink basis-0 overflow-hidden flex flex-row space-x-1">
-    <div
-      class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
-    >
-      <Viewport bind:canvas />
-    </div>
-    <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
-    />
-  </div>
-  <div class="grow shrink basis-0 overflow-hidden flex flex-row space-x-1">
-    <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
-    />
-    <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
-    />
-    <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
-    />
-  </div>
-</div>
+<Viewport bind:canvas />

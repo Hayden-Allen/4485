@@ -12,6 +12,11 @@ const config = {
       models: 'src/backend/models',
       routes: 'src/frontend/routes',
       tailwind: 'src/frontend/tailwind',
+      '%engine': 'src/frontend/engine',
+      '%component': 'src/frontend/engine/component',
+      '%system': 'src/frontend/engine/system',
+      '%util': 'src/frontend/engine/util',
+      '%window': 'src/frontend/engine/window',
     },
     files: {
       routes: 'src/frontend/routes',

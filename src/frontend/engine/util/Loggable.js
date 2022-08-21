@@ -5,6 +5,7 @@ const setting = {
   verbosityInfo: 3,
   verbosity: 3,
   showId: false,
+  stackTrace: true,
 }
 
 export class Loggable {
@@ -27,9 +28,11 @@ export class Loggable {
   logWarning(message) {
     if (setting.verbosity >= setting.verbosityWarning)
       console.warn(this.logMessageFormat(message))
+    if (setting.stackTrace) console.trace()
   }
   logError(message) {
     if (setting.verbosity >= setting.verbosityError)
       console.error(this.logMessageFormat(message))
+    if (setting.stackTrace) console.trace()
   }
 }

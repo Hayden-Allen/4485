@@ -14,7 +14,8 @@ export class ScriptNode extends Component {
     this.active = false
   }
   checkIndex(types, index) {
-    if (index < 0 || index > types.length) {
+    // -1 signals that an edge carries activation, but not value
+    if (index < -1 || index > types.length) {
       this.logError(`Invalid index ${index}`)
       return false
     }
@@ -45,6 +46,8 @@ export class ScriptNode extends Component {
   run(inputs) {
     if (!this.active) return
 
+    console.log(inputs)
+    console.log(this.data.inputTypes.types)
     if (!validateScriptDataTypes(inputs, this.data.inputTypes.types)) {
       this.logError('Invalid input')
       return
@@ -58,9 +61,15 @@ export class ScriptNode extends Component {
     for (var i = 0; i < outboundEdges.length; i++) {
       // get an outbound edge and the output associated with that edge
       const edge = outboundEdges[i]
-      const result = results[edge.outputIndex]
-      // if the associated output carries activation, activate the edge's other node
-      if (result.activate) edge.inputNode.active = true
+      if (edge.outputIndex === -1) {
+        // this is an activation edge
+        edge.inputNode.active = true
+      } else {
+        const result = results[edge.outputIndex]
+        // if the associated output is explicitly active, activate the edge's other node
+        if (result.activate || result.activate === undefined)
+          edge.inputNode.active = true
+      }
     }
   }
 }

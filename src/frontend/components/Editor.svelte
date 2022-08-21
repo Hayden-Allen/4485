@@ -18,21 +18,63 @@
   let framebuffer = undefined
 
   function runScripts() {
+    const trun = new ScriptNodeTemplate('run', [], [], () => [
+      { activate: true },
+    ])
+    // const tmux2 = new ScriptNodeTemplate(
+    //   'mux2',
+    //   ['int', 'any', 'any'],
+    //   ['any'],
+    //   ([index, x0, x1]) => [{ value: (index ? x1 : x0) }]
+    // )
+    const tbranch = new ScriptNodeTemplate(
+      'branch',
+      ['bool'],
+      ['bool', 'bool', 'int'],
+      ([b]) => [
+        { value: b, activate: b },
+        { value: !b, activate: !b },
+        { value: ~~b, activate: true },
+      ]
+    )
     const tmul = new ScriptNodeTemplate(
       'mul',
       ['number', 'number'],
       ['number'],
-      ([a, b]) => [{ value: a * b, activate: true }]
+      ([a, b]) => [{ value: a * b }]
     )
     const tcf = new ConstantScriptNodeTemplate('cf', ['float'])
+    const tcb = new ConstantScriptNodeTemplate('cb', ['bool'])
 
     let graph = new ScriptGraph('graph')
+    let run = trun.createNode(graph)
     let mulA = tmul.createNode(graph)
     let mulB = tmul.createNode(graph)
-    let cf5 = tcf.createNode(graph, [5])
+    let cf2 = tcf.createNode(graph, [2])
+    let cf3 = tcf.createNode(graph, [3])
+    let cf4 = tcf.createNode(graph, [4])
+    let branch = tbranch.createNode(graph)
+    let cb = tcb.createNode(graph, [false])
 
-    mulB.attachAsInput(mulA, 0, 0)
-    mulB.attachAsInput(cf5, 0, 1)
+    // run.attachAsOutput(-1, mulA, -1)
+    // mulA.attachAsInput(cf2, 0, 0)
+    // mulA.attachAsInput(cf3, 0, 1)
+    // mulB.attachAsInput(mulA, 0, 0)
+    // mulB.attachAsInput(cf4, 0, 1)
+
+    run.attachAsOutput(-1, branch, -1)
+    // 2 * 3
+    cf2.attachAsOutput(0, mulA, 0)
+    cf3.attachAsOutput(0, mulA, 1)
+    // 3 * 4
+    cf3.attachAsOutput(0, mulB, 0)
+    cf4.attachAsOutput(0, mulB, 1)
+    // cb ? 2 * 3 : 3 * 4
+    cb.attachAsOutput(0, branch, 0)
+    branch.attachAsOutput(0, mulA, -1)
+    branch.attachAsOutput(1, mulB, -1)
+
+    console.log(graph)
 
     let inputs = new Map()
     inputs.set(mulA.id, [2, 3])

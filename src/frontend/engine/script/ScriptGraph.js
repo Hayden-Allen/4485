@@ -127,7 +127,8 @@ export class ScriptGraph extends Component {
       } else {
         // fill out input array with cached output from previous nodes (guaranteed to be valid because of topological ordering)
         inputEdges.forEach((edge) => {
-          inputs[edge.inputIndex] = edge.outputNode.outputs[edge.outputIndex]
+          if (edge.inputIndex != -1)
+            inputs[edge.inputIndex] = edge.outputNode.outputs[edge.outputIndex]
         })
       }
       // run current node with appropriate inputs; note that this also propagates activation to connected nodes

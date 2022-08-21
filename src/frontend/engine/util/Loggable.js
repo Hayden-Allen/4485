@@ -4,7 +4,7 @@ const setting = {
   verbosityWarning: 2,
   verbosityInfo: 3,
   verbosity: 3,
-  showId: false,
+  showId: true,
   stackTrace: true,
 }
 

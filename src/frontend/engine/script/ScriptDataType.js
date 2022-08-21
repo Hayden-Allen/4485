@@ -3,6 +3,8 @@ export const scriptDataType = {
   float: 0x2,
   array: 0x4,
   object: 0x8,
+  bool: 0x10,
+  any: 0xff,
 }
 export function resolveScriptDataType(input) {
   switch (typeof input) {
@@ -14,6 +16,8 @@ export function resolveScriptDataType(input) {
       )
     case 'object':
       return Array.isArray(input) ? scriptDataType.array : scriptDataType.object
+    case 'boolean':
+      return scriptDataType.bool
   }
 }
 export function validateScriptDataTypes(input, expected) {

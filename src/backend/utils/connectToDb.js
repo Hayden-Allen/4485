@@ -1,12 +1,6 @@
 import mongoose from 'mongoose'
 import { MONGODB_URI } from '$env/static/private'
 
-if (!MONGODB_URI) {
-  throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env; see the example URI in .env.example'
-  )
-}
-
 /**
  * Global is used here to maintain a cached connection across hot reloads
  * in development. This prevents connections growing exponentially
@@ -19,6 +13,12 @@ if (!cached) {
 }
 
 export default async function connectToDb() {
+  if (!MONGODB_URI) {
+    throw new Error(
+      'Please define the MONGODB_URI environment variable inside .env; see the example URI in .env.example'
+    )
+  }
+
   if (cached.conn) {
     return cached.conn
   }

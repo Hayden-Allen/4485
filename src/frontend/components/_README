@@ -1,0 +1,7 @@
+This directory contains all of the Svelte components used by the frontend.
+
+These are mostly used by files in src/frontend/routes, but they do not map to specific filenames.
+For example, src/frontend/routes/edit/+page.svelte uses the Editor component from Editor.svelte.
+
+Some files in this directory are used by other files in this directory.
+For example, Editor.svelte uses the Viewport component from Viewport.svelte.

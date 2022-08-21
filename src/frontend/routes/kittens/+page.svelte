@@ -1,5 +1,5 @@
 <script>
-  import fetchJson from '../../lib/frontend/fetchJson'
+  import fetchJson from 'frontend/utils/fetchJson'
 
   let createKittenName = 'Test Kitten'
 
@@ -10,7 +10,9 @@
         name: createKittenName,
       },
     })
-    window.alert(`Successfully added a kitten named "${responseJson.name}" to the database!`)
+    window.alert(
+      `Successfully added a kitten named "${responseJson.name}" to the database!`
+    )
   }
 </script>
 

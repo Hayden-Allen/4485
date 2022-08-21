@@ -17,6 +17,7 @@ export default async function fetchJson(url, options) {
 
   if (response.ok) {
     const json = await response.json()
+    console.log(json)
     return json
   }
 

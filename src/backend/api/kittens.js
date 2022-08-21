@@ -1,5 +1,5 @@
-import connectToDb from './connectToDb'
-import Kitten from './models/Kitten'
+import connectToDb from '../utils/connectToDb'
+import Kitten from 'models/Kitten'
 
 export async function createKitten(options) {
   await connectToDb()

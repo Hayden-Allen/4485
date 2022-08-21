@@ -3,7 +3,7 @@ import { MONGODB_URI } from '$env/static/private'
 
 if (!MONGODB_URI) {
   throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env'
+    'Please define the MONGODB_URI environment variable inside .env; see the example URI in .env.example'
   )
 }
 
@@ -33,5 +33,6 @@ export default async function connectToDb() {
     })
   }
   cached.conn = await cached.promise
+  console.log(cached)
   return cached.conn
 }

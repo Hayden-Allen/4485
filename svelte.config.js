@@ -14,6 +14,7 @@ const config = {
       tailwind: 'src/frontend/tailwind',
       '%engine': 'src/frontend/engine',
       '%component': 'src/frontend/engine/component',
+      '%script': 'src/frontend/engine/script',
       '%system': 'src/frontend/engine/system',
       '%util': 'src/frontend/engine/util',
       '%window': 'src/frontend/engine/window',

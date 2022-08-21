@@ -9,10 +9,39 @@
   import { Window } from '%window/Window.js'
   import { UILayer } from '%window/Layer.js'
   import { EditorLayer } from '%engine/editor/EditorLayer.js'
+  import {
+    ScriptNodeTemplate,
+    ConstantScriptNodeTemplate,
+  } from '%script/ScriptNodeTemplate.js'
+  import { ScriptGraph } from '%script/ScriptGraph.js'
 
   let canvas = undefined
 
+  function runScripts() {
+    const tmul = new ScriptNodeTemplate(
+      'mul',
+      ['number', 'number'],
+      ['number'],
+      ([a, b]) => [{ value: a * b, activate: true }]
+    )
+    const tcf = new ConstantScriptNodeTemplate('cf', ['float'])
+
+    let graph = new ScriptGraph('graph')
+    let mulA = tmul.createNode(graph)
+    let mulB = tmul.createNode(graph)
+    let cf5 = tcf.createNode(graph, [5])
+
+    mulB.attachAsInput(mulA, 0, 0)
+    mulB.attachAsInput(cf5, 0, 1)
+
+    let inputs = new Map()
+    inputs.set(mulA.id, [2, 3])
+    console.log(graph.run(inputs))
+  }
+
   onMount(() => {
+    runScripts()
+
     global.init()
     var game = new Game()
 

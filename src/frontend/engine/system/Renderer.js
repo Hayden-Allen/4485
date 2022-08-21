@@ -29,9 +29,6 @@ export class Renderer extends System {
   preUpdate() {
     // clear the screen as the first command of each frame (subsequent clears can be at any point in the render command queue)
     this.renderCommands.unshift(new RenderCommand('clear', []))
-    this.components.forEach((component) => {
-      component.scale()
-    })
   }
   handleGlobalOptions(component, options) {
     component.ctx.globalAlpha = options.alpha

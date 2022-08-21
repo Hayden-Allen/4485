@@ -15,7 +15,7 @@
   } from '%script/ScriptNodeTemplate.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
 
-  let canvas = undefined
+  let framebuffer = undefined
 
   function runScripts() {
     const tmul = new ScriptNodeTemplate(
@@ -82,7 +82,7 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    var window = new Window(canvas, '#00f')
+    var window = new Window(framebuffer, '#00f')
     window.pushLayer(new EditorLayer(game))
     window.pushLayer(new UILayer())
     window.run()
@@ -96,7 +96,7 @@
     <div
       class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
     >
-      <Viewport bind:canvas />
+      <Viewport bind:framebuffer />
     </div>
     <div
       class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"

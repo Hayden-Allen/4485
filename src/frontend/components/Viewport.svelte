@@ -1,47 +1,50 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, setContext } from 'svelte'
 
-  const GAME_WIDTH = 1920, GAME_HEIGHT = 1080
+  export let canvas = undefined
 
-  let canvas = null, ctx = null
-  let containerWidth = null, containerHeight = null
+  const TARGET_ASPECT_RATIO = 1920 / 1080,
+    R_TARGET_ASPECT_RATIO = 1 / TARGET_ASPECT_RATIO
+  let containerWidth = undefined,
+    containerHeight = undefined
 
-  function animate() {
-    window.requestAnimationFrame(animate)
-
-    if (!canvas || !ctx) {
-      return
-    }
-
-    ctx.restore()
-    ctx.save()
-    ctx.scale(canvas.width / GAME_WIDTH, canvas.height / GAME_HEIGHT)
-
-    ctx.fillStyle = '#000'
-    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT)
-  }
-
-  $: {
+  function resize() {
     if (canvas && containerWidth && containerHeight) {
       const ratio = containerWidth / containerHeight
-      if (ratio < 16 / 9) {
+      // container is tall; canvas should fill horizontally
+      if (ratio < TARGET_ASPECT_RATIO) {
         canvas.width = Math.floor(containerWidth) * window.devicePixelRatio
-        canvas.height = Math.floor(containerWidth * (9 / 16)) * window.devicePixelRatio
-      } else {
+        canvas.height =
+          Math.floor(containerWidth * R_TARGET_ASPECT_RATIO) *
+          window.devicePixelRatio
+      }
+      // container is wide; canvas should fill vertically
+      else {
         canvas.height = Math.floor(containerHeight) * window.devicePixelRatio
-        canvas.width = Math.floor(containerHeight * (16 / 9)) * window.devicePixelRatio
+        canvas.width =
+          Math.floor(containerHeight * TARGET_ASPECT_RATIO) *
+          window.devicePixelRatio
       }
     }
   }
 
+  $: containerWidth, containerHeight, resize()
+
   onMount(() => {
     if (canvas) {
-      ctx = canvas.getContext('2d')
-      window.requestAnimationFrame(animate)
+      // set initial size
+      const container = document.getElementById('viewport-div')
+      containerWidth = container.clientWidth
+      containerHeight = container.clientHeight
     }
   })
 </script>
 
-<div class="w-full h-full flex items-center justify-center overflow-hidden" bind:clientWidth={containerWidth} bind:clientHeight={containerHeight}>
+<div
+  id="viewport-div"
+  class="w-full h-full flex items-center justify-center overflow-hidden"
+  bind:clientWidth={containerWidth}
+  bind:clientHeight={containerHeight}
+>
   <canvas bind:this={canvas} />
 </div>

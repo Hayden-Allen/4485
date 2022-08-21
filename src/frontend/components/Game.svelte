@@ -10,7 +10,7 @@
   import { UILayer } from '%window/Layer.js'
   import { GameLayer } from '%engine/game/GameLayer.js'
 
-  let canvas = undefined
+  let framebuffer = undefined
 
   onMount(() => {
     global.init()
@@ -53,11 +53,11 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    var window = new Window(canvas, '#000')
+    var window = new Window(framebuffer, '#000')
     window.pushLayer(new GameLayer(game))
     window.pushLayer(new UILayer())
     window.run()
   })
 </script>
 
-<Viewport bind:canvas />
+<Viewport bind:framebuffer />

@@ -17,6 +17,7 @@
   } from '%script/ScriptNodeTemplate.js'
   import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
+  import { ScriptGraphVisualizer } from '%editor/ScriptGraphVisualizer.js'
 
   let canvas = undefined
 
@@ -144,6 +145,9 @@
 
   onMount(() => {
     global.init()
+    let playerScript = createPlayerScript()
+    const gv = new ScriptGraphVisualizer(playerScript)
+    console.log(gv.arrangeX())
 
     var game = new Game()
 
@@ -165,15 +169,8 @@
         )
       }
     }
-    let playerScript = createPlayerScript()
     let playerController = {
       run: (player, deltaTimeSeconds) => {
-        // player.vel = new Vec2(
-        //   global.input.isKeyPressed('d') - global.input.isKeyPressed('a'),
-        //   global.input.isKeyPressed('s') - global.input.isKeyPressed('w')
-        // )
-        //   .norm()
-        //   .scale(500)
         playerScript.run(player)
       },
     }

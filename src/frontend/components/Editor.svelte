@@ -91,7 +91,7 @@
         return [
           { value: pressed, active: pressed },
           { value: !pressed, active: !pressed },
-          { value: ~~pressed, active: true },
+          { value: ~~pressed },
         ]
       }
     )
@@ -171,15 +171,13 @@
     const dy = tSubtract.createNode(graph)
     dy.attachAsInput(keySPressed, 2, 0)
     dy.attachAsInput(keyWPressed, 2, 1)
-
-    // create normalized velocity vector
     const vec2 = tVec2.createNode(graph)
     vec2.attachAsInput(dx, 0, 0)
     vec2.attachAsInput(dy, 0, 1)
     const norm = tNormalize.createNode(graph)
     norm.attachAsInput(vec2, 0, 0)
 
-    // boost if necessary
+    // boost if shift pressed
     const ci1 = tConstInt.createNode(graph, [500])
     const ci2 = tConstInt.createNode(graph, [1000])
     const mux = tMux2.createNode(graph)

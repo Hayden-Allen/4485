@@ -7,10 +7,10 @@ import {
 import { ScriptNode } from './ScriptNode.js'
 
 export class ScriptNodeTemplate extends ScriptNodeData {
-  constructor(name, inputTypenames, outputTypenames, fn) {
+  constructor(name, inPorts, outPorts, fn) {
     super(
-      new ScriptDataTypeList(inputTypenames),
-      new ScriptDataTypeList(outputTypenames),
+      new ScriptDataTypeList(inPorts.map((port) => port.typename)),
+      new ScriptDataTypeList(outPorts.map((port) => port.typename)),
       fn
     )
     this.name = name
@@ -35,9 +35,9 @@ export class EventScriptNodeTemplate extends ScriptNodeTemplate {
 }
 
 export class ConstantScriptNodeTemplate {
-  constructor(name, outputTypenames) {
+  constructor(name, outPorts) {
     this.name = name
-    this.outputTypes = outputTypenames.map((name) => scriptDataType[name])
+    this.outputTypes = outPorts.map((port) => scriptDataType[port.typename])
   }
   createNode(graph, outputValues) {
     // console.log(outputValues)

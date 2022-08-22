@@ -2,6 +2,13 @@ import { validateScriptDataTypes } from './ScriptDataType.js'
 import { ScriptNodeData } from './ScriptNodeData.js'
 import { Component } from '%component/Component.js'
 
+export class ScriptNodePort {
+  constructor(name, typename) {
+    this.name = name
+    this.typename = typename
+  }
+}
+
 export class ScriptNode extends Component {
   constructor(debugName, graph, inputTypes, outputTypes, fn) {
     super(debugName)

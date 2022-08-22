@@ -14,6 +14,7 @@
     EventScriptNodeTemplate,
     ConstantScriptNodeTemplate,
   } from '%script/ScriptNodeTemplate.js'
+  import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
 
   let framebuffer = undefined
@@ -75,11 +76,20 @@
     }
 
     const tOnTick = new EventScriptNodeTemplate('OnTick')
-    const tKey = new ConstantScriptNodeTemplate('Key', ['string'])
+    const tKey = new ConstantScriptNodeTemplate('Key', [
+      new ScriptNodePort('key', 'string'),
+    ])
+    /**
+     * @HATODO properly
+     */
     const tKeyPressed = new ScriptNodeTemplate(
       'KeyPressed',
-      ['string'],
-      ['bool', 'bool', 'int'],
+      [new ScriptNodePort('key', 'string')],
+      [
+        new ScriptNodePort('T', 'bool'),
+        new ScriptNodePort('F', 'bool'),
+        new ScriptNodePort('int', 'int'),
+      ],
       ([key]) => {
         const pressed = global.input.isKeyPressed(key)
         return [
@@ -91,53 +101,53 @@
     )
     const tSubtract = new ScriptNodeTemplate(
       'Subtract',
-      ['number', 'number'],
-      ['number'],
+      [new ScriptNodePort('a', 'number'), new ScriptNodePort('b', 'number')],
+      [new ScriptNodePort('a-b', 'number')],
       ([a, b]) => [{ value: a - b }]
     )
-    const tConstInt = new ConstantScriptNodeTemplate('ConstInt', ['int'])
+    const tConstInt = new ConstantScriptNodeTemplate('ConstInt', [
+      new ScriptNodePort('int', 'int'),
+    ])
     const tMux2 = new ScriptNodeTemplate(
       'Mux2',
-      ['int', 'any', 'any'],
-      ['any'],
+      [
+        new ScriptNodePort('index', 'int'),
+        new ScriptNodePort('0', 'any'),
+        new ScriptNodePort('1', 'any'),
+      ],
+      [new ScriptNodePort('out', 'any')],
       ([index, a0, a1]) => [{ value: index ? a1 : a0 }]
     )
-    // const tMultiply = new ScriptNodeTemplate(
-    //   'Multiply',
-    //   ['number', 'number'],
-    //   ['number'],
-    //   ([a, b]) => [{ value: a * b }]
-    // )
     const tScaleVec2 = new ScriptNodeTemplate(
       'ScaleVec2',
-      ['object', 'number'],
-      ['object'],
+      [new ScriptNodePort('v', 'object'), new ScriptNodePort('s', 'number')],
+      [new ScriptNodePort('v', 'object')],
       ([v, s]) => [{ value: v.scale(s) }]
     )
-    /**
-     * @HATODO properly. Store owning entity in graph or something
-     */
     const tGetControlledEntity = new ScriptNodeTemplate(
       'GetControlledEntity',
       [],
-      ['object'],
+      [new ScriptNodePort('entity', 'object')],
       (_, entity) => [{ value: entity }]
     )
     const tVec2 = new ScriptNodeTemplate(
       'Vec2',
-      ['number', 'number'],
-      ['object'],
+      [new ScriptNodePort('x', 'number'), new ScriptNodePort('y', 'number')],
+      [new ScriptNodePort('v', 'object')],
       ([x, y]) => [{ value: new Vec2(x, y) }]
     )
     const tNormalize = new ScriptNodeTemplate(
       'Normalize',
-      ['object'],
-      ['object'],
+      [new ScriptNodePort('v', 'object')],
+      [new ScriptNodePort('n', 'object')],
       ([v]) => [{ value: v.norm() }]
     )
     const tSetEntityVelocity = new ScriptNodeTemplate(
       'SetEntityVelocity',
-      ['object', 'object'],
+      [
+        new ScriptNodePort('entity', 'object'),
+        new ScriptNodePort('v', 'object'),
+      ],
       [],
       ([entity, v]) => {
         entity.vel = v

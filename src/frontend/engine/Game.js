@@ -59,4 +59,7 @@ export class Game {
     this.systems.forEach((system) => system.update(deltaTime))
     this.postUpdateFunctions.forEach((fn) => fn())
   }
+  draw(renderer) {
+    this.currentScene.layers.forEach((layer) => layer.draw(renderer))
+  }
 }

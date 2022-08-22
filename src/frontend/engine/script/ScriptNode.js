@@ -43,17 +43,17 @@ export class ScriptNode extends Component {
     }
     this.graph.addEdge(this, outputIndex, inputNode, inputIndex)
   }
-  run(inputs) {
+  run(inputs, entity) {
     if (!this.active) return
 
-    console.log(inputs)
-    console.log(this.data.inputTypes.types)
+    // console.log(inputs)
+    // console.log(this.data.inputTypes.types)
     if (!validateScriptDataTypes(inputs, this.data.inputTypes.types)) {
       this.logError('Invalid input')
       return
     }
 
-    const results = this.data.fn(inputs)
+    const results = this.data.fn(inputs, entity) || []
     this.outputs = results.map((result) => result.value)
     // propagate activation
     let outboundEdges = this.graph.edges.get(this.id).out
@@ -66,7 +66,7 @@ export class ScriptNode extends Component {
         edge.inputNode.active = true
       } else {
         const result = results[edge.outputIndex]
-        // if the associated output is explicitly active, activate the edge's other node
+        // if the associated output is explicitly active OR not set, activate the edge's other node
         if (result.activate || result.activate === undefined)
           edge.inputNode.active = true
       }

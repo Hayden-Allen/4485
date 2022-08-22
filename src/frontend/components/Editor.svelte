@@ -11,80 +11,201 @@
   import { EditorLayer } from '%engine/editor/EditorLayer.js'
   import {
     ScriptNodeTemplate,
+    EventScriptNodeTemplate,
     ConstantScriptNodeTemplate,
   } from '%script/ScriptNodeTemplate.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
 
   let framebuffer = undefined
 
-  function runScripts() {
-    const trun = new ScriptNodeTemplate('run', [], [], () => [
-      { activate: true },
-    ])
-    // const tmux2 = new ScriptNodeTemplate(
-    //   'mux2',
-    //   ['int', 'any', 'any'],
-    //   ['any'],
-    //   ([index, x0, x1]) => [{ value: (index ? x1 : x0) }]
-    // )
-    const tbranch = new ScriptNodeTemplate(
-      'branch',
-      ['bool'],
+  function createPlayerScript() {
+    {
+      // const trun = new ScriptNodeTemplate('run', [], [], () => [
+      //   { activate: true },
+      // ])
+      // // const tmux2 = new ScriptNodeTemplate(
+      // //   'mux2',
+      // //   ['int', 'any', 'any'],
+      // //   ['any'],
+      // //   ([index, x0, x1]) => [{ value: (index ? x1 : x0) }]
+      // // )
+      // const tbranch = new ScriptNodeTemplate(
+      //   'branch',
+      //   ['bool'],
+      //   ['bool', 'bool', 'int'],
+      //   ([b]) => [
+      //     { value: b, activate: b },
+      //     { value: !b, activate: !b },
+      //     { value: ~~b, activate: true },
+      //   ]
+      // )
+      // const tmul = new ScriptNodeTemplate(
+      //   'mul',
+      //   ['number', 'number'],
+      //   ['number'],
+      //   ([a, b]) => [{ value: a * b }]
+      // )
+      // const tcf = new ConstantScriptNodeTemplate('cf', ['float'])
+      // const tcb = new ConstantScriptNodeTemplate('cb', ['bool'])
+      // let graph = new ScriptGraph('graph')
+      // let run = trun.createNode(graph)
+      // let mulA = tmul.createNode(graph)
+      // let mulB = tmul.createNode(graph)
+      // let cf2 = tcf.createNode(graph, [2])
+      // let cf3 = tcf.createNode(graph, [3])
+      // let cf4 = tcf.createNode(graph, [4])
+      // let branch = tbranch.createNode(graph)
+      // let cb = tcb.createNode(graph, [false])
+      // // run.attachAsOutput(-1, mulA, -1)
+      // // mulA.attachAsInput(cf2, 0, 0)
+      // // mulA.attachAsInput(cf3, 0, 1)
+      // // mulB.attachAsInput(mulA, 0, 0)
+      // // mulB.attachAsInput(cf4, 0, 1)
+      // run.attachAsOutput(-1, branch, -1)
+      // // 2 * 3
+      // cf2.attachAsOutput(0, mulA, 0)
+      // cf3.attachAsOutput(0, mulA, 1)
+      // // 3 * 4
+      // cf3.attachAsOutput(0, mulB, 0)
+      // cf4.attachAsOutput(0, mulB, 1)
+      // // cb ? 2 * 3 : 3 * 4
+      // cb.attachAsOutput(0, branch, 0)
+      // branch.attachAsOutput(0, mulA, -1)
+      // branch.attachAsOutput(1, mulB, -1)
+    }
+
+    const tOnTick = new EventScriptNodeTemplate('OnTick')
+    const tKey = new ConstantScriptNodeTemplate('Key', ['string'])
+    const tKeyPressed = new ScriptNodeTemplate(
+      'KeyPressed',
+      ['string'],
       ['bool', 'bool', 'int'],
-      ([b]) => [
-        { value: b, activate: b },
-        { value: !b, activate: !b },
-        { value: ~~b, activate: true },
-      ]
+      ([key]) => {
+        const pressed = global.input.isKeyPressed(key)
+        return [
+          { value: pressed, active: pressed },
+          { value: !pressed, active: !pressed },
+          { value: ~~pressed, active: true },
+        ]
+      }
     )
-    const tmul = new ScriptNodeTemplate(
-      'mul',
+    const tSubtract = new ScriptNodeTemplate(
+      'Subtract',
       ['number', 'number'],
       ['number'],
-      ([a, b]) => [{ value: a * b }]
+      ([a, b]) => [{ value: a - b }]
     )
-    const tcf = new ConstantScriptNodeTemplate('cf', ['float'])
-    const tcb = new ConstantScriptNodeTemplate('cb', ['bool'])
+    const tConstInt = new ConstantScriptNodeTemplate('ConstInt', ['int'])
+    const tMux2 = new ScriptNodeTemplate(
+      'Mux2',
+      ['int', 'any', 'any'],
+      ['any'],
+      ([index, a0, a1]) => [{ value: index ? a1 : a0 }]
+    )
+    // const tMultiply = new ScriptNodeTemplate(
+    //   'Multiply',
+    //   ['number', 'number'],
+    //   ['number'],
+    //   ([a, b]) => [{ value: a * b }]
+    // )
+    const tScaleVec2 = new ScriptNodeTemplate(
+      'ScaleVec2',
+      ['object', 'number'],
+      ['object'],
+      ([v, s]) => [{ value: v.scale(s) }]
+    )
+    /**
+     * @HATODO properly. Store owning entity in graph or something
+     */
+    const tGetControlledEntity = new ScriptNodeTemplate(
+      'GetControlledEntity',
+      [],
+      ['object'],
+      (_, entity) => [{ value: entity }]
+    )
+    const tVec2 = new ScriptNodeTemplate(
+      'Vec2',
+      ['number', 'number'],
+      ['object'],
+      ([x, y]) => [{ value: new Vec2(x, y) }]
+    )
+    const tNormalize = new ScriptNodeTemplate(
+      'Normalize',
+      ['object'],
+      ['object'],
+      ([v]) => [{ value: v.norm() }]
+    )
+    const tSetEntityVelocity = new ScriptNodeTemplate(
+      'SetEntityVelocity',
+      ['object', 'object'],
+      [],
+      ([entity, v]) => {
+        entity.vel = v
+      }
+    )
 
-    let graph = new ScriptGraph('graph')
-    let run = trun.createNode(graph)
-    let mulA = tmul.createNode(graph)
-    let mulB = tmul.createNode(graph)
-    let cf2 = tcf.createNode(graph, [2])
-    let cf3 = tcf.createNode(graph, [3])
-    let cf4 = tcf.createNode(graph, [4])
-    let branch = tbranch.createNode(graph)
-    let cb = tcb.createNode(graph, [false])
+    let graph = new ScriptGraph('PlayerController')
+    const onTick = tOnTick.createNode(graph)
+    // get input
+    const keyW = tKey.createNode(graph, ['w'])
+    const keyA = tKey.createNode(graph, ['a'])
+    const keyS = tKey.createNode(graph, ['s'])
+    const keyD = tKey.createNode(graph, ['d'])
+    const keyShift = tKey.createNode(graph, ['shift'])
+    const keyWPressed = tKeyPressed.createNode(graph)
+    keyWPressed.attachAsInput(keyW, 0, 0)
+    keyWPressed.attachAsInput(onTick, -1, -1)
+    const keyAPressed = tKeyPressed.createNode(graph)
+    keyAPressed.attachAsInput(keyA, 0, 0)
+    keyAPressed.attachAsInput(onTick, -1, -1)
+    const keySPressed = tKeyPressed.createNode(graph)
+    keySPressed.attachAsInput(keyS, 0, 0)
+    keySPressed.attachAsInput(onTick, -1, -1)
+    const keyDPressed = tKeyPressed.createNode(graph)
+    keyDPressed.attachAsInput(keyD, 0, 0)
+    keyDPressed.attachAsInput(onTick, -1, -1)
+    const keyShiftPressed = tKeyPressed.createNode(graph)
+    keyShiftPressed.attachAsInput(keyShift, 0, 0)
+    keyShiftPressed.attachAsInput(onTick, -1, -1)
 
-    // run.attachAsOutput(-1, mulA, -1)
-    // mulA.attachAsInput(cf2, 0, 0)
-    // mulA.attachAsInput(cf3, 0, 1)
-    // mulB.attachAsInput(mulA, 0, 0)
-    // mulB.attachAsInput(cf4, 0, 1)
+    // compute normalized velocity vector
+    const dx = tSubtract.createNode(graph)
+    dx.attachAsInput(keyDPressed, 2, 0)
+    dx.attachAsInput(keyAPressed, 2, 1)
+    const dy = tSubtract.createNode(graph)
+    dy.attachAsInput(keySPressed, 2, 0)
+    dy.attachAsInput(keyWPressed, 2, 1)
 
-    run.attachAsOutput(-1, branch, -1)
-    // 2 * 3
-    cf2.attachAsOutput(0, mulA, 0)
-    cf3.attachAsOutput(0, mulA, 1)
-    // 3 * 4
-    cf3.attachAsOutput(0, mulB, 0)
-    cf4.attachAsOutput(0, mulB, 1)
-    // cb ? 2 * 3 : 3 * 4
-    cb.attachAsOutput(0, branch, 0)
-    branch.attachAsOutput(0, mulA, -1)
-    branch.attachAsOutput(1, mulB, -1)
+    // create normalized velocity vector
+    const vec2 = tVec2.createNode(graph)
+    vec2.attachAsInput(dx, 0, 0)
+    vec2.attachAsInput(dy, 0, 1)
+    const norm = tNormalize.createNode(graph)
+    norm.attachAsInput(vec2, 0, 0)
 
-    console.log(graph)
+    // boost if necessary
+    const ci1 = tConstInt.createNode(graph, [500])
+    const ci2 = tConstInt.createNode(graph, [1000])
+    const mux = tMux2.createNode(graph)
+    mux.attachAsInput(keyShiftPressed, 2, 0)
+    mux.attachAsInput(ci1, 0, 1)
+    mux.attachAsInput(ci2, 0, 2)
+    const scale = tScaleVec2.createNode(graph)
+    scale.attachAsInput(norm, 0, 0)
+    scale.attachAsInput(mux, 0, 1)
 
-    let inputs = new Map()
-    inputs.set(mulA.id, [2, 3])
-    console.log(graph.run(inputs))
+    // set velocity
+    const entity = tGetControlledEntity.createNode(graph)
+    const setVel = tSetEntityVelocity.createNode(graph)
+    setVel.attachAsInput(entity, 0, 0)
+    setVel.attachAsInput(scale, 0, 1)
+
+    return graph
   }
 
   onMount(() => {
-    runScripts()
-
     global.init()
+
     var game = new Game()
 
     var scene = new Scene()
@@ -105,14 +226,16 @@
         )
       }
     }
+    let playerScript = createPlayerScript()
     let playerController = {
       run: (player, deltaTimeSeconds) => {
-        player.vel = new Vec2(
-          global.input.isKeyPressed('d') - global.input.isKeyPressed('a'),
-          global.input.isKeyPressed('s') - global.input.isKeyPressed('w')
-        )
-          .norm()
-          .scale(500)
+        // player.vel = new Vec2(
+        //   global.input.isKeyPressed('d') - global.input.isKeyPressed('a'),
+        //   global.input.isKeyPressed('s') - global.input.isKeyPressed('w')
+        // )
+        //   .norm()
+        //   .scale(500)
+        playerScript.run(player)
       },
     }
     let player = new ControlledSceneEntity(

@@ -4,6 +4,7 @@ export const scriptDataType = {
   array: 0x4,
   object: 0x8,
   bool: 0x10,
+  string: 0x20,
   any: 0xff,
 }
 export function resolveScriptDataType(input) {
@@ -18,6 +19,8 @@ export function resolveScriptDataType(input) {
       return Array.isArray(input) ? scriptDataType.array : scriptDataType.object
     case 'boolean':
       return scriptDataType.bool
+    case 'string':
+      return scriptDataType.string
   }
 }
 export function validateScriptDataTypes(input, expected) {

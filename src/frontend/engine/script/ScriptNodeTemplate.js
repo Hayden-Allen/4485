@@ -34,33 +34,37 @@ export class EventScriptNodeTemplate extends ScriptNodeTemplate {
   }
 }
 
-export class ConstantScriptNodeTemplate {
-  constructor(name, outPorts) {
-    this.name = name
-    this.outputTypes = outPorts.map((port) => scriptDataType[port.typename])
+// for nodes that contain constant values, but also have regular inputs/outputs (ie, KeyPressed)
+export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
+  constructor(name, inPorts, internalPorts, outPorts, fn) {
+    super(name, inPorts, outPorts, fn)
+    this.internalTypes = internalPorts.map(
+      (port) => scriptDataType[port.typename]
+    )
   }
-  createNode(graph, outputValues) {
-    // console.log(outputValues)
-    // console.log(this.outputTypes)
-    if (!validateScriptDataTypes(outputValues, this.outputTypes)) {
+  createNode(graph, internalValues) {
+    if (!validateScriptDataTypes(internalValues, this.internalTypes)) {
       console.error('Invalid inputs')
       return
     }
 
-    let outputs = []
-    outputValues.forEach((value) => outputs.push({ value, activate: false }))
-    // a constant node should not carry activation; it is merely a data supplier
     let node = new ScriptNode(
       this.name,
       graph,
-      new ScriptDataTypeList([]),
+      this.inputTypes,
       this.outputTypes,
-      () => {
-        return outputs
-      }
+      this.fn
     )
-    // this node will always return the given values
-    node.outputs = outputValues
+
+    node.internal = internalValues
     return node
+  }
+}
+
+export class ConstantScriptNodeTemplate extends InternalScriptNodeTemplate {
+  constructor(name, ports) {
+    super(name, [], ports, ports, (_, { internal }) =>
+      internal.map((value) => ({ value, activate: false }))
+    )
   }
 }

@@ -19,6 +19,8 @@ export class ScriptNode extends Component {
     this.outputs = []
     // whether or not this node should be evaluated during current graph execution
     this.active = false
+    // internal constants
+    this.internal = []
   }
   checkIndex(types, index) {
     // -1 signals that an edge carries activation, but not value
@@ -60,7 +62,8 @@ export class ScriptNode extends Component {
       return
     }
 
-    const results = this.data.fn(inputs, entity) || []
+    const results =
+      this.data.fn(inputs, { entity, internal: this.internal }) || []
     this.outputs = results.map((result) => result.value)
     // propagate activation
     let outboundEdges = this.graph.edges.get(this.id).out

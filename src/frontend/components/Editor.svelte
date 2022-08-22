@@ -12,6 +12,7 @@
   import {
     ScriptNodeTemplate,
     EventScriptNodeTemplate,
+    InternalScriptNodeTemplate,
     ConstantScriptNodeTemplate,
   } from '%script/ScriptNodeTemplate.js'
   import { ScriptNodePort } from '%script/ScriptNode.js'
@@ -76,22 +77,17 @@
     }
 
     const tOnTick = new EventScriptNodeTemplate('OnTick')
-    const tKey = new ConstantScriptNodeTemplate('Key', [
-      new ScriptNodePort('key', 'string'),
-    ])
-    /**
-     * @HATODO properly
-     */
-    const tKeyPressed = new ScriptNodeTemplate(
+    const tKeyPressed = new InternalScriptNodeTemplate(
       'KeyPressed',
+      [],
       [new ScriptNodePort('key', 'string')],
       [
         new ScriptNodePort('T', 'bool'),
         new ScriptNodePort('F', 'bool'),
         new ScriptNodePort('int', 'int'),
       ],
-      ([key]) => {
-        const pressed = global.input.isKeyPressed(key)
+      (_, { internal }) => {
+        const pressed = global.input.isKeyPressed(internal[0])
         return [
           { value: pressed, active: pressed },
           { value: !pressed, active: !pressed },
@@ -128,7 +124,7 @@
       'GetControlledEntity',
       [],
       [new ScriptNodePort('entity', 'object')],
-      (_, entity) => [{ value: entity }]
+      (_, { entity }) => [{ value: entity }]
     )
     const tVec2 = new ScriptNodeTemplate(
       'Vec2',
@@ -157,25 +153,15 @@
     let graph = new ScriptGraph('PlayerController')
     const onTick = tOnTick.createNode(graph)
     // get input
-    const keyW = tKey.createNode(graph, ['w'])
-    const keyA = tKey.createNode(graph, ['a'])
-    const keyS = tKey.createNode(graph, ['s'])
-    const keyD = tKey.createNode(graph, ['d'])
-    const keyShift = tKey.createNode(graph, ['shift'])
-    const keyWPressed = tKeyPressed.createNode(graph)
-    keyWPressed.attachAsInput(keyW, 0, 0)
+    const keyWPressed = tKeyPressed.createNode(graph, ['w'])
     keyWPressed.attachAsInput(onTick, -1, -1)
-    const keyAPressed = tKeyPressed.createNode(graph)
-    keyAPressed.attachAsInput(keyA, 0, 0)
+    const keyAPressed = tKeyPressed.createNode(graph, ['a'])
     keyAPressed.attachAsInput(onTick, -1, -1)
-    const keySPressed = tKeyPressed.createNode(graph)
-    keySPressed.attachAsInput(keyS, 0, 0)
+    const keySPressed = tKeyPressed.createNode(graph, ['s'])
     keySPressed.attachAsInput(onTick, -1, -1)
-    const keyDPressed = tKeyPressed.createNode(graph)
-    keyDPressed.attachAsInput(keyD, 0, 0)
+    const keyDPressed = tKeyPressed.createNode(graph, ['d'])
     keyDPressed.attachAsInput(onTick, -1, -1)
-    const keyShiftPressed = tKeyPressed.createNode(graph)
-    keyShiftPressed.attachAsInput(keyShift, 0, 0)
+    const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
     keyShiftPressed.attachAsInput(onTick, -1, -1)
 
     // compute normalized velocity vector

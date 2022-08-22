@@ -34,7 +34,7 @@ export class EditorLayer extends Layer {
     }
   }
   onRender(e) {
-    this.game.currentScene.layers.forEach((layer) => layer.draw(e.renderer))
+    this.game.draw(e.renderer)
 
     if (this.showDebug) {
       e.renderer.drawText(

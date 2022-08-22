@@ -1,20 +1,5 @@
 import { Component } from './Component.js'
-
-class SceneLayer {
-  constructor() {
-    this.static = new Map()
-    this.dynamic = new Map()
-  }
-  draw(renderer) {
-    this.static.forEach((entity) => entity.draw(renderer))
-    this.dynamic.forEach((entity) => entity.draw(renderer))
-  }
-  update(deltaTimeSeconds) {
-    this.dynamic.forEach((entity) => {
-      entity.pos.plusEqual(entity.vel.scale(deltaTimeSeconds))
-    })
-  }
-}
+import { SceneLayer } from './SceneLayer.js'
 
 export class Scene extends Component {
   constructor() {

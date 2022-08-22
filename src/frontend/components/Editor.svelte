@@ -12,8 +12,10 @@
   import {
     ScriptNodeTemplate,
     EventScriptNodeTemplate,
+    InternalScriptNodeTemplate,
     ConstantScriptNodeTemplate,
   } from '%script/ScriptNodeTemplate.js'
+  import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
 
   let framebuffer = undefined
@@ -75,69 +77,73 @@
     }
 
     const tOnTick = new EventScriptNodeTemplate('OnTick')
-    const tKey = new ConstantScriptNodeTemplate('Key', ['string'])
-    const tKeyPressed = new ScriptNodeTemplate(
+    const tKeyPressed = new InternalScriptNodeTemplate(
       'KeyPressed',
-      ['string'],
-      ['bool', 'bool', 'int'],
-      ([key]) => {
-        const pressed = global.input.isKeyPressed(key)
+      [],
+      [new ScriptNodePort('key', 'string')],
+      [
+        new ScriptNodePort('T', 'bool'),
+        new ScriptNodePort('F', 'bool'),
+        new ScriptNodePort('int', 'int'),
+      ],
+      (_, { internal }) => {
+        const pressed = global.input.isKeyPressed(internal[0])
         return [
           { value: pressed, active: pressed },
           { value: !pressed, active: !pressed },
-          { value: ~~pressed, active: true },
+          { value: ~~pressed },
         ]
       }
     )
     const tSubtract = new ScriptNodeTemplate(
       'Subtract',
-      ['number', 'number'],
-      ['number'],
+      [new ScriptNodePort('a', 'number'), new ScriptNodePort('b', 'number')],
+      [new ScriptNodePort('a-b', 'number')],
       ([a, b]) => [{ value: a - b }]
     )
-    const tConstInt = new ConstantScriptNodeTemplate('ConstInt', ['int'])
+    const tConstInt = new ConstantScriptNodeTemplate('ConstInt', [
+      new ScriptNodePort('int', 'int'),
+    ])
     const tMux2 = new ScriptNodeTemplate(
       'Mux2',
-      ['int', 'any', 'any'],
-      ['any'],
+      [
+        new ScriptNodePort('index', 'int'),
+        new ScriptNodePort('0', 'any'),
+        new ScriptNodePort('1', 'any'),
+      ],
+      [new ScriptNodePort('out', 'any')],
       ([index, a0, a1]) => [{ value: index ? a1 : a0 }]
     )
-    // const tMultiply = new ScriptNodeTemplate(
-    //   'Multiply',
-    //   ['number', 'number'],
-    //   ['number'],
-    //   ([a, b]) => [{ value: a * b }]
-    // )
     const tScaleVec2 = new ScriptNodeTemplate(
       'ScaleVec2',
-      ['object', 'number'],
-      ['object'],
+      [new ScriptNodePort('v', 'object'), new ScriptNodePort('s', 'number')],
+      [new ScriptNodePort('v', 'object')],
       ([v, s]) => [{ value: v.scale(s) }]
     )
-    /**
-     * @HATODO properly. Store owning entity in graph or something
-     */
     const tGetControlledEntity = new ScriptNodeTemplate(
       'GetControlledEntity',
       [],
-      ['object'],
-      (_, entity) => [{ value: entity }]
+      [new ScriptNodePort('entity', 'object')],
+      (_, { entity }) => [{ value: entity }]
     )
     const tVec2 = new ScriptNodeTemplate(
       'Vec2',
-      ['number', 'number'],
-      ['object'],
+      [new ScriptNodePort('x', 'number'), new ScriptNodePort('y', 'number')],
+      [new ScriptNodePort('v', 'object')],
       ([x, y]) => [{ value: new Vec2(x, y) }]
     )
     const tNormalize = new ScriptNodeTemplate(
       'Normalize',
-      ['object'],
-      ['object'],
+      [new ScriptNodePort('v', 'object')],
+      [new ScriptNodePort('n', 'object')],
       ([v]) => [{ value: v.norm() }]
     )
     const tSetEntityVelocity = new ScriptNodeTemplate(
       'SetEntityVelocity',
-      ['object', 'object'],
+      [
+        new ScriptNodePort('entity', 'object'),
+        new ScriptNodePort('v', 'object'),
+      ],
       [],
       ([entity, v]) => {
         entity.vel = v
@@ -147,25 +153,15 @@
     let graph = new ScriptGraph('PlayerController')
     const onTick = tOnTick.createNode(graph)
     // get input
-    const keyW = tKey.createNode(graph, ['w'])
-    const keyA = tKey.createNode(graph, ['a'])
-    const keyS = tKey.createNode(graph, ['s'])
-    const keyD = tKey.createNode(graph, ['d'])
-    const keyShift = tKey.createNode(graph, ['shift'])
-    const keyWPressed = tKeyPressed.createNode(graph)
-    keyWPressed.attachAsInput(keyW, 0, 0)
+    const keyWPressed = tKeyPressed.createNode(graph, ['w'])
     keyWPressed.attachAsInput(onTick, -1, -1)
-    const keyAPressed = tKeyPressed.createNode(graph)
-    keyAPressed.attachAsInput(keyA, 0, 0)
+    const keyAPressed = tKeyPressed.createNode(graph, ['a'])
     keyAPressed.attachAsInput(onTick, -1, -1)
-    const keySPressed = tKeyPressed.createNode(graph)
-    keySPressed.attachAsInput(keyS, 0, 0)
+    const keySPressed = tKeyPressed.createNode(graph, ['s'])
     keySPressed.attachAsInput(onTick, -1, -1)
-    const keyDPressed = tKeyPressed.createNode(graph)
-    keyDPressed.attachAsInput(keyD, 0, 0)
+    const keyDPressed = tKeyPressed.createNode(graph, ['d'])
     keyDPressed.attachAsInput(onTick, -1, -1)
-    const keyShiftPressed = tKeyPressed.createNode(graph)
-    keyShiftPressed.attachAsInput(keyShift, 0, 0)
+    const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
     keyShiftPressed.attachAsInput(onTick, -1, -1)
 
     // compute normalized velocity vector
@@ -175,15 +171,13 @@
     const dy = tSubtract.createNode(graph)
     dy.attachAsInput(keySPressed, 2, 0)
     dy.attachAsInput(keyWPressed, 2, 1)
-
-    // create normalized velocity vector
     const vec2 = tVec2.createNode(graph)
     vec2.attachAsInput(dx, 0, 0)
     vec2.attachAsInput(dy, 0, 1)
     const norm = tNormalize.createNode(graph)
     norm.attachAsInput(vec2, 0, 0)
 
-    // boost if necessary
+    // boost if shift pressed
     const ci1 = tConstInt.createNode(graph, [500])
     const ci2 = tConstInt.createNode(graph, [1000])
     const mux = tMux2.createNode(graph)

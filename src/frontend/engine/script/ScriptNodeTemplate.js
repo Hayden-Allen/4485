@@ -7,10 +7,10 @@ import {
 import { ScriptNode } from './ScriptNode.js'
 
 export class ScriptNodeTemplate extends ScriptNodeData {
-  constructor(name, inputTypenames, outputTypenames, fn) {
+  constructor(name, inPorts, outPorts, fn) {
     super(
-      new ScriptDataTypeList(inputTypenames),
-      new ScriptDataTypeList(outputTypenames),
+      new ScriptDataTypeList(inPorts.map((port) => port.typename)),
+      new ScriptDataTypeList(outPorts.map((port) => port.typename)),
       fn
     )
     this.name = name
@@ -34,33 +34,37 @@ export class EventScriptNodeTemplate extends ScriptNodeTemplate {
   }
 }
 
-export class ConstantScriptNodeTemplate {
-  constructor(name, outputTypenames) {
-    this.name = name
-    this.outputTypes = outputTypenames.map((name) => scriptDataType[name])
+// for nodes that contain constant values, but also have regular inputs/outputs (ie, KeyPressed)
+export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
+  constructor(name, inPorts, internalPorts, outPorts, fn) {
+    super(name, inPorts, outPorts, fn)
+    this.internalTypes = internalPorts.map(
+      (port) => scriptDataType[port.typename]
+    )
   }
-  createNode(graph, outputValues) {
-    // console.log(outputValues)
-    // console.log(this.outputTypes)
-    if (!validateScriptDataTypes(outputValues, this.outputTypes)) {
+  createNode(graph, internalValues) {
+    if (!validateScriptDataTypes(internalValues, this.internalTypes)) {
       console.error('Invalid inputs')
       return
     }
 
-    let outputs = []
-    outputValues.forEach((value) => outputs.push({ value, activate: false }))
-    // a constant node should not carry activation; it is merely a data supplier
     let node = new ScriptNode(
       this.name,
       graph,
-      new ScriptDataTypeList([]),
+      this.inputTypes,
       this.outputTypes,
-      () => {
-        return outputs
-      }
+      this.fn
     )
-    // this node will always return the given values
-    node.outputs = outputValues
+
+    node.internal = internalValues
     return node
+  }
+}
+
+export class ConstantScriptNodeTemplate extends InternalScriptNodeTemplate {
+  constructor(name, ports) {
+    super(name, [], ports, ports, (_, { internal }) =>
+      internal.map((value) => ({ value, activate: false }))
+    )
   }
 }

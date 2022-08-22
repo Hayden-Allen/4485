@@ -100,7 +100,7 @@ export class ScriptGraph extends Component {
     // add to topological sort results
     order.unshift(node)
   }
-  run(initialInputs) {
+  run(entity) {
     // graph has changed, need to recompile
     if (!this.cachedCompile) this.cachedCompile = this.compile()
 
@@ -118,20 +118,15 @@ export class ScriptGraph extends Component {
       let edges = this.edges.get(node.id)
       let inputEdges = edges.in
 
-      /**
-       * @HATODO change this? Probably only needed for testing; real startNodes should not require input anyway
-       * this edge has no inputs (is a startNode), so give it specific input
-       */
-      if (!inputEdges.length) {
-        inputs = initialInputs.get(node.id) || []
-      } else {
-        // fill out input array with cached output from previous nodes (guaranteed to be valid because of topological ordering)
+      // fill input array with cached output from previous nodes (guaranteed to be valid because of topological ordering)
+      if (inputEdges.length) {
         inputEdges.forEach((edge) => {
-          inputs[edge.inputIndex] = edge.outputNode.outputs[edge.outputIndex]
+          if (edge.inputIndex != -1)
+            inputs[edge.inputIndex] = edge.outputNode.outputs[edge.outputIndex]
         })
       }
-      // run current node with appropriate inputs; note that this also propagates activation to connected nodes
-      node.run(inputs)
+      // run current node with appropriate inputs; this also propagates activation to connected nodes
+      node.run(inputs, entity)
 
       // this is a terminating node, return its output
       if (!edges.out.length) outputs.set(node.id, node.outputs)

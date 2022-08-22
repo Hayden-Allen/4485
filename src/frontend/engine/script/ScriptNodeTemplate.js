@@ -25,12 +25,23 @@ export class ScriptNodeTemplate extends ScriptNodeData {
     )
   }
 }
+
+// event script nodes only carry activation
+// they are starting points for the graph
+export class EventScriptNodeTemplate extends ScriptNodeTemplate {
+  constructor(name) {
+    super(name, [], [], () => [])
+  }
+}
+
 export class ConstantScriptNodeTemplate {
   constructor(name, outputTypenames) {
     this.name = name
     this.outputTypes = outputTypenames.map((name) => scriptDataType[name])
   }
   createNode(graph, outputValues) {
+    // console.log(outputValues)
+    // console.log(this.outputTypes)
     if (!validateScriptDataTypes(outputValues, this.outputTypes)) {
       console.error('Invalid inputs')
       return

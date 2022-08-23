@@ -37,17 +37,21 @@
       const ratio = containerWidth / containerHeight
       // container is tall; canvas should fill horizontally
       if (ratio < TARGET_ASPECT_RATIO) {
-        canvas.width = Math.floor(containerWidth) * window.devicePixelRatio
-        canvas.height =
-          Math.floor(containerWidth / TARGET_ASPECT_RATIO) *
-          window.devicePixelRatio
+        const width = Math.floor(containerWidth),
+          height = Math.floor(containerWidth / TARGET_ASPECT_RATIO)
+        canvas.width = width * window.devicePixelRatio
+        canvas.height = height * window.devicePixelRatio
+        canvas.style.width = `${width}px`
+        canvas.style.height = `${height}px`
       }
       // container is wide; canvas should fill vertically
       else {
-        canvas.height = Math.floor(containerHeight) * window.devicePixelRatio
-        canvas.width =
-          Math.floor(containerHeight * TARGET_ASPECT_RATIO) *
-          window.devicePixelRatio
+        const width = Math.floor(containerHeight * TARGET_ASPECT_RATIO),
+          height = Math.floor(containerHeight)
+        canvas.width = width * window.devicePixelRatio
+        canvas.height = height * window.devicePixelRatio
+        canvas.style.width = `${width}px`
+        canvas.style.height = `${height}px`
       }
     }
   }

@@ -18,64 +18,9 @@
   import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
 
-  let framebuffer = undefined
+  let canvas = undefined
 
   function createPlayerScript() {
-    {
-      // const trun = new ScriptNodeTemplate('run', [], [], () => [
-      //   { activate: true },
-      // ])
-      // // const tmux2 = new ScriptNodeTemplate(
-      // //   'mux2',
-      // //   ['int', 'any', 'any'],
-      // //   ['any'],
-      // //   ([index, x0, x1]) => [{ value: (index ? x1 : x0) }]
-      // // )
-      // const tbranch = new ScriptNodeTemplate(
-      //   'branch',
-      //   ['bool'],
-      //   ['bool', 'bool', 'int'],
-      //   ([b]) => [
-      //     { value: b, activate: b },
-      //     { value: !b, activate: !b },
-      //     { value: ~~b, activate: true },
-      //   ]
-      // )
-      // const tmul = new ScriptNodeTemplate(
-      //   'mul',
-      //   ['number', 'number'],
-      //   ['number'],
-      //   ([a, b]) => [{ value: a * b }]
-      // )
-      // const tcf = new ConstantScriptNodeTemplate('cf', ['float'])
-      // const tcb = new ConstantScriptNodeTemplate('cb', ['bool'])
-      // let graph = new ScriptGraph('graph')
-      // let run = trun.createNode(graph)
-      // let mulA = tmul.createNode(graph)
-      // let mulB = tmul.createNode(graph)
-      // let cf2 = tcf.createNode(graph, [2])
-      // let cf3 = tcf.createNode(graph, [3])
-      // let cf4 = tcf.createNode(graph, [4])
-      // let branch = tbranch.createNode(graph)
-      // let cb = tcb.createNode(graph, [false])
-      // // run.attachAsOutput(-1, mulA, -1)
-      // // mulA.attachAsInput(cf2, 0, 0)
-      // // mulA.attachAsInput(cf3, 0, 1)
-      // // mulB.attachAsInput(mulA, 0, 0)
-      // // mulB.attachAsInput(cf4, 0, 1)
-      // run.attachAsOutput(-1, branch, -1)
-      // // 2 * 3
-      // cf2.attachAsOutput(0, mulA, 0)
-      // cf3.attachAsOutput(0, mulA, 1)
-      // // 3 * 4
-      // cf3.attachAsOutput(0, mulB, 0)
-      // cf4.attachAsOutput(0, mulB, 1)
-      // // cb ? 2 * 3 : 3 * 4
-      // cb.attachAsOutput(0, branch, 0)
-      // branch.attachAsOutput(0, mulA, -1)
-      // branch.attachAsOutput(1, mulB, -1)
-    }
-
     const tOnTick = new EventScriptNodeTemplate('OnTick')
     const tKeyPressed = new InternalScriptNodeTemplate(
       'KeyPressed',
@@ -241,7 +186,8 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    var window = new Window(framebuffer, '#00f')
+    console.log(canvas)
+    var window = new Window(canvas, '#00f')
     window.pushLayer(new EditorLayer(game))
     window.pushLayer(new UILayer())
     window.run()
@@ -255,7 +201,7 @@
     <div
       class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
     >
-      <Viewport bind:framebuffer />
+      <Viewport bind:canvas />
     </div>
     <div
       class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"

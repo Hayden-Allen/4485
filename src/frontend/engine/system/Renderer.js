@@ -54,7 +54,7 @@ export class Renderer extends System {
     this.renderCommands.push(new RenderCommand('clear', []))
   }
   drawLine(x0, y0, x1, y1, color, options) {
-    this.addRenderCommand('drawLine', options, x0, y0, x1, y1, color, options)
+    this.addRenderCommand('drawLine', options, x0, y0, x1, y1, color)
   }
   drawRect(x, y, w, h, color, options) {
     this.addRenderCommand('drawRect', options, x, y, w, h, color)

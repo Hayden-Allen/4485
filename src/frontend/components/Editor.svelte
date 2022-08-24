@@ -17,7 +17,6 @@
   } from '%script/ScriptNodeTemplate.js'
   import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
-  import { ScriptGraphVisualizer } from '%editor/ScriptGraphVisualizer.js'
 
   let canvas = undefined
 
@@ -99,6 +98,8 @@
     let graph = new ScriptGraph('PlayerController')
     const onTick = tOnTick.createNode(graph)
     // get input
+    const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
+    keyShiftPressed.attachAsInput(onTick, -1, -1)
     const keyWPressed = tKeyPressed.createNode(graph, ['w'])
     keyWPressed.attachAsInput(onTick, -1, -1)
     const keyAPressed = tKeyPressed.createNode(graph, ['a'])
@@ -107,8 +108,13 @@
     keySPressed.attachAsInput(onTick, -1, -1)
     const keyDPressed = tKeyPressed.createNode(graph, ['d'])
     keyDPressed.attachAsInput(onTick, -1, -1)
-    const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
-    keyShiftPressed.attachAsInput(onTick, -1, -1)
+
+    const ci1 = tConstInt.createNode(graph, [500])
+    const ci2 = tConstInt.createNode(graph, [1000])
+    const mux = tMux2.createNode(graph)
+    mux.attachAsInput(keyShiftPressed, 2, 0)
+    mux.attachAsInput(ci1, 0, 1)
+    mux.attachAsInput(ci2, 0, 2)
 
     // compute normalized velocity vector
     const dx = tSubtract.createNode(graph)
@@ -124,12 +130,6 @@
     norm.attachAsInput(vec2, 0, 0)
 
     // boost if shift pressed
-    const ci1 = tConstInt.createNode(graph, [500])
-    const ci2 = tConstInt.createNode(graph, [1000])
-    const mux = tMux2.createNode(graph)
-    mux.attachAsInput(keyShiftPressed, 2, 0)
-    mux.attachAsInput(ci1, 0, 1)
-    mux.attachAsInput(ci2, 0, 2)
     const scale = tScaleVec2.createNode(graph)
     scale.attachAsInput(norm, 0, 0)
     scale.attachAsInput(mux, 0, 1)
@@ -145,30 +145,28 @@
 
   onMount(() => {
     global.init()
-    let playerScript = createPlayerScript()
-    const gv = new ScriptGraphVisualizer(playerScript)
-    console.log(gv.arrangeX())
 
     var game = new Game()
 
     var scene = new Scene()
     game.setCurrentScene(scene)
-    const size = 10
-    for (var y = 0; y < 500; y += size) {
-      for (var x = 0; x < 500; x += size) {
-        const red = parseInt((((x + y) * (x + y)) / 1000000) * 255)
-        const color = `#${global.padZeroes(red.toString(16), 2)}0000`
-        // create grid at z-index 0
-        game.addStaticSceneEntity(
-          new SceneEntity(
-            new Vec2(x + 100, y + 100),
-            new Vec2(size, size),
-            color
-          ),
-          0
-        )
-      }
-    }
+    // const size = 10
+    // for (var y = 0; y < 500; y += size) {
+    //   for (var x = 0; x < 500; x += size) {
+    //     const red = parseInt((((x + y) * (x + y)) / 1000000) * 255)
+    //     const color = `#${global.padZeroes(red.toString(16), 2)}0000`
+    //     // create grid at z-index 0
+    //     game.addStaticSceneEntity(
+    //       new SceneEntity(
+    //         new Vec2(x + 100, y + 100),
+    //         new Vec2(size, size),
+    //         color
+    //       ),
+    //       0
+    //     )
+    //   }
+    // }
+    let playerScript = createPlayerScript()
     let playerController = {
       run: (player, deltaTimeSeconds) => {
         playerScript.run(player)
@@ -183,9 +181,8 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    console.log(canvas)
     var window = new Window(canvas, '#00f')
-    window.pushLayer(new EditorLayer(game))
+    window.pushLayer(new EditorLayer(window, game, playerScript))
     window.pushLayer(new UILayer())
     window.run()
   })

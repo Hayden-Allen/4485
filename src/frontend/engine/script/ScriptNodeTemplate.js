@@ -1,26 +1,18 @@
 import { ScriptNodeData } from './ScriptNodeData.js'
-import {
-  scriptDataType,
-  validateScriptDataTypes,
-  ScriptDataTypeList,
-} from './ScriptDataType.js'
+import { scriptDataType, validateScriptDataTypes } from './ScriptDataType.js'
 import { ScriptNode } from './ScriptNode.js'
 
 export class ScriptNodeTemplate extends ScriptNodeData {
-  constructor(name, inPorts, outPorts, fn) {
-    super(
-      new ScriptDataTypeList(inPorts.map((port) => port.typename)),
-      new ScriptDataTypeList(outPorts.map((port) => port.typename)),
-      fn
-    )
+  constructor(name, inputPorts, outputPorts, fn) {
+    super(inputPorts, outputPorts, fn)
     this.name = name
   }
   createNode(graph) {
     return new ScriptNode(
       this.name,
       graph,
-      this.inputTypes,
-      this.outputTypes,
+      this.inputPorts,
+      this.outputPorts,
       this.fn
     )
   }
@@ -36,8 +28,8 @@ export class EventScriptNodeTemplate extends ScriptNodeTemplate {
 
 // for nodes that contain constant values, but also have regular inputs/outputs (ie, KeyPressed)
 export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
-  constructor(name, inPorts, internalPorts, outPorts, fn) {
-    super(name, inPorts, outPorts, fn)
+  constructor(name, inputPorts, internalPorts, outputPorts, fn) {
+    super(name, inputPorts, outputPorts, fn)
     this.internalTypes = internalPorts.map(
       (port) => scriptDataType[port.typename]
     )
@@ -51,8 +43,8 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
     let node = new ScriptNode(
       this.name,
       graph,
-      this.inputTypes,
-      this.outputTypes,
+      this.inputPorts,
+      this.outputPorts,
       this.fn
     )
 

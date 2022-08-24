@@ -1,9 +1,10 @@
 import { Layer } from '%window/Layer.js'
 import { Varying } from '%component/Varying.js'
 import { global } from '%engine/Global.js'
+import { ScriptGraphVisualizer } from './ScriptGraphVisualizer.js'
 
 export class EditorLayer extends Layer {
-  constructor(game) {
+  constructor(window, game, playerScript) {
     super('EditorLayer')
     this.game = game
     this.paused = false
@@ -13,6 +14,12 @@ export class EditorLayer extends Layer {
     })
     this.showDebug = true
     this.fps = 0
+    /**
+     * @HATODO hack
+     */
+    this.graphvis = new ScriptGraphVisualizer(window.canvas.ctx, playerScript)
+    this.graphvis.arrangeX()
+    this.graphvis.arrangeY()
   }
   onAppTick(e) {
     if (!this.paused) {
@@ -35,12 +42,13 @@ export class EditorLayer extends Layer {
   }
   onRender(e) {
     this.game.draw(e.renderer)
+    this.graphvis.draw(e.renderer, 100, 100)
 
     if (this.showDebug) {
       e.renderer.drawText(
         `FPS: ${parseInt(this.fps)}`,
-        0,
-        0,
+        10,
+        10,
         'Courier',
         20,
         '#0f0'

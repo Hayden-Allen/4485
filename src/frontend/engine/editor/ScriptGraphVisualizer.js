@@ -10,8 +10,7 @@ export class ScriptGraphVisualizer {
       this.proxies.set(node.id, new ScriptGraphProxy(ctx, node, 0, 0))
     )
   }
-  draw(window, ox, oy) {
-    this.proxies.forEach((proxy) => proxy.draw(window, ox, oy))
+  draw(window, ox, oy, zoom) {
     this.graph.nodes.forEach((node) => {
       const outboundEdges = this.graph.edges.get(node.id).out
       outboundEdges.forEach((edge) => {
@@ -36,11 +35,13 @@ export class ScriptGraphVisualizer {
           sy + oy,
           ex + ox,
           ey + oy,
-          edge.inputIndex === -1 ? '#f00' : '#000',
-          { width: 1.5 }
+          edge.inputIndex === -1 ? '#059669' : '#4b5563',
+          { width: 2 }
         )
       })
     })
+
+    this.proxies.forEach((proxy) => proxy.draw(window, ox, oy, zoom))
   }
   /**
    * @HATODO render to separate framebuffer?
@@ -105,7 +106,7 @@ export class ScriptGraphVisualizer {
     this.slices = slices
   }
   arrangeY() {
-    const padding = 25
+    const padding = 48
     let slices = this.slices
     let maxHeight = 0
 

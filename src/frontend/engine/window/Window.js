@@ -14,9 +14,16 @@ export class Window {
   constructor(canvas, clearColor) {
     this.layers = []
 
+    this.setCanvas(canvas)
+    this.clearColor = clearColor || undefined
+  }
+  setCanvas(canvas) {
+    if (this.canvas === canvas) {
+      return
+    }
+
     this.canvas = canvas
     this.ctx = this.canvas.getContext('2d')
-    this.clearColor = clearColor
 
     this.canvas.addEventListener('keydown', (e) => {
       this.propagateEvent('onKeyDown', new KeyDownEvent(e))
@@ -38,6 +45,10 @@ export class Window {
     })
     this.canvas.addEventListener('wheel', (e) => {
       this.propagateEvent('onMouseScroll', new MouseScrollEvent(e))
+    })
+    this.canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
     })
   }
   pushLayer(layer) {
@@ -66,25 +77,79 @@ export class Window {
   clear() {
     const w = global.canvas.targetWidth
     const h = global.canvas.targetHeight
-    this.ctx.clearRect(0, 0, w, h)
-    this.drawRect(0, 0, w, h, this.clearColor)
+    if (this.clearColor) {
+      this.drawRect(0, 0, w, h, this.clearColor)
+    } else {
+      this.ctx.clearRect(0, 0, w, h)
+    }
   }
   drawLine(x0, y0, x1, y1, color, options = {}) {
     const [cx0, cy0] = this.transformCoords(x0, y0)
     const [cx1, cy1] = this.transformCoords(x1, y1)
     this.ctx.strokeStyle = color
     this.ctx.lineWidth = options.width
+    this.ctx.lineCap = 'round'
     this.ctx.beginPath()
     this.ctx.moveTo(cx0, cy0)
     this.ctx.lineTo(cx1, cy1)
     this.ctx.stroke()
     this.ctx.closePath()
   }
-  drawRect(x, y, w, h, color) {
+  drawRect(x, y, w, h, color, stroke) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cw, ch] = this.transformDims(w, h)
-    this.ctx.fillStyle = color
-    this.ctx.fillRect(cx, cy, cw, ch)
+    if (stroke) {
+      this.ctx.strokeStyle = color
+      this.ctx.strokeRect(cx, cy, cw, ch)
+    } else {
+      this.ctx.fillStyle = color
+      this.ctx.fillRect(cx, cy, cw, ch)
+    }
+  }
+  drawRoundRect(x, y, w, h, r, color, stroke, shadowOptions) {
+    const [cx, cy] = this.transformCoords(x, y)
+    const [cw, ch] = this.transformDims(w, h)
+    const [cr] = this.transformDims(r)
+    this.ctx.beginPath()
+    if (shadowOptions) {
+      const [csb, cso] = this.transformDims(
+        shadowOptions.blur,
+        shadowOptions.offsetY
+      )
+      this.ctx.shadowBlur = csb
+      this.ctx.shadowOffsetY = cso
+      this.ctx.shadowColor = color
+      this.ctx.fillColor = color
+      this.ctx.roundRect(cx, cy, cw, ch, [cr])
+      this.ctx.fill()
+      this.ctx.shadowBlur = 0
+      this.ctx.shadowOffsetY = 0
+      this.ctx.shadowColor = 'transparent'
+    } else if (stroke) {
+      this.ctx.strokeStyle = color
+      this.ctx.roundRect(cx, cy, cw, ch, [cr])
+      this.ctx.stroke()
+    } else {
+      this.ctx.fillStyle = color
+      this.ctx.roundRect(cx, cy, cw, ch, [cr])
+      this.ctx.fill()
+    }
+    this.ctx.closePath()
+  }
+  drawArc(x, y, r, startAngle, endAngle, color, stroke) {
+    const [cx, cy] = this.transformCoords(x, y)
+    const [cr] = this.transformDims(r)
+    this.ctx.beginPath()
+    if (stroke) {
+      this.ctx.strokeStyle = color
+      this.ctx.arc(cx, cy, cr, startAngle, endAngle)
+      this.ctx.stroke()
+    } else {
+      this.ctx.fillStyle = color
+      this.ctx.arc(cx, cy, cr, startAngle, endAngle)
+      this.ctx.fill()
+    }
+    this.ctx.closePath()
   }
   drawText(message, x, y, fontFamily, fontSize, color) {
     const [cx, cy] = this.transformCoords(x, y)
@@ -98,9 +163,10 @@ export class Window {
   }
   drawCenteredText(message, x, y, fontFamily, fontSize, color, options = {}) {
     const [cx, cy] = this.transformCoords(x, y)
+    const [cs] = this.transformDims(fontSize)
     this.ctx.fillStyle = color
     this.ctx.textBaseline = 'middle'
-    this.ctx.font = `${fontSize}px ${fontFamily}`
+    this.ctx.font = `${cs}px ${fontFamily}`
 
     if (options.theta) this.rotate(cx, cy, options.theta)
     this.ctx.fillText(message, cx - this.ctx.measureText(message).width / 2, cy)

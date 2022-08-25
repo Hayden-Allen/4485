@@ -65,6 +65,6 @@ export class ScriptGraphLayer extends Layer {
     if (this.rmb) e.window.canvas.style.cursor = 'move'
     else e.window.canvas.style.cursor = 'default'
 
-    this.graphvis.draw(e.window, 0, 0)
+    this.graphvis.draw(e.window, 0, 0, this.zoom)
   }
 }

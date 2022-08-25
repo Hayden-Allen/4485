@@ -20,8 +20,13 @@
   import { ScriptGraph } from '%script/ScriptGraph.js'
   import { Context } from '%engine/Context.js'
 
+  let context = undefined
+
   let gameCanvas = undefined,
     scriptCanvas = undefined
+
+  let gameWindow = undefined,
+    scriptWindow = undefined
 
   function createPlayerScript() {
     const tOnTick = new EventScriptNodeTemplate('OnTick')
@@ -146,8 +151,12 @@
     return graph
   }
 
-  let context = new Context()
   onMount(() => {
+    if (context) {
+      return
+    }
+
+    context = new Context()
     global.init(context)
     var game = new Game(context)
 
@@ -184,17 +193,29 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    var gameWindow = new Window(gameCanvas, '#00f')
+    gameWindow = new Window(gameCanvas, '#00f')
     gameWindow.pushLayer(new EditorLayer(game))
     gameWindow.pushLayer(new UILayer())
 
-    let scriptWindow = new Window(scriptCanvas, '#f0f')
+    scriptWindow = new Window(scriptCanvas)
     scriptWindow.pushLayer(new ScriptGraphLayer(scriptWindow, playerScript))
 
     context.windows.push(gameWindow)
     context.windows.push(scriptWindow)
     context.run()
   })
+
+  $: {
+    if (gameCanvas) {
+      gameWindow.setCanvas(gameCanvas)
+    }
+  }
+
+  $: {
+    if (scriptCanvas) {
+      scriptWindow.setCanvas(scriptCanvas)
+    }
+  }
 </script>
 
 <div
@@ -204,10 +225,14 @@
     <div
       class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
     >
-      <Viewport bind:canvas={gameCanvas} />
+      <Viewport
+        targetAspectRatio={global.canvas.targetWidth /
+          global.canvas.targetHeight}
+        bind:canvas={gameCanvas}
+      />
     </div>
     <div
-      class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink basis-0 overflow-hidden bg-gray-800 border-solid border border-gray-700"
     >
       <Viewport bind:canvas={scriptCanvas} />
     </div>

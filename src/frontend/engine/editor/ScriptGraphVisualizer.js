@@ -10,8 +10,8 @@ export class ScriptGraphVisualizer {
       this.proxies.set(node.id, new ScriptGraphProxy(ctx, node, 0, 0))
     )
   }
-  draw(renderer, ox, oy) {
-    this.proxies.forEach((proxy) => proxy.draw(renderer, ox, oy))
+  draw(window, ox, oy) {
+    this.proxies.forEach((proxy) => proxy.draw(window, ox, oy))
     this.graph.nodes.forEach((node) => {
       const outboundEdges = this.graph.edges.get(node.id).out
       outboundEdges.forEach((edge) => {
@@ -31,7 +31,7 @@ export class ScriptGraphVisualizer {
           ((edge.inputIndex + 1) / (edge.inputNode.inputTypes.length + 1)) *
             eproxy.h
 
-        renderer.drawLine(
+        window.drawLine(
           sx + ox,
           sy + oy,
           ex + ox,

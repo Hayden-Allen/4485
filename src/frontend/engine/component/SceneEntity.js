@@ -9,14 +9,8 @@ export class SceneEntity extends Component {
     this.dim = dim
     this.color = color
   }
-  draw(renderer) {
-    renderer.drawRect(
-      this.pos.x,
-      this.pos.y,
-      this.dim.x,
-      this.dim.y,
-      this.color
-    )
+  draw(window) {
+    window.drawRect(this.pos.x, this.pos.y, this.dim.x, this.dim.y, this.color)
   }
 }
 

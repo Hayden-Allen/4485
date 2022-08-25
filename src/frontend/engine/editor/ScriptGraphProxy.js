@@ -23,13 +23,13 @@ export class ScriptGraphProxy {
       this.portHeight *
         (Math.max(node.outputTypes.length, node.inputTypes.length) + 2)
   }
-  draw(renderer, ox, oy) {
+  draw(window, ox, oy) {
     const tx = this.x + ox,
       ty = this.y + oy
     // node
-    renderer.drawRect(tx, ty, this.w, this.h, '#000')
+    window.drawRect(tx, ty, this.w, this.h, '#000')
     // name
-    renderer.drawCenteredText(
+    window.drawCenteredText(
       this.node.debugName,
       tx + this.w / 2,
       ty + this.nameHeight / 2,
@@ -38,7 +38,7 @@ export class ScriptGraphProxy {
       '#0f0'
     )
     // name underline
-    renderer.drawLine(
+    window.drawLine(
       tx,
       ty + this.nameHeight,
       tx + this.w,
@@ -48,7 +48,7 @@ export class ScriptGraphProxy {
     // ports
     const pby = ty + this.nameHeight + this.portHeight
     this.node.data.inputPorts.forEach((port, i) => {
-      renderer.drawText(
+      window.drawText(
         port.name,
         tx,
         pby + i * this.portHeight,

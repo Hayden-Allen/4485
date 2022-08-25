@@ -8,7 +8,8 @@
   import { global } from '%engine/Global.js'
   import { Window } from '%window/Window.js'
   import { UILayer } from '%window/Layer.js'
-  import { EditorLayer } from '%engine/editor/EditorLayer.js'
+  import { EditorLayer } from '%editor/EditorLayer.js'
+  import { ScriptGraphLayer } from '%editor/ScriptGraphLayer.js'
   import {
     ScriptNodeTemplate,
     EventScriptNodeTemplate,
@@ -17,8 +18,10 @@
   } from '%script/ScriptNodeTemplate.js'
   import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
+  import { Context } from '%engine/Context.js'
 
-  let canvas = undefined
+  let gameCanvas = undefined,
+    scriptCanvas = undefined
 
   function createPlayerScript() {
     const tOnTick = new EventScriptNodeTemplate('OnTick')
@@ -143,29 +146,29 @@
     return graph
   }
 
+  let context = new Context()
   onMount(() => {
-    global.init()
-
-    var game = new Game()
+    global.init(context)
+    var game = new Game(context)
 
     var scene = new Scene()
     game.setCurrentScene(scene)
-    // const size = 10
-    // for (var y = 0; y < 500; y += size) {
-    //   for (var x = 0; x < 500; x += size) {
-    //     const red = parseInt((((x + y) * (x + y)) / 1000000) * 255)
-    //     const color = `#${global.padZeroes(red.toString(16), 2)}0000`
-    //     // create grid at z-index 0
-    //     game.addStaticSceneEntity(
-    //       new SceneEntity(
-    //         new Vec2(x + 100, y + 100),
-    //         new Vec2(size, size),
-    //         color
-    //       ),
-    //       0
-    //     )
-    //   }
-    // }
+    const size = 10
+    for (var y = 0; y < 500; y += size) {
+      for (var x = 0; x < 500; x += size) {
+        const red = parseInt((((x + y) * (x + y)) / 1000000) * 255)
+        const color = `#${global.padZeroes(red.toString(16), 2)}0000`
+        // create grid at z-index 0
+        game.addStaticSceneEntity(
+          new SceneEntity(
+            new Vec2(x + 100, y + 100),
+            new Vec2(size, size),
+            color
+          ),
+          0
+        )
+      }
+    }
     let playerScript = createPlayerScript()
     let playerController = {
       run: (player, deltaTimeSeconds) => {
@@ -181,10 +184,16 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    var window = new Window(canvas, '#00f')
-    window.pushLayer(new EditorLayer(window, game, playerScript))
-    window.pushLayer(new UILayer())
-    window.run()
+    var gameWindow = new Window(gameCanvas, '#00f')
+    gameWindow.pushLayer(new EditorLayer(game))
+    gameWindow.pushLayer(new UILayer())
+
+    let scriptWindow = new Window(scriptCanvas, '#f0f')
+    scriptWindow.pushLayer(new ScriptGraphLayer(scriptWindow, playerScript))
+
+    context.windows.push(gameWindow)
+    context.windows.push(scriptWindow)
+    context.run()
   })
 </script>
 
@@ -195,11 +204,13 @@
     <div
       class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
     >
-      <Viewport bind:canvas />
+      <Viewport bind:canvas={gameCanvas} />
     </div>
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
-    />
+      class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+    >
+      <Viewport bind:canvas={scriptCanvas} />
+    </div>
   </div>
   <div class="grow shrink basis-0 overflow-hidden flex flex-row space-x-1">
     <div

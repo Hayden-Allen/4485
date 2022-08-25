@@ -3,7 +3,7 @@ import { VaryingController } from '%system/VaryingController.js'
 
 export var global = {
   input: undefined,
-  varyingController: new VaryingController(),
+  varyingController: undefined,
   vsync: false,
   fps: 60,
 
@@ -17,8 +17,10 @@ export var global = {
     delta: 0,
   },
 
-  init: () => {
+  init: (context) => {
     global.input = new InputCache()
+    global.varyingController = new VaryingController()
+    context.addSystem(global.varyingController)
 
     window.oncontextmenu = (e) => {
       e.preventDefault()
@@ -39,5 +41,8 @@ export var global = {
     const deltaTime = global.updateTime()
     global.varyingController.update(deltaTime / 1000)
     return deltaTime
+  },
+  clamp: (x, min, max) => {
+    return Math.min(max, Math.max(x, min))
   },
 }

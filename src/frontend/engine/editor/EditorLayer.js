@@ -1,10 +1,9 @@
 import { Layer } from '%window/Layer.js'
 import { Varying } from '%component/Varying.js'
 import { global } from '%engine/Global.js'
-import { ScriptGraphVisualizer } from './ScriptGraphVisualizer.js'
 
 export class EditorLayer extends Layer {
-  constructor(window, game, playerScript) {
+  constructor(game) {
     super('EditorLayer')
     this.game = game
     this.paused = false
@@ -14,18 +13,9 @@ export class EditorLayer extends Layer {
     })
     this.showDebug = true
     this.fps = 0
-    /**
-     * @HATODO hack
-     */
-    this.graphvis = new ScriptGraphVisualizer(window.canvas.ctx, playerScript)
-    this.graphvis.arrangeX()
-    this.graphvis.arrangeY()
   }
   onAppTick(e) {
-    if (!this.paused) {
-      this.game.update(e.deltaTime)
-      this.fps = 1000 / e.deltaTime
-    }
+    if (!this.paused) this.fps = 1000 / e.deltaTime
     return false
   }
   onKeyDown(e) {
@@ -41,14 +31,14 @@ export class EditorLayer extends Layer {
     }
   }
   onRender(e) {
-    this.game.draw(e.renderer)
-    this.graphvis.draw(e.renderer, 100, 100)
+    e.window.clear()
+    this.game.draw(e.window)
 
     if (this.showDebug) {
-      e.renderer.drawText(
+      e.window.drawText(
         `FPS: ${parseInt(this.fps)}`,
-        10,
-        10,
+        0,
+        0,
         'Courier',
         20,
         '#0f0'
@@ -58,8 +48,8 @@ export class EditorLayer extends Layer {
     if (this.paused) {
       const cw = global.canvas.targetWidth,
         ch = global.canvas.targetHeight
-      e.renderer.drawRect(0, 0, cw, ch, '#000', { alpha: 0.5 })
-      e.renderer.drawCenteredText(
+      e.window.drawRect(0, 0, cw, ch, '#000', { alpha: 0.5 })
+      e.window.drawCenteredText(
         'PAUSED',
         cw / 2,
         ch / 2,

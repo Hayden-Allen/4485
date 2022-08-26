@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import Viewport from './Viewport.svelte'
+  import Splitter from './Splitter.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
   import { SceneEntity, ControlledSceneEntity } from '%component/SceneEntity.js'
@@ -216,14 +217,43 @@
       scriptWindow.setCanvas(scriptCanvas)
     }
   }
+
+  /*
+   * Handles
+   */
+
+  let topSplit = 1 / 2
+  let midSplit = 1 / 2
+  let leftSplit = 1 / 3
+  let rightSplit = 2 / 3
+
+  let topLeftBasis = null,
+    topRightBasis = null
+  let midTopBasis = null,
+    midBottomBasis = null
+  let bottomLeftBasis = null,
+    bottomMidBasis = null,
+    bottomRightBasis = null
+
+  $: {
+    topLeftBasis = topSplit * 100
+    topRightBasis = (1 - topSplit) * 100
+    midTopBasis = midSplit * 100
+    midBottomBasis = (1 - midSplit) * 100
+    bottomLeftBasis = leftSplit * 100
+    bottomMidBasis = (rightSplit - leftSplit) * 100
+    bottomRightBasis = (1 - rightSplit) * 100
+  }
 </script>
 
-<div
-  class="w-full h-full p-1 flex flex-col space-y-1 bg-gray-900 overflow-hidden"
->
-  <div class="grow shrink basis-0 overflow-hidden flex flex-row space-x-1">
+<div class="w-full h-full p-1 flex flex-col bg-gray-900 overflow-hidden">
+  <div
+    class="grow shrink basis-0 overflow-hidden flex flex-row"
+    style={`flex-basis: ${midTopBasis}%;`}
+  >
     <div
-      class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${topLeftBasis}%;`}
     >
       <Viewport
         targetAspectRatio={global.canvas.targetWidth /
@@ -231,21 +261,45 @@
         bind:canvas={gameCanvas}
       />
     </div>
+    <Splitter bind:split={topSplit} minSplit={0.1} maxSplit={0.9} />
     <div
-      class="grow shrink basis-0 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${topRightBasis}%;`}
     >
       <Viewport bind:canvas={scriptCanvas} />
     </div>
   </div>
-  <div class="grow shrink basis-0 overflow-hidden flex flex-row space-x-1">
+  <Splitter
+    bind:split={midSplit}
+    isVertical={true}
+    minSplit={0.1}
+    maxSplit={0.9}
+  />
+  <div
+    class="grow shrink overflow-hidden flex flex-row"
+    style={`flex-basis: ${midBottomBasis}%;`}
+  >
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${bottomLeftBasis}%;`}
+    />
+    <Splitter
+      bind:split={leftSplit}
+      minSplit={0.1}
+      maxSplit={rightSplit - 0.1}
     />
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${bottomMidBasis}%;`}
+    />
+    <Splitter
+      bind:split={rightSplit}
+      minSplit={leftSplit + 0.1}
+      maxSplit={0.9}
     />
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${bottomRightBasis}%;`}
     />
   </div>
 </div>

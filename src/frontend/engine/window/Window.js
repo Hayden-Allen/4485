@@ -75,10 +75,11 @@ export class Window {
     this.ctx.translate(-centerX, -centerY)
   }
   clear() {
-    const w = global.canvas.targetWidth
-    const h = global.canvas.targetHeight
+    const w = this.canvas.width
+    const h = this.canvas.height
     if (this.clearColor) {
-      this.drawRect(0, 0, w, h, this.clearColor)
+      this.ctx.fillStyle = this.clearColor
+      this.ctx.fillRect(0, 0, w, h)
     } else {
       this.ctx.clearRect(0, 0, w, h)
     }

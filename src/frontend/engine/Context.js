@@ -6,7 +6,7 @@ export class Context {
     this.windows = []
   }
   run() {
-    if (global.vsync) requestAnimationFrame(this.run.bind(this))
+    requestAnimationFrame(this.run.bind(this))
 
     const deltaTime = global.beginFrame()
     // this is a failsafe; because this runs in the browser, switching to a different tab allows the user to make the delta time arbitraily large, which obviously breaks stuff
@@ -17,11 +17,6 @@ export class Context {
     this.systems.forEach((system) => system.update(deltaTime))
     // draw everything
     this.windows.forEach((window) => window.update(deltaTime))
-
-    if (!global.vsync) {
-      const frameTime = performance.now() - global.time.now
-      setTimeout(this.run.bind(this), 1000 / global.fps - frameTime)
-    }
   }
   addSystem(system) {
     if (this.systems.has(system.name))

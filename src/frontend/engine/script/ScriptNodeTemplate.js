@@ -4,7 +4,10 @@ import { ScriptNode } from './ScriptNode.js'
 
 export class ScriptNodeTemplate extends ScriptNodeData {
   constructor(name, inputPorts, outputPorts, fn) {
-    super(inputPorts, outputPorts, fn)
+    /**
+     * @HATODO cleanup
+     */
+    super(inputPorts, [], outputPorts, fn)
     this.name = name
   }
   createNode(graph) {
@@ -30,6 +33,7 @@ export class EventScriptNodeTemplate extends ScriptNodeTemplate {
 export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
   constructor(name, inputPorts, internalPorts, outputPorts, fn) {
     super(name, inputPorts, outputPorts, fn)
+    this.internalPorts = internalPorts
     this.internalTypes = internalPorts.map(
       (port) => scriptDataType[port.typename]
     )
@@ -45,10 +49,9 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
       graph,
       this.inputPorts,
       this.outputPorts,
-      this.fn
+      this.fn,
+      { internalPorts: this.internalPorts, internalValues }
     )
-
-    node.internal = internalValues
     return node
   }
 }

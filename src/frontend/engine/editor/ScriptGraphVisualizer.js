@@ -1,13 +1,13 @@
-import { ScriptGraphProxy } from './ScriptGraphProxy.js'
+import { ScriptGraphProxy, PORT_COLOR } from './ScriptGraphProxy.js'
 
 export class ScriptGraphVisualizer {
-  constructor(ctx, graph) {
+  constructor(window, graph) {
     this.graph = graph
     this.slices = []
 
     this.proxies = new Map()
     this.graph.nodes.forEach((node) =>
-      this.proxies.set(node.id, new ScriptGraphProxy(ctx, node, 0, 0))
+      this.proxies.set(node.id, new ScriptGraphProxy(window, node, 0, 0))
     )
   }
   draw(window, ox, oy, zoom) {
@@ -15,29 +15,31 @@ export class ScriptGraphVisualizer {
       const outboundEdges = this.graph.edges.get(node.id).out
       outboundEdges.forEach((edge) => {
         const sproxy = this.proxies.get(edge.outputNode.id)
-        const sx = sproxy.x + sproxy.w
-        let sy = 0
-        if (node.outputTypes.length)
-          sy =
-            sproxy.y +
-            sproxy.h * ((edge.outputIndex + 1) / (node.outputTypes.length + 1))
-        else sy = sproxy.y + sproxy.h / 2
-
+        const scoords = sproxy.getOutPortCoords(edge.outputIndex, ox, oy)
         const eproxy = this.proxies.get(edge.inputNode.id)
-        const ex = eproxy.x
-        const ey =
-          eproxy.y +
-          ((edge.inputIndex + 1) / (edge.inputNode.inputTypes.length + 1)) *
-            eproxy.h
+        const ecoords = eproxy.getInPortCoords(edge.inputIndex, ox, oy)
 
-        window.drawLine(
-          sx + ox,
-          sy + oy,
-          ex + ox,
-          ey + oy,
-          edge.inputIndex === -1 ? '#059669' : '#4b5563',
-          { width: 2 }
-        )
+        let color = undefined
+        if (
+          edge.inputIndex === -1 ||
+          edge.outputNode.data.outputPorts.length === 0
+        ) {
+          color = '#facc15'
+        } else {
+          const [sx, sy] = window.transformCoords(scoords.x, scoords.y)
+          const [ex, ey] = window.transformCoords(ecoords.x, ecoords.y)
+          color = window.ctx.createLinearGradient(sx, sy, ex, ey)
+          const inType =
+            edge.inputNode.data.inputPorts[edge.inputIndex].typename
+          const outType =
+            edge.outputNode.data.outputPorts[edge.outputIndex].typename
+          color.addColorStop(0, PORT_COLOR[outType].edge)
+          color.addColorStop(1, PORT_COLOR[inType].edge)
+        }
+
+        window.drawLine(scoords.x, scoords.y, ecoords.x, ecoords.y, color, {
+          width: 2,
+        })
       })
     })
 
@@ -47,7 +49,7 @@ export class ScriptGraphVisualizer {
    * @HATODO render to separate framebuffer?
    */
   arrangeX() {
-    const padding = 75
+    const padding = 100
     const order = this.graph.compile()
     let index = new Map()
     let slices = []

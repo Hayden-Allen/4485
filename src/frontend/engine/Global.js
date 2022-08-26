@@ -4,7 +4,6 @@ import { VaryingController } from '%system/VaryingController.js'
 export var global = {
   input: undefined,
   varyingController: undefined,
-  vsync: false,
   fps: 60,
 
   canvas: {

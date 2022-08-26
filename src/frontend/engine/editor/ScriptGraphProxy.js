@@ -1,50 +1,117 @@
+const HEIGHT_PADDING = 16
+export const PORT_COLOR = {
+  int: {
+    name: '#f59e0b',
+    dot: '#d97706',
+    edge: '#b45309',
+  },
+  float: {
+    name: '#f59e0b',
+    dot: '#d97706',
+    edge: '#b45309',
+  },
+  number: {
+    name: '#f59e0b',
+    dot: '#d97706',
+    edge: '#b45309',
+  },
+
+  object: {
+    name: '#22c55e',
+    dot: '#16a34a',
+    edge: '#15803d',
+  },
+  bool: {
+    name: '#0ea5e9',
+    dot: '#0284c7',
+    edge: '#0369a1',
+  },
+
+  array: {
+    name: '#e5e7eb',
+    dot: '#d1d5db',
+    edge: '#9ca3af',
+  },
+  string: {
+    name: '#e5e7eb',
+    dot: '#d1d5db',
+    edge: '#9ca3af',
+  },
+  any: {
+    name: '#e5e7eb',
+    dot: '#d1d5db',
+    edge: '#9ca3af',
+  },
+}
 export class ScriptGraphProxy {
-  constructor(ctx, node, x, y) {
+  constructor(window, node, x, y) {
     this.node = node
     this.x = x
     this.y = y
 
     this.font = 'sans-serif'
-    this.nameFontSize = 24
-    ctx.font = `${this.nameFontSize}px ${this.font}`
-    let text = ctx.measureText(node.debugName)
-    this.nameHeight =
-      (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent + 16) * 2
-    this.w = Math.ceil(text.width * 2) + 48
-
+    this.nameFontSize = 32
     this.portFontSize = 24
-    ctx.font = `${this.portFontSize}px ${this.font}`
-    text = ctx.measureText(node.debugName)
+    this.portRadius = 8
+    this.portNameXPadding = this.portRadius * 2
+    this.portDotOffset = 10
+
+    // compute name height
+    let text = window.textMetrics(
+      this.node.debugName,
+      this.font,
+      this.nameFontSize
+    )
+    this.nameHeight =
+      (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent) * 2
+
+    // compute node width
+    const inPorts = this.node.data.inputPorts,
+      outPorts = this.node.data.outputPorts
+    let inWidth = 0,
+      outWidth = 0
+    for (var i = 0; i < Math.max(inPorts.length, outPorts.length); i++) {
+      if (i < inPorts.length)
+        inWidth = Math.max(
+          inWidth,
+          window.textMetrics(inPorts[i].name, this.font, this.portFontSize)
+            .width + this.portNameXPadding
+        )
+      if (i < outPorts.length)
+        outWidth = Math.max(
+          outWidth,
+          window.textMetrics(outPorts[i].name, this.font, this.portFontSize)
+            .width + this.portNameXPadding
+        )
+    }
+    this.w = Math.max(inWidth + outWidth, Math.ceil(text.width)) + 32
+
+    // compute port height
+    text = window.textMetrics(this.node.debugName, this.font, this.portFontSize)
     this.portHeight =
-      (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent + 4) * 2
+      (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent) * 2
 
-    this.h =
-      this.nameHeight +
-      this.portHeight *
-        Math.max(node.outputTypes.length, node.inputTypes.length) +
-      16
-
-    this.r = 8
+    // compute node height
+    const maxPortCount = Math.max(
+      this.node.outputTypes.length,
+      this.node.inputTypes.length
+    )
+    if (maxPortCount)
+      this.h = this.nameHeight + this.portHeight * maxPortCount + HEIGHT_PADDING
+    else this.h = this.nameHeight
   }
   draw(window, ox, oy, zoom) {
     const tx = this.x + ox,
       ty = this.y + oy
     // node
-    window.drawRoundRect(
-      tx,
-      ty,
-      this.w,
-      this.h,
-      this.r,
-      'rgba(0, 0, 0, 0.55)',
-      false,
-      {
-        blur: 6 * zoom,
-        offsetY: 4 * zoom,
-      }
-    )
-    window.drawRoundRect(tx, ty, this.w, this.h, this.r, '#334155')
-    window.drawRoundRect(tx, ty, this.w, this.h, this.r, '#6b7280', true)
+    window.drawRoundRect(tx, ty, this.w, this.h, this.portRadius, '#00000077', {
+      shadowBlur: 6 * zoom,
+      shadowOffsetY: 4 * zoom,
+    })
+    window.drawRoundRect(tx, ty, this.w, this.h, this.portRadius, '#334155')
+    window.drawRoundRect(tx, ty, this.w, this.h, this.portRadius, '#6b7280', {
+      stroke: true,
+    })
     // name
     window.drawCenteredText(
       this.node.debugName,
@@ -63,18 +130,79 @@ export class ScriptGraphProxy {
       '#6b7280'
     )
     // ports
-    const pby = ty + this.nameHeight + 16
+    const portBaseY = ty + this.nameHeight + this.portHeight / 2
     this.node.data.inputPorts.forEach((port, i) => {
-      const portY = pby + i * this.portHeight
-      window.drawArc(tx, portY + 10, 8, -Math.PI / 2, Math.PI / 2, '#f3f4f6')
+      const portY = portBaseY + i * this.portHeight
+      window.drawArc(
+        tx - 2,
+        portY + this.portDotOffset,
+        this.portRadius,
+        -Math.PI / 2,
+        Math.PI / 2,
+        PORT_COLOR[port.typename].dot
+      )
       window.drawText(
         port.name,
-        tx + 20,
+        tx + this.portNameXPadding,
         portY,
         this.font,
         this.portFontSize,
-        '#f3f4f6'
+        PORT_COLOR[port.typename].name
       )
     })
+    this.node.data.outputPorts.forEach((port, i) => {
+      const portY = portBaseY + i * this.portHeight
+      window.drawArc(
+        tx + this.w + 2,
+        portY + this.portDotOffset,
+        this.portRadius,
+        Math.PI / 2,
+        -Math.PI / 2,
+        PORT_COLOR[port.typename].dot
+      )
+      const width = window.textMetrics(
+        port.name,
+        this.font,
+        this.portFontSize
+      ).width
+      window.drawText(
+        port.name,
+        tx + this.w - width - this.portNameXPadding,
+        portY,
+        this.font,
+        this.portFontSize,
+        PORT_COLOR[port.typename].name
+      )
+    })
+    // internals
+    this.node.data.internalPorts.forEach((port, i) => {
+      const portY = portBaseY + i * this.portHeight
+      window.drawText(
+        `${port.name}: ${this.node.internalValues[i]}`,
+        tx + this.portNameXPadding,
+        portY,
+        this.font,
+        this.portFontSize,
+        PORT_COLOR[port.typename].name
+      )
+    })
+  }
+  getInPortCoords(i, ox, oy) {
+    let y = 0
+    if (i === -1) {
+      y = this.nameHeight / 2
+    } else {
+      y = this.nameHeight + this.portHeight * (0.5 + i) + this.portDotOffset
+    }
+    return { x: this.x + ox, y: this.y + oy + y }
+  }
+  getOutPortCoords(i, ox, oy) {
+    let y = 0
+    if (i === -1) {
+      y = this.nameHeight / 2
+    } else {
+      y = this.nameHeight + this.portHeight * (0.5 + i) + this.portDotOffset
+    }
+    return { x: this.x + ox + this.w, y: this.y + oy + y }
   }
 }

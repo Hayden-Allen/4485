@@ -95,10 +95,10 @@ export class Window {
     this.ctx.stroke()
     this.ctx.closePath()
   }
-  drawRect(x, y, w, h, color, stroke) {
+  drawRect(x, y, w, h, color, options = {}) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cw, ch] = this.transformDims(w, h)
-    if (stroke) {
+    if (options.stroke) {
       this.ctx.strokeStyle = color
       this.ctx.strokeRect(cx, cy, cw, ch)
     } else {
@@ -106,15 +106,15 @@ export class Window {
       this.ctx.fillRect(cx, cy, cw, ch)
     }
   }
-  drawRoundRect(x, y, w, h, r, color, stroke, shadowOptions) {
+  drawRoundRect(x, y, w, h, r, color, options = {}) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cw, ch] = this.transformDims(w, h)
     const [cr] = this.transformDims(r)
     this.ctx.beginPath()
-    if (shadowOptions) {
+    if (options.shadowBlur) {
       const [csb, cso] = this.transformDims(
-        shadowOptions.blur,
-        shadowOptions.offsetY
+        options.shadowBlur,
+        options.shadowOffsetY
       )
       this.ctx.shadowBlur = csb
       this.ctx.shadowOffsetY = cso
@@ -125,7 +125,7 @@ export class Window {
       this.ctx.shadowBlur = 0
       this.ctx.shadowOffsetY = 0
       this.ctx.shadowColor = 'transparent'
-    } else if (stroke) {
+    } else if (options.stroke) {
       this.ctx.strokeStyle = color
       this.ctx.roundRect(cx, cy, cw, ch, [cr])
       this.ctx.stroke()
@@ -136,11 +136,11 @@ export class Window {
     }
     this.ctx.closePath()
   }
-  drawArc(x, y, r, startAngle, endAngle, color, stroke) {
+  drawArc(x, y, r, startAngle, endAngle, color, options = {}) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cr] = this.transformDims(r)
     this.ctx.beginPath()
-    if (stroke) {
+    if (options.stroke) {
       this.ctx.strokeStyle = color
       this.ctx.arc(cx, cy, cr, startAngle, endAngle)
       this.ctx.stroke()
@@ -175,14 +175,20 @@ export class Window {
     // reset to default
     this.ctx.textBaseline = 'alphabetic'
   }
+  textMetrics(string, fontFamily, fontSize) {
+    this.ctx.font = `${fontSize}px ${fontFamily}`
+    return this.ctx.measureText(string)
+  }
   transformCoords(x, y) {
     const xs = this.canvas.width / global.canvas.targetWidth
     const ys = this.canvas.height / global.canvas.targetHeight
-    return [Math.floor(x * xs), Math.floor(y * ys)]
+    const s = Math.min(xs, ys)
+    return [Math.floor(x * s), Math.floor(y * s)]
   }
   transformDims(w, h) {
     const xs = this.canvas.width / global.canvas.targetWidth
     const ys = this.canvas.height / global.canvas.targetHeight
-    return [Math.ceil(w * xs), Math.ceil(h * ys)]
+    const s = Math.min(xs, ys)
+    return [Math.ceil(w * s), Math.ceil(h * s)]
   }
 }

@@ -5,7 +5,7 @@ import { global } from '%engine/Global.js'
 export class ScriptGraphLayer extends Layer {
   constructor(window, playerScript) {
     super('ScriptGraphLayer')
-    this.graphvis = new ScriptGraphVisualizer(window.ctx, playerScript)
+    this.graphvis = new ScriptGraphVisualizer(window, playerScript)
     this.graphvis.arrangeX()
     this.graphvis.arrangeY()
     this.changed = true

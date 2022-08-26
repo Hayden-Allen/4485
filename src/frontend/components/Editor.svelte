@@ -181,7 +181,7 @@
     }
     let playerScript = createPlayerScript()
     let playerController = {
-      run: (player, deltaTimeSeconds) => {
+      run: (player /* deltaTimeSeconds */) => {
         playerScript.run(player)
       },
     }

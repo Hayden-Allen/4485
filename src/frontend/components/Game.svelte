@@ -35,7 +35,7 @@
       }
     }
     let playerController = {
-      run: (player, deltaTimeSeconds) => {
+      run: (player /* deltaTimeSeconds */) => {
         player.vel = new Vec2(
           global.input.isKeyPressed('d') - global.input.isKeyPressed('a'),
           global.input.isKeyPressed('s') - global.input.isKeyPressed('w')

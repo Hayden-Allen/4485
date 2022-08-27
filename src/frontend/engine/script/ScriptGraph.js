@@ -60,6 +60,9 @@ export class ScriptGraph extends Component {
     this.edges.get(outputNode.id).out.push(edge)
     this.edges.get(inputNode.id).in.push(edge)
   }
+  getEdges(node) {
+    return this.edges.get(node.id)
+  }
   compile() {
     // identify nodes to start from
     this.startNodes = []

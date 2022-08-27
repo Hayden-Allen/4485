@@ -18,8 +18,7 @@ export class ScriptGraphLayer extends Layer {
   onAttach() {
     // need this.window to be valid, so can't call in constructor
     this.graphvis = new ScriptGraphVisualizer(this.window, this.playerScript)
-    this.graphvis.arrangeX()
-    this.graphvis.arrangeY()
+    this.graphvis.arrange()
   }
   onMouseScroll() {
     this.redraw = true
@@ -55,19 +54,19 @@ export class ScriptGraphLayer extends Layer {
   onMouseMove() {
     this.redraw = this.input.rightMousePressed && !this.capturedRightClick
 
-    if (this.selected && this.input.leftMousePressed) {
-      const [wmx, wmy] = this.transformCoordsScreen2World(
-        this.input.mouseX,
-        this.input.mouseY
-      )
-      this.selected.x = this.input.mouseX / this.controls.zoom
-      this.selected.y = this.input.mouseY / this.controls.zoom
-      this.redraw = true
-    }
+    // if (this.selected && this.input.leftMousePressed) {
+    //   const [wmx, wmy] = this.transformCoordsScreen2World(
+    //     this.input.mouseX,
+    //     this.input.mouseY
+    //   )
+    //   this.selected.x = this.input.mouseX / this.controls.zoom
+    //   this.selected.y = this.input.mouseY / this.controls.zoom
+    //   this.redraw = true
+    // }
 
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
-    return this.capturedRightClick || hit
+    return this.capturedRightClick && hit
   }
   onResize() {
     this.redraw = true
@@ -84,9 +83,9 @@ export class ScriptGraphLayer extends Layer {
     this.controls.setTransform(e.window.ctx)
     this.graphvis.draw(e.window, this.zoom)
 
-    e.window.ctx.resetTransform()
-    this.window.ctx.fillStyle = '#0f0'
-    this.window.ctx.fillRect(this.input.mouseX, this.input.mouseY, 5, 5)
+    // e.window.ctx.resetTransform()
+    // this.window.ctx.fillStyle = '#0f0'
+    // this.window.ctx.fillRect(this.input.mouseX, this.input.mouseY, 5, 5)
   }
   checkIntersection() {
     const [mx, my] = [this.input.mouseX, this.input.mouseY]

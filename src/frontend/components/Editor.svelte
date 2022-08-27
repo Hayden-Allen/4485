@@ -119,13 +119,6 @@
     const keyDPressed = tKeyPressed.createNode(graph, ['d'])
     keyDPressed.attachAsInput(onTick, -1, -1)
 
-    const ci1 = tConstInt.createNode(graph, [500])
-    const ci2 = tConstInt.createNode(graph, [1000])
-    const mux = tMux2.createNode(graph)
-    mux.attachAsInput(keyShiftPressed, 2, 0)
-    mux.attachAsInput(ci1, 0, 1)
-    mux.attachAsInput(ci2, 0, 2)
-
     // compute normalized velocity vector
     const dx = tSubtract.createNode(graph)
     dx.attachAsInput(keyDPressed, 2, 0)
@@ -140,6 +133,12 @@
     norm.attachAsInput(vec2, 0, 0)
 
     // boost if shift pressed
+    const ci1 = tConstInt.createNode(graph, [500])
+    const ci2 = tConstInt.createNode(graph, [1000])
+    const mux = tMux2.createNode(graph)
+    mux.attachAsInput(keyShiftPressed, 2, 0)
+    mux.attachAsInput(ci1, 0, 1)
+    mux.attachAsInput(ci2, 0, 2)
     const scale = tScaleVec2.createNode(graph)
     scale.attachAsInput(norm, 0, 0)
     scale.attachAsInput(mux, 0, 1)

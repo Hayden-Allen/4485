@@ -1,215 +1,259 @@
 import { ScriptGraphProxy, PORT_COLOR } from './ScriptGraphProxy.js'
 
+const PADDING_X = 100,
+  PADDING_Y = 50
 export class ScriptGraphVisualizer {
   constructor(window, graph) {
     this.graph = graph
-    this.slices = []
-
+    this.columns = []
+    // map ScriptNode.id to its ScriptGraphProxy
     this.proxies = new Map()
     this.graph.nodes.forEach((node) =>
       this.proxies.set(node.id, new ScriptGraphProxy(window, node, 0, 0))
     )
+    this.activationEdgeColor = '#facc15'
+    this.edgeWidth = 2
   }
   draw(window, zoom) {
+    // draw edges
     this.graph.nodes.forEach((node) => {
-      const outboundEdges = this.graph.edges.get(node.id).out
+      const outboundEdges = this.graph.getEdges(node).out
       outboundEdges.forEach((edge) => {
-        const sproxy = this.proxies.get(edge.outputNode.id)
-        const scoords = sproxy.getOutPortCoords(edge.outputIndex)
-        const eproxy = this.proxies.get(edge.inputNode.id)
-        const ecoords = eproxy.getInPortCoords(edge.inputIndex)
+        const startCoords = this.proxies
+          .get(edge.outputNode.id)
+          .getOutPortCoords(edge.outputIndex)
+        const endCoords = this.proxies
+          .get(edge.inputNode.id)
+          .getInPortCoords(edge.inputIndex)
 
         let color = undefined
+        // if the current edge only carries activation
         if (
           edge.inputIndex === -1 ||
-          edge.outputNode.data.outputPorts.length === 0
+          !edge.outputNode.data.outputPorts.length
         ) {
-          color = '#facc15'
+          color = this.activationEdgeColor
         } else {
-          const [sx, sy] = window.transformCoords(scoords.x, scoords.y)
-          const [ex, ey] = window.transformCoords(ecoords.x, ecoords.y)
+          // get scaled coordinates
+          const [sx, sy] = window.transformCoords(startCoords.x, startCoords.y)
+          const [ex, ey] = window.transformCoords(endCoords.x, endCoords.y)
+          // draw the line using a gradient between the two port's colors
           color = window.ctx.createLinearGradient(sx, sy, ex, ey)
-          const inType =
-            edge.inputNode.data.inputPorts[edge.inputIndex].typename
           const outType =
             edge.outputNode.data.outputPorts[edge.outputIndex].typename
+          const inType =
+            edge.inputNode.data.inputPorts[edge.inputIndex].typename
           color.addColorStop(0, PORT_COLOR[outType].edge)
           color.addColorStop(1, PORT_COLOR[inType].edge)
         }
 
-        window.drawLine(scoords.x, scoords.y, ecoords.x, ecoords.y, color, {
-          width: 2,
-        })
+        window.drawLine(
+          startCoords.x,
+          startCoords.y,
+          endCoords.x,
+          endCoords.y,
+          color,
+          { width: this.edgeWidth }
+        )
       })
     })
-
+    // draw nodes
     this.proxies.forEach((proxy) => proxy.draw(window, zoom))
   }
-  /**
-   * @HATODO render to separate framebuffer?
-   */
-  arrangeX() {
-    const padding = 100
-    const order = this.graph.compile()
-    let index = new Map()
-    let slices = []
+  arrange() {
+    let columns = []
+    // x-axis
+    {
+      const order = this.graph.compile()
+      let columnIndex = new Map()
 
-    order.forEach((node) => {
-      const inboundEdges = this.graph.edges.get(node.id).in
-      // be default, put nodes in the first slice
-      let slice = 0
-      if (inboundEdges.length) {
-        let maxSlice = 0
-        inboundEdges.forEach(
-          (edge) =>
-            (maxSlice = Math.max(maxSlice, index.get(edge.outputNode.id)))
-        )
-        // put this node one slice right of its rightmost parent
-        slice = maxSlice + 1
+      // traverse nodes in topological order; this corresponds to left->right visual order
+      order.forEach((node) => {
+        const inboundEdges = this.graph.getEdges(node).in
+        // By default, put nodes in the first column. This means that any nodes with no input ports will start at the very left of the graph. This is fixed in the next pass, when all nodes are shifted as far right as possible
+        let column = 0
+        if (inboundEdges.length) {
+          let maxColumn = 0
+          inboundEdges.forEach((edge) => {
+            // find the rightmost parent of the current node
+            maxColumn = Math.max(maxColumn, columnIndex.get(edge.outputNode.id))
+          })
+          // put current node one column right of rightmost parent
+          column = maxColumn + 1
+        }
+
+        // create new column if necessary
+        if (!columns[column]) columns[column] = new Map()
+        // add current node to column
+        columns[column].set(node.id, node)
+        columnIndex.set(node.id, column)
+      })
+
+      // push no-input nodes as far right as they can go (see above comment)
+      order.forEach((node) => {
+        const currentColumn = columnIndex.get(node.id)
+        // this node has inputs, so is already in the correct column
+        if (currentColumn != 0) return
+
+        const outboundEdges = this.graph.getEdges(node).out
+        let minColumn = columns.length
+        // find the leftmost child of the current node
+        outboundEdges.forEach((edge) => {
+          minColumn = Math.min(minColumn, columnIndex.get(edge.inputNode.id))
+        })
+        // put current node one column left of leftmost child
+        const newColumn = minColumn - 1
+        if (newColumn != currentColumn) {
+          columns[currentColumn].delete(node.id)
+          columns[newColumn].set(node.id, node)
+          columnIndex.set(node.id, newColumn)
+        }
+      })
+
+      // compute x-axis starting point for each column (first column starts at 0)
+      let baseX = [0]
+      for (var i = 0; i < columns.length; i++) {
+        // compute the maximum width of all nodes in current column
+        let maxWidth = 0
+        columns[i].forEach((node) => {
+          maxWidth = Math.max(maxWidth, this.proxies.get(node.id).w)
+        })
+        // baseX of next column is baseX of current column + maxWidth of current column
+        baseX[i + 1] = baseX[i] + maxWidth + PADDING_X
       }
 
-      if (!slices[slice]) slices[slice] = new Map()
-      slices[slice].set(node.id, node)
-      index.set(node.id, slice)
-    })
-
-    // shift nodes in slice 0 as far right as they can go
-    order.forEach((node) => {
-      const currentSlice = index.get(node.id)
-      if (currentSlice != 0) return
-
-      const outboundEdges = this.graph.edges.get(node.id).out
-      let minSlice = slices.length
-      outboundEdges.forEach(
-        (edge) => (minSlice = Math.min(minSlice, index.get(edge.inputNode.id)))
-      )
-      // put this node one slice left of its leftmost child
-      const slice = minSlice - 1
-      slices[currentSlice].delete(node.id)
-      slices[slice].set(node.id, node)
-      index.set(node.id, slice)
-    })
-
-    // compute starting point on x-axis for each column
-    let basex = [0]
-    for (var i = 0; i < slices.length; i++) {
-      let maxWidth = 0
-      slices[i].forEach(
-        (node) => (maxWidth = Math.max(this.proxies.get(node.id).w, maxWidth))
-      )
-      basex[i + 1] = basex[i] + maxWidth + padding
+      // update proxies with new x values (all proxies within a column are left-justified)
+      this.proxies.forEach((proxy) => {
+        proxy.x = baseX[columnIndex.get(proxy.node.id)]
+      })
     }
-
-    // update proxies
-    this.proxies.forEach((proxy) => {
-      proxy.x = basex[index.get(proxy.node.id)]
-    })
-
-    this.slices = slices
-  }
-  arrangeY() {
-    const padding = 48
-    let slices = this.slices
-    let maxHeight = 0
-
-    // find maximum slice height
-    let heights = []
-    slices.forEach((slice) => {
-      let height = 0
-      slice.forEach((node) => (height += this.proxies.get(node.id).h))
-      height += padding * (slice.size - 1)
-      heights.push(height)
-      maxHeight = Math.max(maxHeight, height)
-    })
-
-    // initially, arrange only last slice
-    const heightStep = maxHeight / (slices[slices.length - 1].size + 1)
-    let index = 0
-    slices[slices.length - 1].forEach((node) => {
-      let proxy = this.proxies.get(node.id)
-      proxy.y = heightStep * (index + 1) - proxy.h / 2
-      index++
-    })
-
-    let sortedSlices = []
-    // based on that, arrange all other slices
-    let children = new Map()
-    for (var i = slices.length - 2; i >= 0; i--) {
-      slices[i].forEach((parent) => {
-        let c = []
-        const outboundEdges = this.graph.edges.get(parent.id).out
-        outboundEdges.forEach((edge) => {
-          c.push(edge.inputNode)
+    //y-axis
+    {
+      let heights = []
+      let maxHeight = 0
+      // compute maximum column height
+      columns.forEach((column) => {
+        let height = 0
+        column.forEach((node) => {
+          height += this.proxies.get(node.id).h
         })
-        children.set(parent.id, c)
+        // there are (n - 1) gaps between nodes in a column
+        height += PADDING_Y * (column.size - 1)
+        // cache this column's height
+        heights.push(height)
+        maxHeight = Math.max(maxHeight, height)
       })
-      let sorted = []
-      slices[i].forEach((parent) => {
-        let avgy = 0
-        if (!children.has(parent.id)) return
-        let c = children.get(parent.id)
-        c.forEach((child) => {
-          avgy += this.proxies.get(child.id).y
-          /**
-           * @HATODO slow
-           */
-          const port = this.graph.edges
-            .get(child.id)
-            .in.find((edge) => edge.outputNode.id === parent.id).inputIndex
-          if (port > -1) avgy += port
-        })
-        avgy /= c.length
-        sorted.push({ y: avgy, node: parent })
-      })
-      sortedSlices[i] = sorted = sorted.sort((a, b) => a.y - b.y)
 
-      // update proxies
-      let bottom = 0
-      const basey = maxHeight / (slices[i].size + 1)
-      sorted.forEach((o, i) => {
-        let proxy = this.proxies.get(o.node.id)
-        if (i === 0) {
-          proxy.y = basey - proxy.h / 2
-        } else {
-          proxy.y = Math.max(bottom + padding, o.y - proxy.h / 2)
+      // compute y positions for rightmost column
+      const lastColumn = columns[columns.length - 1]
+      // evenly space across the entire column height
+      const heightStep = maxHeight / (lastColumn.size + 1)
+      let nodesTraversed = 0
+      lastColumn.forEach((node) => {
+        let proxy = this.proxies.get(node.id)
+        proxy.y = heightStep * (nodesTraversed + 1) - proxy.h / 2
+        nodesTraversed++
+      })
+
+      // each column's nodes sorted by y coord
+      let sortedColumns = []
+      // for each node, store a list of its children
+      let children = new Map()
+      // arrange other columns in right->left order
+      for (let i = columns.length - 2; i >= 0; i--) {
+        // get list of children for each node in current column
+        columns[i].forEach((parent) => {
+          let currentChildren = []
+          const outboundEdges = this.graph.getEdges(parent).out
+          outboundEdges.forEach((edge) => {
+            currentChildren.push(edge.inputNode)
+          })
+          children.set(parent.id, currentChildren)
+        })
+        // assign y values to all nodes in current column based on their children
+        let sortedColumn = []
+        columns[i].forEach((parent) => {
+          let averageY = 0
+          let currentChildren = children.get(parent.id)
+          currentChildren.forEach((child) => {
+            // base y of current child
+            averageY += this.proxies.get(child.id).y
+            // account for the port of the current child the current parent is attached to
+            const port = this.graph
+              .getEdges(child)
+              .in.find((edge) => edge.outputNode.id === parent.id).inputIndex
+            averageY += port
+          })
+          averageY /= currentChildren.length
+          sortedColumn.push({ y: averageY, node: parent })
+        })
+        // sort all nodes in current column based on their current y value
+        // NOTE: this produces a correct ordering, but the current y values are not necessarily used, see below
+        sortedColumn = sortedColumn.sort((a, b) => a.y - b.y)
+        sortedColumns[i] = sortedColumn
+
+        // update proxies
+        let bottomY = 0
+        sortedColumn.forEach((object, index) => {
+          let proxy = this.proxies.get(object.node.id)
+          // set the first node to the first evenly spaced position
+          if (index === 0) {
+            proxy.y = maxHeight / (columns[i].size + 1) - proxy.h / 2
+          } else {
+            // attempt to set following nodes to their position based on the previous step, but snap to the bottom of the last node if necessary
+            proxy.y = Math.max(bottomY + PADDING_Y, object.y - proxy.h / 2)
+          }
+          bottomY = proxy.y + proxy.h
+        })
+      }
+
+      // second pass (left to right); attempt to set y position of all proxies to the average y of all their parents (this provides a nice layout)
+      // eslint-disable-next-line no-redeclare
+      for (let i = 1; i < columns.length - 1; i++) {
+        const sorted = sortedColumns[i]
+        // if there's only one node in current column, set it to the ideal position (average of its parents)
+        if (sorted.length === 1) {
+          this.proxies.get(sorted[0].node.id).y = this.computeAverageParentY(
+            columns,
+            i,
+            sorted[0].node
+          )
         }
-        bottom = proxy.y + proxy.h
-      })
-    }
-    // second pass (left to right)
-    // eslint-disable-next-line no-redeclare
-    for (var i = 1; i < slices.length - 1; i++) {
-      const sorted = sortedSlices[i]
-      if (sorted.length === 1) {
-        this.proxies.get(sorted[0].node.id).y = this.computeAverageParentY(
-          i,
-          sorted,
-          0
-        )
-      } else {
-        for (var j = sorted.length - 1; j > 0; j--) {
-          const child = sorted[j].node
-          let proxy = this.proxies.get(child.id)
-          const above = this.proxies.get(sorted[j - 1].node.id)
+        // if there are multiple nodes in current column, try to set them to their ideal positions, but prevent overlapping with other nodes
+        else {
+          // attempt to reposition proxies from bottom to top
+          for (var j = sorted.length - 1; j > 0; j--) {
+            let currentProxy = this.proxies.get(sorted[j].node.id)
+            const aboveProxy = this.proxies.get(sorted[j - 1].node.id)
+            const averageY = this.computeAverageParentY(
+              columns,
+              i,
+              sorted[j].node
+            )
 
-          const avgy = this.computeAverageParentY(i, sorted, j)
-
-          if (avgy >= above.y + above.h + padding) {
-            if (j < sorted.length - 1) {
-              const below = this.proxies.get(sorted[j + 1].node.id)
-              if (avgy + proxy.h <= below.y - padding) proxy.y = avgy
-            } else proxy.y = avgy
+            // if the ideal position is sufficiently beneath the proxy above
+            if (averageY >= aboveProxy.y + aboveProxy.h + PADDING_Y) {
+              // this is not the bottom proxy, must check it against the one below it as well
+              if (j < sorted.length - 1) {
+                const belowProxy = this.proxies.get(sorted[j + 1].node.id)
+                if (belowProxy.y >= averageY + currentProxy.h + PADDING_Y)
+                  currentProxy.y = averageY
+              }
+              // if this is the bottom proxy, there's nothing below for it to intersect
+              else {
+                currentProxy.y = averageY
+              }
+            }
           }
         }
       }
     }
   }
-  computeAverageParentY(slice, sorted, index) {
-    const child = sorted[index].node
-
+  computeAverageParentY(columns, column, child) {
+    // find all parents of given node
     let parents = []
-    this.slices[slice - 1].forEach((parent) => {
-      const outboundEdges = this.graph.edges.get(parent.id).out
+    columns[column - 1].forEach((parent) => {
+      const outboundEdges = this.graph.getEdges(parent).out
       outboundEdges.forEach((edge) => {
         if (edge.inputNode.id === child.id) parents.push(parent)
       })

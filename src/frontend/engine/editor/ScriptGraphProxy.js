@@ -92,26 +92,54 @@ export class ScriptGraphProxy {
       (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent) * 2
 
     // compute node height
-    const maxPortCount = Math.max(
+    this.maxPortCount = Math.max(
       this.node.outputTypes.length,
       this.node.inputTypes.length
     )
-    if (maxPortCount)
-      this.h = this.nameHeight + this.portHeight * maxPortCount + HEIGHT_PADDING
+    if (this.maxPortCount)
+      this.h =
+        this.nameHeight + this.portHeight * this.maxPortCount + HEIGHT_PADDING
     else this.h = this.nameHeight
+
+    this.shadowColor = '#00000077'
+    this.nodeColor = '#334155'
+    this.outlineColor = '#6b7280'
   }
-  draw(window, ox, oy, zoom) {
-    const tx = this.x + ox,
-      ty = this.y + oy
+  draw(window, zoom) {
+    const tx = this.x,
+      ty = this.y
     // node
-    window.drawRoundRect(tx, ty, this.w, this.h, this.portRadius, '#00000077', {
-      shadowBlur: 6 * zoom,
-      shadowOffsetY: 4 * zoom,
-    })
-    window.drawRoundRect(tx, ty, this.w, this.h, this.portRadius, '#334155')
-    window.drawRoundRect(tx, ty, this.w, this.h, this.portRadius, '#6b7280', {
-      stroke: true,
-    })
+    window.drawRoundRect(
+      tx,
+      ty,
+      this.w,
+      this.h,
+      this.portRadius,
+      this.shadowColor,
+      {
+        shadowBlur: 6 * zoom,
+        shadowOffsetY: 4 * zoom,
+      }
+    )
+    window.drawRoundRect(
+      tx,
+      ty,
+      this.w,
+      this.h,
+      this.portRadius,
+      this.nodeColor
+    )
+    window.drawRoundRect(
+      tx,
+      ty,
+      this.w,
+      this.h,
+      this.portRadius,
+      this.outlineColor,
+      {
+        stroke: true,
+      }
+    )
     // name
     window.drawCenteredText(
       this.node.debugName,
@@ -122,13 +150,14 @@ export class ScriptGraphProxy {
       '#f9fafb'
     )
     // name underline
-    window.drawLine(
-      tx,
-      ty + this.nameHeight,
-      tx + this.w,
-      ty + this.nameHeight,
-      '#6b7280'
-    )
+    if (this.maxPortCount)
+      window.drawLine(
+        tx,
+        ty + this.nameHeight,
+        tx + this.w,
+        ty + this.nameHeight,
+        '#6b7280'
+      )
     // ports
     const portBaseY = ty + this.nameHeight + this.portHeight / 2
     this.node.data.inputPorts.forEach((port, i) => {
@@ -187,22 +216,22 @@ export class ScriptGraphProxy {
       )
     })
   }
-  getInPortCoords(i, ox, oy) {
+  getInPortCoords(i) {
     let y = 0
     if (i === -1) {
       y = this.nameHeight / 2
     } else {
       y = this.nameHeight + this.portHeight * (0.5 + i) + this.portDotOffset
     }
-    return { x: this.x + ox, y: this.y + oy + y }
+    return { x: this.x, y: this.y + y }
   }
-  getOutPortCoords(i, ox, oy) {
+  getOutPortCoords(i) {
     let y = 0
     if (i === -1) {
       y = this.nameHeight / 2
     } else {
       y = this.nameHeight + this.portHeight * (0.5 + i) + this.portDotOffset
     }
-    return { x: this.x + ox + this.w, y: this.y + oy + y }
+    return { x: this.x + this.w, y: this.y + y }
   }
 }

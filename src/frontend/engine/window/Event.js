@@ -79,6 +79,16 @@ export class RenderEvent {
   }
 }
 
+export class ResizeEvent {
+  /**
+   * @HATODO implement?
+   */
+  constructor(w, h) {
+    this.w = w
+    this.h = h
+  }
+}
+
 export class EventHandler extends Component {
   constructor(debugName) {
     super(debugName)
@@ -120,6 +130,10 @@ export class EventHandler extends Component {
   }
   // eslint-disable-next-line
   onRender(e) {
+    return false
+  }
+  // eslint-disable-next-line
+  onResize(e) {
     return false
   }
 }

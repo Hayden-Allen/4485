@@ -39,4 +39,7 @@ export var global = {
   clamp: (x, min, max) => {
     return Math.min(max, Math.max(x, min))
   },
+  rectIntersect: (x0, y0, x, y, w, h) => {
+    return y0 >= y && y0 <= y + h && x0 >= x && x0 <= x + w
+  },
 }

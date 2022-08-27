@@ -10,14 +10,14 @@ export class ScriptGraphVisualizer {
       this.proxies.set(node.id, new ScriptGraphProxy(window, node, 0, 0))
     )
   }
-  draw(window, ox, oy, zoom) {
+  draw(window, zoom) {
     this.graph.nodes.forEach((node) => {
       const outboundEdges = this.graph.edges.get(node.id).out
       outboundEdges.forEach((edge) => {
         const sproxy = this.proxies.get(edge.outputNode.id)
-        const scoords = sproxy.getOutPortCoords(edge.outputIndex, ox, oy)
+        const scoords = sproxy.getOutPortCoords(edge.outputIndex)
         const eproxy = this.proxies.get(edge.inputNode.id)
-        const ecoords = eproxy.getInPortCoords(edge.inputIndex, ox, oy)
+        const ecoords = eproxy.getInPortCoords(edge.inputIndex)
 
         let color = undefined
         if (
@@ -43,7 +43,7 @@ export class ScriptGraphVisualizer {
       })
     })
 
-    this.proxies.forEach((proxy) => proxy.draw(window, ox, oy, zoom))
+    this.proxies.forEach((proxy) => proxy.draw(window, zoom))
   }
   /**
    * @HATODO render to separate framebuffer?

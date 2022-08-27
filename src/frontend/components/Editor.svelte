@@ -8,9 +8,10 @@
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
   import { Window } from '%window/Window.js'
-  import { UILayer } from '%window/Layer.js'
   import { EditorLayer } from '%editor/EditorLayer.js'
+  import { ScriptGraphInputLayer } from '%editor/ScriptGraphInputLayer.js'
   import { ScriptGraphLayer } from '%editor/ScriptGraphLayer.js'
+  import { ScriptGraphControlsLayer } from '%editor/ScriptGraphControlsLayer.js'
   import {
     ScriptNodeTemplate,
     EventScriptNodeTemplate,
@@ -196,10 +197,22 @@
 
     gameWindow = new Window(gameCanvas, '#00f')
     gameWindow.pushLayer(new EditorLayer(game))
-    gameWindow.pushLayer(new UILayer())
 
     scriptWindow = new Window(scriptCanvas)
-    scriptWindow.pushLayer(new ScriptGraphLayer(scriptWindow, playerScript))
+    let scriptGraphInputLayer = new ScriptGraphInputLayer()
+    let scriptGraphControlsLayer = new ScriptGraphControlsLayer(
+      scriptGraphInputLayer,
+      scriptWindow
+    )
+    scriptWindow.pushLayer(scriptGraphControlsLayer)
+    scriptWindow.pushLayer(
+      new ScriptGraphLayer(
+        scriptGraphInputLayer,
+        scriptGraphControlsLayer,
+        playerScript
+      )
+    )
+    scriptWindow.pushLayer(scriptGraphInputLayer)
 
     context.windows.push(gameWindow)
     context.windows.push(scriptWindow)
@@ -223,7 +236,7 @@
    */
 
   let topSplit = 1 / 2
-  let midSplit = 1 / 2
+  let midSplit = 2 / 3
   let leftSplit = 1 / 3
   let rightSplit = 2 / 3
 
@@ -261,7 +274,12 @@
         bind:canvas={gameCanvas}
       />
     </div>
-    <Splitter bind:split={topSplit} minSplit={0.1} maxSplit={0.9} />
+    <Splitter
+      bind:context
+      bind:split={topSplit}
+      minSplit={0.1}
+      maxSplit={0.9}
+    />
     <div
       class="grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
       style={`flex-basis: ${topRightBasis}%;`}
@@ -270,6 +288,7 @@
     </div>
   </div>
   <Splitter
+    bind:context
     bind:split={midSplit}
     isVertical={true}
     minSplit={0.1}
@@ -284,6 +303,7 @@
       style={`flex-basis: ${bottomLeftBasis}%;`}
     />
     <Splitter
+      bind:context
       bind:split={leftSplit}
       minSplit={0.1}
       maxSplit={rightSplit - 0.1}
@@ -293,6 +313,7 @@
       style={`flex-basis: ${bottomMidBasis}%;`}
     />
     <Splitter
+      bind:context
       bind:split={rightSplit}
       minSplit={leftSplit + 0.1}
       maxSplit={0.9}

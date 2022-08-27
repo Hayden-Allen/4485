@@ -1,9 +1,17 @@
 import { global } from './Global.js'
+import { ResizeEvent } from '%window/Event.js'
 
 export class Context {
   constructor() {
     this.systems = new Map()
     this.windows = []
+
+    window.addEventListener('resize', () => this.propagateResizeEvent())
+  }
+  propagateResizeEvent() {
+    this.windows.forEach((window) =>
+      window.propagateEvent('onResize', new ResizeEvent())
+    )
   }
   run() {
     requestAnimationFrame(this.run.bind(this))

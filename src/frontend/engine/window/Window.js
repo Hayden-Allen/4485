@@ -53,6 +53,8 @@ export class Window {
   }
   pushLayer(layer) {
     this.layers.push(layer)
+    layer.window = this
+    layer.onAttach()
   }
   removeLayer(layer) {
     this.layers = this.layers.filter((l) => l.debugName !== layer.debugName)
@@ -68,7 +70,6 @@ export class Window {
     // draw everything
     this.propagateEvent('onRender', new RenderEvent(this))
   }
-
   rotate(centerX, centerY, theta) {
     this.ctx.translate(centerX, centerY)
     this.ctx.rotate(theta)

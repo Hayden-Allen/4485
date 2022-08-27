@@ -1,9 +1,10 @@
 <script>
-  export let mouseDown = false,
-    split = null,
+  export let split = undefined,
     minSplit = 0,
     maxSplit = 1,
-    isVertical = false
+    isVertical = false,
+    context = undefined
+  let mouseDown = false
 
   function computeSplit(e) {
     const parentRect = e.target.parentNode.getBoundingClientRect()
@@ -33,14 +34,16 @@
 
 <div
   class={`grow-0 shrink-0 ${
-    isVertical ? 'w-full h-2 cursor-ns-resize' : 'w-2 h-full cursor-ew-resize'
+    isVertical ? 'w-full h-1 cursor-ns-resize' : 'w-1 h-full cursor-ew-resize'
   }`}
   on:contextmenu={handleSplitterContextMenu}
   on:pointerdown={(e) => (mouseDown = handleSplitterPointerDown(e))}
   on:pointerup={(e) => (mouseDown = handleSplitterPointerUp(e))}
-  on:pointermove={(e) =>
-    (split = Math.max(
+  on:pointermove={(e) => {
+    split = Math.max(
       minSplit,
       Math.min(mouseDown ? computeSplit(e) : split, maxSplit)
-    ))}
+    )
+    if (mouseDown) context.propagateResizeEvent()
+  }}
 />

@@ -1,14 +1,17 @@
 <script>
   import { onMount } from 'svelte'
   import Viewport from './Viewport.svelte'
+  import Splitter from './Splitter.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
   import { SceneEntity, ControlledSceneEntity } from '%component/SceneEntity.js'
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
   import { Window } from '%window/Window.js'
-  import { UILayer } from '%window/Layer.js'
-  import { EditorLayer } from '%engine/editor/EditorLayer.js'
+  import { EditorLayer } from '%editor/EditorLayer.js'
+  import { ScriptGraphInputLayer } from '%editor/ScriptGraphInputLayer.js'
+  import { ScriptGraphLayer } from '%editor/ScriptGraphLayer.js'
+  import { ScriptGraphControlsLayer } from '%editor/ScriptGraphControlsLayer.js'
   import {
     ScriptNodeTemplate,
     EventScriptNodeTemplate,
@@ -17,8 +20,15 @@
   } from '%script/ScriptNodeTemplate.js'
   import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
+  import { Context } from '%engine/Context.js'
 
-  let canvas = undefined
+  let context = undefined
+
+  let gameCanvas = undefined,
+    scriptCanvas = undefined
+
+  let gameWindow = undefined,
+    scriptWindow = undefined
 
   function createPlayerScript() {
     const tOnTick = new EventScriptNodeTemplate('OnTick')
@@ -98,6 +108,8 @@
     let graph = new ScriptGraph('PlayerController')
     const onTick = tOnTick.createNode(graph)
     // get input
+    const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
+    keyShiftPressed.attachAsInput(onTick, -1, -1)
     const keyWPressed = tKeyPressed.createNode(graph, ['w'])
     keyWPressed.attachAsInput(onTick, -1, -1)
     const keyAPressed = tKeyPressed.createNode(graph, ['a'])
@@ -106,8 +118,13 @@
     keySPressed.attachAsInput(onTick, -1, -1)
     const keyDPressed = tKeyPressed.createNode(graph, ['d'])
     keyDPressed.attachAsInput(onTick, -1, -1)
-    const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
-    keyShiftPressed.attachAsInput(onTick, -1, -1)
+
+    const ci1 = tConstInt.createNode(graph, [500])
+    const ci2 = tConstInt.createNode(graph, [1000])
+    const mux = tMux2.createNode(graph)
+    mux.attachAsInput(keyShiftPressed, 2, 0)
+    mux.attachAsInput(ci1, 0, 1)
+    mux.attachAsInput(ci2, 0, 2)
 
     // compute normalized velocity vector
     const dx = tSubtract.createNode(graph)
@@ -123,12 +140,6 @@
     norm.attachAsInput(vec2, 0, 0)
 
     // boost if shift pressed
-    const ci1 = tConstInt.createNode(graph, [500])
-    const ci2 = tConstInt.createNode(graph, [1000])
-    const mux = tMux2.createNode(graph)
-    mux.attachAsInput(keyShiftPressed, 2, 0)
-    mux.attachAsInput(ci1, 0, 1)
-    mux.attachAsInput(ci2, 0, 2)
     const scale = tScaleVec2.createNode(graph)
     scale.attachAsInput(norm, 0, 0)
     scale.attachAsInput(mux, 0, 1)
@@ -143,9 +154,13 @@
   }
 
   onMount(() => {
-    global.init()
+    if (context) {
+      return
+    }
 
-    var game = new Game()
+    context = new Context()
+    global.init(context)
+    var game = new Game(context)
 
     var scene = new Scene()
     game.setCurrentScene(scene)
@@ -167,13 +182,7 @@
     }
     let playerScript = createPlayerScript()
     let playerController = {
-      run: (player, deltaTimeSeconds) => {
-        // player.vel = new Vec2(
-        //   global.input.isKeyPressed('d') - global.input.isKeyPressed('a'),
-        //   global.input.isKeyPressed('s') - global.input.isKeyPressed('w')
-        // )
-        //   .norm()
-        //   .scale(500)
+      run: (player /* deltaTimeSeconds */) => {
         playerScript.run(player)
       },
     }
@@ -186,36 +195,132 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    console.log(canvas)
-    var window = new Window(canvas, '#00f')
-    window.pushLayer(new EditorLayer(game))
-    window.pushLayer(new UILayer())
-    window.run()
+    gameWindow = new Window(gameCanvas, '#00f')
+    gameWindow.pushLayer(new EditorLayer(game))
+
+    scriptWindow = new Window(scriptCanvas)
+    let scriptGraphInputLayer = new ScriptGraphInputLayer()
+    let scriptGraphControlsLayer = new ScriptGraphControlsLayer(
+      scriptGraphInputLayer,
+      scriptWindow
+    )
+    scriptWindow.pushLayer(scriptGraphControlsLayer)
+    scriptWindow.pushLayer(
+      new ScriptGraphLayer(
+        scriptGraphInputLayer,
+        scriptGraphControlsLayer,
+        playerScript
+      )
+    )
+    scriptWindow.pushLayer(scriptGraphInputLayer)
+
+    context.windows.push(gameWindow)
+    context.windows.push(scriptWindow)
+    context.run()
   })
+
+  $: {
+    if (gameCanvas) {
+      gameWindow.setCanvas(gameCanvas)
+    }
+  }
+
+  $: {
+    if (scriptCanvas) {
+      scriptWindow.setCanvas(scriptCanvas)
+    }
+  }
+
+  /*
+   * Handles
+   */
+
+  let topSplit = 1 / 2
+  let midSplit = 2 / 3
+  let leftSplit = 1 / 3
+  let rightSplit = 2 / 3
+
+  let topLeftBasis = null,
+    topRightBasis = null
+  let midTopBasis = null,
+    midBottomBasis = null
+  let bottomLeftBasis = null,
+    bottomMidBasis = null,
+    bottomRightBasis = null
+
+  $: {
+    topLeftBasis = topSplit * 100
+    topRightBasis = (1 - topSplit) * 100
+    midTopBasis = midSplit * 100
+    midBottomBasis = (1 - midSplit) * 100
+    bottomLeftBasis = leftSplit * 100
+    bottomMidBasis = (rightSplit - leftSplit) * 100
+    bottomRightBasis = (1 - rightSplit) * 100
+  }
 </script>
 
-<div
-  class="w-full h-full p-1 flex flex-col space-y-1 bg-gray-900 overflow-hidden"
->
-  <div class="grow shrink basis-0 overflow-hidden flex flex-row space-x-1">
+<div class="w-full h-full p-1 flex flex-col bg-gray-900 overflow-hidden">
+  <div
+    class="grow shrink basis-0 overflow-hidden flex flex-row"
+    style={`flex-basis: ${midTopBasis}%;`}
+  >
     <div
-      class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${topLeftBasis}%;`}
     >
-      <Viewport bind:canvas />
+      <Viewport
+        targetAspectRatio={global.canvas.targetWidth /
+          global.canvas.targetHeight}
+        bind:canvas={gameCanvas}
+      />
     </div>
-    <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+    <Splitter
+      bind:context
+      bind:split={topSplit}
+      minSplit={0.1}
+      maxSplit={0.9}
     />
+    <div
+      class="grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${topRightBasis}%;`}
+    >
+      <Viewport bind:canvas={scriptCanvas} />
+    </div>
   </div>
-  <div class="grow shrink basis-0 overflow-hidden flex flex-row space-x-1">
+  <Splitter
+    bind:context
+    bind:split={midSplit}
+    isVertical={true}
+    minSplit={0.1}
+    maxSplit={0.9}
+  />
+  <div
+    class="grow shrink overflow-hidden flex flex-row"
+    style={`flex-basis: ${midBottomBasis}%;`}
+  >
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${bottomLeftBasis}%;`}
+    />
+    <Splitter
+      bind:context
+      bind:split={leftSplit}
+      minSplit={0.1}
+      maxSplit={rightSplit - 0.1}
     />
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${bottomMidBasis}%;`}
+    />
+    <Splitter
+      bind:context
+      bind:split={rightSplit}
+      minSplit={leftSplit + 0.1}
+      maxSplit={0.9}
     />
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${bottomRightBasis}%;`}
     />
   </div>
 </div>

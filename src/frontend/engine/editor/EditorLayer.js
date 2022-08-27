@@ -15,10 +15,7 @@ export class EditorLayer extends Layer {
     this.fps = 0
   }
   onAppTick(e) {
-    if (!this.paused) {
-      this.game.update(e.deltaTime)
-      this.fps = 1000 / e.deltaTime
-    }
+    if (!this.paused) this.fps = 1000 / e.deltaTime
     return false
   }
   onKeyDown(e) {
@@ -34,10 +31,11 @@ export class EditorLayer extends Layer {
     }
   }
   onRender(e) {
-    this.game.currentScene.layers.forEach((layer) => layer.draw(e.renderer))
+    e.window.clear()
+    this.game.draw(e.window)
 
     if (this.showDebug) {
-      e.renderer.drawText(
+      e.window.drawText(
         `FPS: ${parseInt(this.fps)}`,
         0,
         0,
@@ -50,8 +48,8 @@ export class EditorLayer extends Layer {
     if (this.paused) {
       const cw = global.canvas.targetWidth,
         ch = global.canvas.targetHeight
-      e.renderer.drawRect(0, 0, cw, ch, '#000', { alpha: 0.5 })
-      e.renderer.drawCenteredText(
+      e.window.drawRect(0, 0, cw, ch, '#000', { alpha: 0.5 })
+      e.window.drawCenteredText(
         'PAUSED',
         cw / 2,
         ch / 2,

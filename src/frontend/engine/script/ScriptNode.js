@@ -1,6 +1,7 @@
 import { validateScriptDataTypes } from './ScriptDataType.js'
 import { ScriptNodeData } from './ScriptNodeData.js'
 import { Component } from '%component/Component.js'
+import { ScriptDataTypeList } from './ScriptDataType.js'
 
 export class ScriptNodePort {
   constructor(name, typename) {
@@ -10,17 +11,30 @@ export class ScriptNodePort {
 }
 
 export class ScriptNode extends Component {
-  constructor(debugName, graph, inputTypes, outputTypes, fn) {
+  constructor(
+    debugName,
+    graph,
+    inputPorts,
+    outputPorts,
+    fn,
+    { internalPorts = [], internalValues = [] } = {}
+  ) {
     super(debugName)
     this.graph = graph
     this.graph.addNode(this)
-    this.data = new ScriptNodeData(inputTypes, outputTypes, fn)
+    this.data = new ScriptNodeData(inputPorts, internalPorts, outputPorts, fn)
+    this.inputTypes = new ScriptDataTypeList(
+      inputPorts.map((port) => port.typename)
+    )
+    this.outputTypes = new ScriptDataTypeList(
+      outputPorts.map((port) => port.typename)
+    )
     // cached outputs from last run
     this.outputs = []
     // whether or not this node should be evaluated during current graph execution
     this.active = false
     // internal constants
-    this.internal = []
+    this.internalValues = internalValues
   }
   checkIndex(types, index) {
     // -1 signals that an edge carries activation, but not value
@@ -31,10 +45,10 @@ export class ScriptNode extends Component {
     return true
   }
   checkInputIndex(index) {
-    return this.checkIndex(this.data.inputTypes, index)
+    return this.checkIndex(this.inputTypes, index)
   }
   checkOutputIndex(index) {
-    return this.checkIndex(this.data.outputTypes, index)
+    return this.checkIndex(this.outputTypes, index)
   }
   // outputNode.outputs[outputIndex] => this.inputs[inputIndex]
   attachAsInput(outputNode, outputIndex, inputIndex) {
@@ -57,13 +71,13 @@ export class ScriptNode extends Component {
 
     // console.log(inputs)
     // console.log(this.data.inputTypes.types)
-    if (!validateScriptDataTypes(inputs, this.data.inputTypes.types)) {
+    if (!validateScriptDataTypes(inputs, this.inputTypes.types)) {
       this.logError('Invalid input')
       return
     }
 
     const results =
-      this.data.fn(inputs, { entity, internal: this.internal }) || []
+      this.data.fn(inputs, { entity, internal: this.internalValues }) || []
     this.outputs = results.map((result) => result.value)
     // propagate activation
     let outboundEdges = this.graph.edges.get(this.id).out

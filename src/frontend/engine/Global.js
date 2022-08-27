@@ -3,8 +3,7 @@ import { VaryingController } from '%system/VaryingController.js'
 
 export var global = {
   input: undefined,
-  varyingController: new VaryingController(),
-  vsync: false,
+  varyingController: undefined,
   fps: 60,
 
   canvas: {
@@ -17,13 +16,10 @@ export var global = {
     delta: 0,
   },
 
-  init: () => {
+  init: (context) => {
     global.input = new InputCache()
-
-    window.oncontextmenu = (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-    }
+    global.varyingController = new VaryingController()
+    context.addSystem(global.varyingController)
   },
   padZeroes: (s, n) => {
     while (s.length < n) s = '0' + s
@@ -39,5 +35,11 @@ export var global = {
     const deltaTime = global.updateTime()
     global.varyingController.update(deltaTime / 1000)
     return deltaTime
+  },
+  clamp: (x, min, max) => {
+    return Math.min(max, Math.max(x, min))
+  },
+  rectIntersect: (x0, y0, x, y, w, h) => {
+    return y0 >= y && y0 <= y + h && x0 >= x && x0 <= x + w
   },
 }

@@ -7,7 +7,6 @@
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
   import { Window } from '%window/Window.js'
-  import { UILayer } from '%window/Layer.js'
   import { GameLayer } from '%engine/game/GameLayer.js'
 
   let canvas = undefined
@@ -35,7 +34,7 @@
       }
     }
     let playerController = {
-      run: (player, deltaTimeSeconds) => {
+      run: (player /* deltaTimeSeconds */) => {
         player.vel = new Vec2(
           global.input.isKeyPressed('d') - global.input.isKeyPressed('a'),
           global.input.isKeyPressed('s') - global.input.isKeyPressed('w')
@@ -55,7 +54,6 @@
 
     var window = new Window(canvas, '#000')
     window.pushLayer(new GameLayer(game))
-    window.pushLayer(new UILayer())
     window.run()
   })
 </script>

@@ -9,38 +9,52 @@ import {
   RenderEvent,
 } from './Event.js'
 import { global } from '%engine/Global.js'
-import { Renderer } from '%system/Renderer.js'
-import { Canvas } from '%component/Canvas.js'
 
 export class Window {
   constructor(canvas, clearColor) {
     this.layers = []
 
-    this.renderer = new Renderer(clearColor)
-    this.canvas = new Canvas(canvas)
-    this.renderer.addComponent(this.canvas)
+    this.setCanvas(canvas)
+    this.clearColor = clearColor || undefined
+  }
+  setCanvas(canvas) {
+    if (this.canvas === canvas) {
+      return
+    }
 
-    window.addEventListener('keydown', (e) => {
+    this.canvas = canvas
+    this.ctx = this.canvas.getContext('2d')
+
+    this.canvas.addEventListener('keydown', (e) => {
       this.propagateEvent('onKeyDown', new KeyDownEvent(e))
     })
-    window.addEventListener('keyup', (e) => {
+    this.canvas.addEventListener('keyup', (e) => {
       this.propagateEvent('onKeyUp', new KeyUpEvent(e))
     })
-    window.addEventListener('mousemove', (e) => {
-      this.propagateEvent('onMouseMove', new MouseMoveEvent(e))
+    this.canvas.addEventListener('mousemove', (e) => {
+      const rect = this.canvas.getBoundingClientRect()
+      const x = e.clientX - Math.floor(rect.x),
+        y = e.clientY - Math.floor(rect.y)
+      this.propagateEvent('onMouseMove', new MouseMoveEvent(e, x, y))
     })
-    window.addEventListener('mousedown', (e) => {
+    this.canvas.addEventListener('mousedown', (e) => {
       this.propagateEvent('onMouseDown', new MouseDownEvent(e))
     })
-    window.addEventListener('mouseup', (e) => {
+    this.canvas.addEventListener('mouseup', (e) => {
       this.propagateEvent('onMouseUp', new MouseUpEvent(e))
     })
-    window.addEventListener('wheel', (e) => {
+    this.canvas.addEventListener('wheel', (e) => {
       this.propagateEvent('onMouseScroll', new MouseScrollEvent(e))
+    })
+    this.canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
     })
   }
   pushLayer(layer) {
     this.layers.push(layer)
+    layer.window = this
+    layer.onAttach()
   }
   removeLayer(layer) {
     this.layers = this.layers.filter((l) => l.debugName !== layer.debugName)
@@ -50,22 +64,140 @@ export class Window {
     for (var i = this.layers.length - 1; i >= 0; i--)
       if (this.layers[i][fn](e)) break
   }
-  run() {
-    const deltaTime = global.beginFrame()
-
+  update(deltaTime) {
     // update everything
     this.propagateEvent('onAppTick', new AppTickEvent(deltaTime))
-    // submit all render commands
-    this.renderer.components.forEach((component) =>
-      this.propagateEvent('onRender', new RenderEvent(this.renderer, component))
-    )
     // draw everything
-    this.renderer.update(deltaTime)
-
-    if (global.vsync) requestAnimationFrame(this.run.bind(this))
-    else {
-      const frameTime = performance.now() - global.time.now
-      setTimeout(this.run.bind(this), 1000 / global.fps - frameTime)
+    this.propagateEvent('onRender', new RenderEvent(this))
+  }
+  rotate(centerX, centerY, theta) {
+    this.ctx.translate(centerX, centerY)
+    this.ctx.rotate(theta)
+    this.ctx.translate(-centerX, -centerY)
+  }
+  clear() {
+    const w = this.canvas.width
+    const h = this.canvas.height
+    if (this.clearColor) {
+      this.ctx.fillStyle = this.clearColor
+      this.ctx.fillRect(0, 0, w, h)
+    } else {
+      this.ctx.clearRect(0, 0, w, h)
     }
+  }
+  drawLine(x0, y0, x1, y1, color, options = { width: 1 }) {
+    const [cx0, cy0] = this.transformCoords(x0, y0)
+    const [cx1, cy1] = this.transformCoords(x1, y1)
+    this.ctx.strokeStyle = color
+    this.ctx.lineWidth = options.width
+    this.ctx.lineCap = 'round'
+    this.ctx.beginPath()
+    this.ctx.moveTo(cx0, cy0)
+    this.ctx.lineTo(cx1, cy1)
+    this.ctx.stroke()
+    this.ctx.closePath()
+  }
+  drawRect(x, y, w, h, color, options = {}) {
+    const [cx, cy] = this.transformCoords(x, y)
+    const [cw, ch] = this.transformDims(w, h)
+    if (options.stroke) {
+      this.ctx.strokeStyle = color
+      this.ctx.strokeRect(cx, cy, cw, ch)
+    } else {
+      this.ctx.fillStyle = color
+      this.ctx.fillRect(cx, cy, cw, ch)
+    }
+  }
+  drawRoundRect(x, y, w, h, r, color, options = { width: 1 }) {
+    const [cx, cy] = this.transformCoords(x, y)
+    const [cw, ch] = this.transformDims(w, h)
+    const [cr] = this.transformDims(r)
+    this.ctx.beginPath()
+    if (options.shadowBlur) {
+      const [csb, cso] = this.transformDims(
+        options.shadowBlur,
+        options.shadowOffsetY
+      )
+      this.ctx.shadowBlur = csb
+      this.ctx.shadowOffsetY = cso
+      this.ctx.shadowColor = color
+      this.ctx.fillColor = color
+      this.ctx.roundRect(cx, cy, cw, ch, [cr])
+      this.ctx.fill()
+      this.ctx.shadowBlur = 0
+      this.ctx.shadowOffsetY = 0
+      this.ctx.shadowColor = 'transparent'
+    } else if (options.stroke) {
+      this.ctx.strokeStyle = color
+      this.ctx.lineWidth = options.width
+      this.ctx.roundRect(cx, cy, cw, ch, [cr])
+      this.ctx.stroke()
+    } else {
+      this.ctx.fillStyle = color
+      this.ctx.roundRect(cx, cy, cw, ch, [cr])
+      this.ctx.fill()
+    }
+    this.ctx.closePath()
+  }
+  drawArc(x, y, r, startAngle, endAngle, color, options = {}) {
+    const [cx, cy] = this.transformCoords(x, y)
+    const [cr] = this.transformDims(r)
+    this.ctx.beginPath()
+    if (options.stroke) {
+      this.ctx.strokeStyle = color
+      this.ctx.arc(cx, cy, cr, startAngle, endAngle)
+      this.ctx.stroke()
+    } else {
+      this.ctx.fillStyle = color
+      this.ctx.arc(cx, cy, cr, startAngle, endAngle)
+      this.ctx.fill()
+    }
+    this.ctx.closePath()
+  }
+  drawText(message, x, y, fontFamily, fontSize, color) {
+    const [cx, cy] = this.transformCoords(x, y)
+    const [cs] = this.transformDims(fontSize)
+    this.ctx.fillStyle = color
+    this.ctx.font = `${cs}px ${fontFamily}`
+    this.ctx.textBaseline = 'top'
+    this.ctx.fillText(message, cx, cy)
+    // reset to default
+    this.ctx.textBaseline = 'alphabetic'
+  }
+  drawCenteredText(message, x, y, fontFamily, fontSize, color, options = {}) {
+    const [cx, cy] = this.transformCoords(x, y)
+    const [cs] = this.transformDims(fontSize)
+    this.ctx.fillStyle = color
+    this.ctx.textBaseline = 'middle'
+    this.ctx.font = `${cs}px ${fontFamily}`
+
+    if (options.theta) this.rotate(cx, cy, options.theta)
+    this.ctx.fillText(message, cx - this.ctx.measureText(message).width / 2, cy)
+    if (options.theta) this.rotate(cx, cy, -options.theta)
+
+    // reset to default
+    this.ctx.textBaseline = 'alphabetic'
+  }
+  textMetrics(string, fontFamily, fontSize) {
+    this.ctx.font = `${fontSize}px ${fontFamily}`
+    return this.ctx.measureText(string)
+  }
+  transformCoords(x, y) {
+    const xs = this.canvas.width / global.canvas.targetWidth
+    const ys = this.canvas.height / global.canvas.targetHeight
+    const s = Math.min(xs, ys)
+    return [Math.floor(x * s), Math.floor(y * s)]
+  }
+  inverseTransformCoords(x, y) {
+    const xs = this.canvas.width / global.canvas.targetWidth
+    const ys = this.canvas.height / global.canvas.targetHeight
+    const s = Math.min(xs, ys)
+    return [Math.floor(x / s), Math.floor(y / s)]
+  }
+  transformDims(w, h) {
+    const xs = this.canvas.width / global.canvas.targetWidth
+    const ys = this.canvas.height / global.canvas.targetHeight
+    const s = Math.min(xs, ys)
+    return [Math.ceil(w * s), Math.ceil(h * s)]
   }
 }

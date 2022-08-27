@@ -11,6 +11,9 @@ export class ScriptGraphLayer extends Layer {
     this.capturedRightClick = false
     this.graphvis = undefined
     this.playerScript = playerScript
+    this.selected = undefined
+    this.selectedX = 0
+    this.selectedY = 0
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -24,15 +27,19 @@ export class ScriptGraphLayer extends Layer {
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
   }
-  onMouseMove() {
-    this.redraw = this.input.rightMousePressed && !this.capturedRightClick
-
-    const hit = this.checkIntersection()
-    if (hit) this.input.cursor = 'default'
-    return this.capturedRightClick && hit
-  }
   onMouseDown(e) {
     const hit = this.checkIntersection()
+    if (e.button === 0) {
+      this.redraw = true
+
+      if (this.selected) this.selected.selected = false
+      this.selected = hit
+      if (this.selected) {
+        this.selected.selected = true
+        this.selectedX = this.selected.x
+        this.selectedY = this.selected.y
+      }
+    }
     if (hit) {
       this.input.cursor = 'default'
       this.capturedRightClick = e.button === 2
@@ -44,6 +51,23 @@ export class ScriptGraphLayer extends Layer {
     if (hit) this.input.cursor = 'default'
     if (e.button === 2) this.capturedRightClick = false
     return hit
+  }
+  onMouseMove() {
+    this.redraw = this.input.rightMousePressed && !this.capturedRightClick
+
+    if (this.selected && this.input.leftMousePressed) {
+      const [wmx, wmy] = this.transformCoordsScreen2World(
+        this.input.mouseX,
+        this.input.mouseY
+      )
+      this.selected.x = this.input.mouseX / this.controls.zoom
+      this.selected.y = this.input.mouseY / this.controls.zoom
+      this.redraw = true
+    }
+
+    const hit = this.checkIntersection()
+    if (hit) this.input.cursor = 'default'
+    return this.capturedRightClick || hit
   }
   onResize() {
     this.redraw = true
@@ -59,26 +83,58 @@ export class ScriptGraphLayer extends Layer {
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
     this.graphvis.draw(e.window, this.zoom)
+
+    e.window.ctx.resetTransform()
+    this.window.ctx.fillStyle = '#0f0'
+    this.window.ctx.fillRect(this.input.mouseX, this.input.mouseY, 5, 5)
   }
   checkIntersection() {
-    const mx = this.input.mouseX,
-      my = this.input.mouseY
+    const [mx, my] = [this.input.mouseX, this.input.mouseY]
 
-    let hit = false
-    const t = this.window.ctx.getTransform()
+    let hit = undefined
     this.graphvis.proxies.forEach((proxy) => {
       if (hit) return
 
-      let [px, py] = this.window.transformCoords(proxy.x, proxy.y)
-      px = t.a * px + t.e
-      py = t.d * py + t.f
-      let [pw, ph] = this.window.transformDims(proxy.w, proxy.h)
-      pw *= t.a
-      ph *= t.d
+      const [px, py] = this.transformCoordsWorld2Screen(proxy.x, proxy.y)
+      const [pw, ph] = this.transformDims(proxy.w, proxy.h)
 
-      if (global.rectIntersect(mx, my, px, py, pw, ph)) hit = true
+      if (global.rectIntersect(mx, my, px, py, pw, ph)) hit = proxy
     })
 
     return hit
+  }
+  // world -> screen
+  transformCoordsWorld2Screen(x, y) {
+    this.controls.setTransform(this.window.ctx)
+    const t = this.window.ctx.getTransform()
+    let [tx, ty] = this.window.transformCoords(x, y)
+    tx = t.a * tx + t.e
+    ty = t.d * ty + t.f
+    return [tx, ty]
+  }
+  // screen -> world
+  transformCoordsScreen2World(x, y) {
+    this.controls.setTransform(this.window.ctx)
+    const t = this.window.ctx.getTransform()
+    x = (x - t.e) / t.a
+    y = (y - t.f) / t.d
+    return [x, y]
+  }
+  // screen -> world
+  transformCoordsScreen2World2(x, y) {
+    this.controls.setTransform(this.window.ctx)
+    const t = this.window.ctx.getTransform()
+    let [tx, ty] = this.window.inverseTransformCoords(x, y)
+    tx = (tx - t.e) / t.a
+    ty = (ty - t.f) / t.d
+    return [tx, ty]
+  }
+  transformDims(w, h) {
+    this.controls.setTransform(this.window.ctx)
+    const t = this.window.ctx.getTransform()
+    let [tw, th] = this.window.transformDims(w, h)
+    tw *= t.a
+    th *= t.d
+    return [tw, th]
   }
 }

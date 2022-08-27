@@ -85,7 +85,7 @@ export class Window {
       this.ctx.clearRect(0, 0, w, h)
     }
   }
-  drawLine(x0, y0, x1, y1, color, options = {}) {
+  drawLine(x0, y0, x1, y1, color, options = { width: 1 }) {
     const [cx0, cy0] = this.transformCoords(x0, y0)
     const [cx1, cy1] = this.transformCoords(x1, y1)
     this.ctx.strokeStyle = color
@@ -108,7 +108,7 @@ export class Window {
       this.ctx.fillRect(cx, cy, cw, ch)
     }
   }
-  drawRoundRect(x, y, w, h, r, color, options = {}) {
+  drawRoundRect(x, y, w, h, r, color, options = { width: 1 }) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cw, ch] = this.transformDims(w, h)
     const [cr] = this.transformDims(r)
@@ -129,6 +129,7 @@ export class Window {
       this.ctx.shadowColor = 'transparent'
     } else if (options.stroke) {
       this.ctx.strokeStyle = color
+      this.ctx.lineWidth = options.width
       this.ctx.roundRect(cx, cy, cw, ch, [cr])
       this.ctx.stroke()
     } else {
@@ -186,6 +187,12 @@ export class Window {
     const ys = this.canvas.height / global.canvas.targetHeight
     const s = Math.min(xs, ys)
     return [Math.floor(x * s), Math.floor(y * s)]
+  }
+  inverseTransformCoords(x, y) {
+    const xs = this.canvas.width / global.canvas.targetWidth
+    const ys = this.canvas.height / global.canvas.targetHeight
+    const s = Math.min(xs, ys)
+    return [Math.floor(x / s), Math.floor(y / s)]
   }
   transformDims(w, h) {
     const xs = this.canvas.width / global.canvas.targetWidth

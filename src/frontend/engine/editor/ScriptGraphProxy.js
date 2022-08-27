@@ -26,13 +26,13 @@ export const PORT_COLOR = {
     dot: '#0284c7',
     edge: '#0369a1',
   },
+  string: {
+    name: '#f43f5e',
+    dot: '#e11d48',
+    edge: '#be123c',
+  },
 
   array: {
-    name: '#e5e7eb',
-    dot: '#d1d5db',
-    edge: '#9ca3af',
-  },
-  string: {
     name: '#e5e7eb',
     dot: '#d1d5db',
     edge: '#9ca3af',
@@ -101,9 +101,12 @@ export class ScriptGraphProxy {
         this.nameHeight + this.portHeight * this.maxPortCount + HEIGHT_PADDING
     else this.h = this.nameHeight
 
-    this.shadowColor = '#00000077'
-    this.nodeColor = '#334155'
-    this.outlineColor = '#6b7280'
+    this.colors = [
+      { shadow: '#00000077', node: '#334155', outline: '#6b7280' },
+      { shadow: '#00000077', node: '#334155', outline: '#dc2626' },
+    ]
+    this.outlineSize = [1, 3]
+    this.selected = false
   }
   draw(window, zoom) {
     const tx = this.x,
@@ -115,7 +118,7 @@ export class ScriptGraphProxy {
       this.w,
       this.h,
       this.portRadius,
-      this.shadowColor,
+      this.colors[~~this.selected].shadow,
       {
         shadowBlur: 6 * zoom,
         shadowOffsetY: 4 * zoom,
@@ -127,17 +130,28 @@ export class ScriptGraphProxy {
       this.w,
       this.h,
       this.portRadius,
-      this.nodeColor
+      this.colors[~~this.selected].node
     )
+    // name underline
+    if (this.maxPortCount)
+      window.drawLine(
+        tx,
+        ty + this.nameHeight,
+        tx + this.w,
+        ty + this.nameHeight,
+        '#6b7280'
+      )
+    // outline
     window.drawRoundRect(
       tx,
       ty,
       this.w,
       this.h,
       this.portRadius,
-      this.outlineColor,
+      this.colors[~~this.selected].outline,
       {
         stroke: true,
+        width: this.outlineSize[~~this.selected],
       }
     )
     // name
@@ -149,15 +163,6 @@ export class ScriptGraphProxy {
       this.nameFontSize,
       '#f9fafb'
     )
-    // name underline
-    if (this.maxPortCount)
-      window.drawLine(
-        tx,
-        ty + this.nameHeight,
-        tx + this.w,
-        ty + this.nameHeight,
-        '#6b7280'
-      )
     // ports
     const portBaseY = ty + this.nameHeight + this.portHeight / 2
     this.node.data.inputPorts.forEach((port, i) => {
@@ -203,7 +208,9 @@ export class ScriptGraphProxy {
         PORT_COLOR[port.typename].name
       )
     })
-    // internals
+    /**
+     * @HATODO internals
+     */
     this.node.data.internalPorts.forEach((port, i) => {
       const portY = portBaseY + i * this.portHeight
       window.drawText(

@@ -9,48 +9,24 @@ export class ScriptGraphControlsLayer extends Layer {
     this.maxZoom = 10
     this.minZoom = 0.1
     this.zoomSpeed = 0.01
-    this.dragStartX = 0
-    this.dragStartY = 0
-    this.dragOffsetX = 0
-    this.dragOffsetY = 0
-    this.offsetX = 0
-    this.offsetY = 0
   }
   onMouseScroll(e) {
     this.zoom -= e.y * this.zoomSpeed * (this.zoom / this.maxZoom)
     this.zoom = global.clamp(this.zoom, this.minZoom, this.maxZoom)
-    this.redraw = true
-  }
-  onMouseDown(e) {
-    if (e.button === 2) {
-      this.dragStartX = this.input.mouseX
-      this.dragStartY = this.input.mouseY
-    }
-  }
-  onMouseUp(e) {
-    if (e.button === 2) {
-      this.offsetX += this.dragOffsetX
-      this.offsetY += this.dragOffsetY
-      this.dragOffsetX = 0
-      this.dragOffsetY = 0
-    }
   }
   onMouseMove() {
     if (this.input.rightMousePressed) {
-      // we want to allow zooming to less than 1, but without asymptotically increasing pan speed
-      this.dragOffsetX =
-        (this.input.mouseX - this.dragStartX) / Math.max(this.zoom, 1)
-      this.dragOffsetY =
-        (this.input.mouseY - this.dragStartY) / Math.max(this.zoom, 1)
+      this.input.dragOffsetX /= Math.max(this.zoom, 1)
+      this.input.dragOffsetY /= Math.max(this.zoom, 1)
     }
   }
   computeTranslation() {
-    const dx =
-      (this.offsetX + this.dragOffsetX) * this.zoom +
-      this.window.canvas.width / 2
-    const dy =
-      (this.offsetY + this.dragOffsetY) * this.zoom +
-      this.window.canvas.height / 2
+    let dx = this.input.offsetX * this.zoom + this.window.canvas.width / 2
+    let dy = this.input.offsetY * this.zoom + this.window.canvas.height / 2
+    if (this.input.rightMousePressed) {
+      dx += this.input.dragOffsetX * this.zoom
+      dy += this.input.dragOffsetY * this.zoom
+    }
     return { dx, dy }
   }
   setTransform(ctx) {

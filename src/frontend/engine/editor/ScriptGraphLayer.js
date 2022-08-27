@@ -54,15 +54,19 @@ export class ScriptGraphLayer extends Layer {
   onMouseMove() {
     this.redraw = this.input.rightMousePressed && !this.capturedRightClick
 
-    // if (this.selected && this.input.leftMousePressed) {
-    //   const [wmx, wmy] = this.transformCoordsScreen2World(
-    //     this.input.mouseX,
-    //     this.input.mouseY
-    //   )
-    //   this.selected.x = this.input.mouseX / this.controls.zoom
-    //   this.selected.y = this.input.mouseY / this.controls.zoom
-    //   this.redraw = true
-    // }
+    if (this.selected && this.input.leftMousePressed) {
+      this.redraw = true
+      this.controls.setTransform(this.window.ctx)
+      const t = this.window.ctx.getTransform()
+      // transform mouse screen->world
+      const sx = (this.input.mouseX - t.e) / t.a
+      const sy = (this.input.mouseY - t.f) / t.d
+      // account for stretching
+      let [wx, wy] = this.window.inverseTransformCoords(sx, sy)
+      // move by center
+      this.selected.x = wx - this.selected.w / 2
+      this.selected.y = wy - this.selected.h / 2
+    }
 
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
@@ -82,10 +86,6 @@ export class ScriptGraphLayer extends Layer {
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
     this.graphvis.draw(e.window, this.zoom)
-
-    // e.window.ctx.resetTransform()
-    // this.window.ctx.fillStyle = '#0f0'
-    // this.window.ctx.fillRect(this.input.mouseX, this.input.mouseY, 5, 5)
   }
   checkIntersection() {
     const [mx, my] = [this.input.mouseX, this.input.mouseY]

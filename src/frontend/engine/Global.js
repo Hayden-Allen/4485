@@ -33,7 +33,6 @@ export var global = {
   },
   beginFrame: () => {
     const deltaTime = global.updateTime()
-    global.varyingController.update(deltaTime / 1000)
     return deltaTime
   },
   clamp: (x, min, max) => {

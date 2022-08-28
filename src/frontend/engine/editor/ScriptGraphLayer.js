@@ -72,6 +72,12 @@ export class ScriptGraphLayer extends Layer {
     if (hit) this.input.cursor = 'default'
     return this.capturedRightClick && hit
   }
+  onKeyDown(e) {
+    if (!e.repeat && e.ctrlPressed && e.key === 's') {
+      this.graphvis.arrange()
+      this.redraw = true
+    }
+  }
   onResize() {
     this.redraw = true
   }
@@ -79,8 +85,8 @@ export class ScriptGraphLayer extends Layer {
     /**
      * @HATODO sometimes the draw doesn't show up, even if this check passes
      */
-    if (!this.redraw) return
-    this.redraw = false
+    // if (!this.redraw) return
+    // this.redraw = false
 
     e.window.ctx.resetTransform()
     e.window.clear()

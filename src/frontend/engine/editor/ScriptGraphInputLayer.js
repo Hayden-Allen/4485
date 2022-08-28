@@ -46,6 +46,7 @@ export class ScriptGraphInputLayer extends Layer {
       this.dragOffsetX = this.mouseX - this.dragStartX
       this.dragOffsetY = this.mouseY - this.dragStartY
     }
+    this.cursor = this.rightMousePressed ? 'grabbing' : 'grab'
   }
   onRender(e) {
     e.window.canvas.style.cursor = this.cursor

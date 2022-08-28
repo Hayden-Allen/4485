@@ -43,5 +43,5 @@
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  <canvas bind:this={canvas} />
+  <canvas bind:this={canvas} tabindex="1" />
 </div>

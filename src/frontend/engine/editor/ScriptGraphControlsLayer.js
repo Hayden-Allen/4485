@@ -6,9 +6,9 @@ export class ScriptGraphControlsLayer extends Layer {
     super('ScriptGraphLayerControls')
     this.input = input
     this.zoom = 1
-    this.maxZoom = 10
-    this.minZoom = 0.1
-    this.zoomSpeed = 0.01
+    this.maxZoom = 2
+    this.minZoom = 0.5
+    this.zoomSpeed = 0.0025
   }
   onMouseScroll(e) {
     this.zoom -= e.y * this.zoomSpeed * (this.zoom / this.maxZoom)

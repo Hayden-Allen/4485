@@ -85,11 +85,11 @@ export class Window {
       this.ctx.clearRect(0, 0, w, h)
     }
   }
-  drawLine(x0, y0, x1, y1, color, options = { width: 1 }) {
+  drawLine(x0, y0, x1, y1, color, { width = 1 } = {}) {
     const [cx0, cy0] = this.transformCoords(x0, y0)
     const [cx1, cy1] = this.transformCoords(x1, y1)
     this.ctx.strokeStyle = color
-    this.ctx.lineWidth = options.width
+    this.ctx.lineWidth = width
     this.ctx.lineCap = 'round'
     this.ctx.beginPath()
     this.ctx.moveTo(cx0, cy0)
@@ -97,10 +97,11 @@ export class Window {
     this.ctx.stroke()
     this.ctx.closePath()
   }
-  drawRect(x, y, w, h, color, options = {}) {
+  drawRect(x, y, w, h, color, { alpha = 1, stroke = false } = {}) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cw, ch] = this.transformDims(w, h)
-    if (options.stroke) {
+    this.ctx.globalAlpha = alpha
+    if (stroke) {
       this.ctx.strokeStyle = color
       this.ctx.strokeRect(cx, cy, cw, ch)
     } else {
@@ -108,16 +109,21 @@ export class Window {
       this.ctx.fillRect(cx, cy, cw, ch)
     }
   }
-  drawRoundRect(x, y, w, h, r, color, options = { width: 1 }) {
+  drawRoundRect(
+    x,
+    y,
+    w,
+    h,
+    r,
+    color,
+    { width = 1, shadowBlur = 0, shadowOffsetY = 0, stroke = false } = {}
+  ) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cw, ch] = this.transformDims(w, h)
     const [cr] = this.transformDims(r)
     this.ctx.beginPath()
-    if (options.shadowBlur) {
-      const [csb, cso] = this.transformDims(
-        options.shadowBlur,
-        options.shadowOffsetY
-      )
+    if (shadowBlur) {
+      const [csb, cso] = this.transformDims(shadowBlur, shadowOffsetY)
       this.ctx.shadowBlur = csb
       this.ctx.shadowOffsetY = cso
       this.ctx.shadowColor = color
@@ -127,9 +133,9 @@ export class Window {
       this.ctx.shadowBlur = 0
       this.ctx.shadowOffsetY = 0
       this.ctx.shadowColor = 'transparent'
-    } else if (options.stroke) {
+    } else if (stroke) {
       this.ctx.strokeStyle = color
-      this.ctx.lineWidth = options.width
+      this.ctx.lineWidth = width
       this.ctx.roundRect(cx, cy, cw, ch, [cr])
       this.ctx.stroke()
     } else {
@@ -156,7 +162,7 @@ export class Window {
   }
   drawText(message, x, y, fontFamily, fontSize, color) {
     const [cx, cy] = this.transformCoords(x, y)
-    const [cs] = this.transformDims(fontSize)
+    const cs = this.transformFontSize(fontSize)
     this.ctx.fillStyle = color
     this.ctx.font = `${cs}px ${fontFamily}`
     this.ctx.textBaseline = 'top'
@@ -166,7 +172,7 @@ export class Window {
   }
   drawCenteredText(message, x, y, fontFamily, fontSize, color, options = {}) {
     const [cx, cy] = this.transformCoords(x, y)
-    const [cs] = this.transformDims(fontSize)
+    const cs = this.transformFontSize(fontSize)
     this.ctx.fillStyle = color
     this.ctx.textBaseline = 'middle'
     this.ctx.font = `${cs}px ${fontFamily}`
@@ -199,5 +205,10 @@ export class Window {
     const ys = this.canvas.height / global.canvas.targetHeight
     const s = Math.min(xs, ys)
     return [Math.ceil(w * s), Math.ceil(h * s)]
+  }
+  transformFontSize(s) {
+    const xs = this.canvas.width / global.canvas.targetWidth
+    const ys = this.canvas.height / global.canvas.targetHeight
+    return s * Math.min(xs, ys)
   }
 }

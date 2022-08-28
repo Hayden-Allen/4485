@@ -36,16 +36,18 @@ export class Window {
     this.canvas.addEventListener('keyup', (e) => {
       this.propagateEvent('onKeyUp', new KeyUpEvent(e))
     })
-    this.canvas.addEventListener('mousemove', (e) => {
+    this.canvas.addEventListener('pointermove', (e) => {
       const rect = this.canvas.getBoundingClientRect()
       const x = e.clientX - Math.floor(rect.x),
         y = e.clientY - Math.floor(rect.y)
       this.propagateEvent('onMouseMove', new MouseMoveEvent(e, x, y))
     })
-    this.canvas.addEventListener('mousedown', (e) => {
+    this.canvas.addEventListener('pointerdown', (e) => {
+      this.canvas.setPointerCapture(e.pointerId)
       this.propagateEvent('onMouseDown', new MouseDownEvent(e))
     })
-    this.canvas.addEventListener('mouseup', (e) => {
+    this.canvas.addEventListener('pointerup', (e) => {
+      this.canvas.releasePointerCapture(e.pointerId)
       this.propagateEvent('onMouseUp', new MouseUpEvent(e))
     })
     this.canvas.addEventListener('wheel', (e) => {

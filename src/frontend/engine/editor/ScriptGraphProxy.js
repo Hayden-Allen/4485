@@ -1,3 +1,5 @@
+import { Varying } from '%component/Varying.js'
+
 const HEIGHT_PADDING = 16
 export const PORT_COLOR = {
   int: {
@@ -44,10 +46,10 @@ export const PORT_COLOR = {
   },
 }
 export class ScriptGraphProxy {
-  constructor(window, node, x, y) {
+  constructor(window, node) {
     this.node = node
-    this.x = x
-    this.y = y
+    this.x = 0
+    this.y = 0
 
     this.font = 'sans-serif'
     this.nameFontSize = 32
@@ -102,11 +104,12 @@ export class ScriptGraphProxy {
     else this.h = this.nameHeight
 
     this.colors = [
-      { shadow: '#00000077', node: '#334155', outline: '#6b7280' },
-      { shadow: '#00000077', node: '#334155', outline: '#dc2626' },
+      { shadow: '#0007', node: '#334155', outline: '#6b7280' },
+      { shadow: '#0007', node: '#334155', outline: '#dc2626' },
     ]
-    this.outlineSize = [1, 3]
+    this.outlineSize = [2, 4]
     this.selected = false
+    this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.0 })
   }
   draw(window, zoom) {
     const tx = this.x,
@@ -132,6 +135,7 @@ export class ScriptGraphProxy {
       this.portRadius,
       this.colors[~~this.selected].node
     )
+    const lineWidth = this.outlineSize[~~this.selected] / Math.min(zoom, 1)
     // name underline
     if (this.maxPortCount)
       window.drawLine(
@@ -139,9 +143,10 @@ export class ScriptGraphProxy {
         ty + this.nameHeight,
         tx + this.w,
         ty + this.nameHeight,
-        '#6b7280'
+        '#6b7280',
+        { width: lineWidth }
       )
-    // outline
+    // node outline
     window.drawRoundRect(
       tx,
       ty,
@@ -151,7 +156,8 @@ export class ScriptGraphProxy {
       this.colors[~~this.selected].outline,
       {
         stroke: true,
-        width: this.outlineSize[~~this.selected],
+        width: lineWidth,
+        alpha: this.selected ? this.outlineAlpha.getValue() : 1,
       }
     )
     // name

@@ -7,6 +7,12 @@ export class Context {
     this.windows = []
 
     window.addEventListener('resize', () => this.propagateResizeEvent())
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    })
   }
   propagateResizeEvent() {
     this.windows.forEach((window) =>

@@ -18,8 +18,7 @@ export class ScriptGraphLayer extends Layer {
   onAttach() {
     // need this.window to be valid, so can't call in constructor
     this.graphvis = new ScriptGraphVisualizer(this.window, this.playerScript)
-    this.graphvis.arrangeX()
-    this.graphvis.arrangeY()
+    this.graphvis.arrange()
   }
   onMouseScroll() {
     this.redraw = true
@@ -42,11 +41,15 @@ export class ScriptGraphLayer extends Layer {
     }
     if (hit) {
       this.input.cursor = 'default'
-      this.capturedRightClick = e.button === 2
+      if (e.button === 2) {
+        this.input.canDrag = false
+        this.capturedRightClick = true
+      }
     }
     return hit
   }
   onMouseUp(e) {
+    this.input.canDrag = true
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
     if (e.button === 2) this.capturedRightClick = false
@@ -55,24 +58,39 @@ export class ScriptGraphLayer extends Layer {
   onMouseMove() {
     this.redraw = this.input.rightMousePressed && !this.capturedRightClick
 
+    // move selected node
     if (this.selected && this.input.leftMousePressed) {
-      const [wmx, wmy] = this.transformCoordsScreen2World(
-        this.input.mouseX,
-        this.input.mouseY
-      )
-      this.selected.x = this.input.mouseX / this.controls.zoom
-      this.selected.y = this.input.mouseY / this.controls.zoom
       this.redraw = true
+      this.controls.setTransform(this.window.ctx)
+      const t = this.window.ctx.getTransform()
+      // transform mouse screen->world
+      const sx = (this.input.mouseX - t.e) / t.a
+      const sy = (this.input.mouseY - t.f) / t.d
+      // account for stretching
+      let [wx, wy] = this.window.inverseTransformCoords(sx, sy)
+      // move by center
+      this.selected.x = wx - this.selected.w / 2
+      this.selected.y = wy - this.selected.h / 2
     }
 
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
-    return this.capturedRightClick || hit
+    return this.capturedRightClick && hit
+  }
+  onKeyDown(e) {
+    if (!e.repeat && e.ctrlPressed && e.key === 's') {
+      this.graphvis.arrange()
+      this.redraw = true
+    }
   }
   onResize() {
     this.redraw = true
   }
   onRender(e) {
+    if (this.selected) {
+      this.redraw = true
+    }
+
     /**
      * @HATODO sometimes the draw doesn't show up, even if this check passes
      */
@@ -82,11 +100,7 @@ export class ScriptGraphLayer extends Layer {
     e.window.ctx.resetTransform()
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
-    this.graphvis.draw(e.window, this.zoom)
-
-    e.window.ctx.resetTransform()
-    this.window.ctx.fillStyle = '#0f0'
-    this.window.ctx.fillRect(this.input.mouseX, this.input.mouseY, 5, 5)
+    this.graphvis.draw(e.window, this.controls.zoom)
   }
   checkIntersection() {
     const [mx, my] = [this.input.mouseX, this.input.mouseY]

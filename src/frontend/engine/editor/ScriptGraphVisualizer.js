@@ -8,9 +8,13 @@ export class ScriptGraphVisualizer {
     this.columns = []
     // map ScriptNode.id to its ScriptGraphProxy
     this.proxies = new Map()
-    this.graph.nodes.forEach((node) =>
-      this.proxies.set(node.id, new ScriptGraphProxy(window, node, 0, 0))
-    )
+    // mantains draw order as nodes are selected
+    this.drawStack = []
+    this.graph.nodes.forEach((node) => {
+      const proxy = new ScriptGraphProxy(window, node)
+      this.proxies.set(node.id, proxy)
+      this.drawStack.push(proxy)
+    })
     this.activationEdgeColor = '#facc15'
     this.edgeWidth = 2
   }
@@ -57,8 +61,16 @@ export class ScriptGraphVisualizer {
         )
       })
     })
+    // move selected node if necessary
+    let selectedIndex = -1
+    for (var i = 0; i < this.drawStack.length - 1; i++)
+      if (this.drawStack[i].selected) selectedIndex = i
+    if (selectedIndex !== -1) {
+      const [selected] = this.drawStack.splice(selectedIndex, 1)
+      this.drawStack.push(selected)
+    }
     // draw nodes
-    this.proxies.forEach((proxy) => proxy.draw(window, zoom))
+    this.drawStack.forEach((proxy) => proxy.draw(window, zoom))
   }
   arrange() {
     let columns = []

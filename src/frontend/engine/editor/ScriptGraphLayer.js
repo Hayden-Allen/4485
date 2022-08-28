@@ -41,11 +41,15 @@ export class ScriptGraphLayer extends Layer {
     }
     if (hit) {
       this.input.cursor = 'default'
-      this.capturedRightClick = e.button === 2
+      if (e.button === 2) {
+        this.input.canDrag = false
+        this.capturedRightClick = true
+      }
     }
     return hit
   }
   onMouseUp(e) {
+    this.input.canDrag = true
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
     if (e.button === 2) this.capturedRightClick = false
@@ -54,6 +58,7 @@ export class ScriptGraphLayer extends Layer {
   onMouseMove() {
     this.redraw = this.input.rightMousePressed && !this.capturedRightClick
 
+    // move selected node
     if (this.selected && this.input.leftMousePressed) {
       this.redraw = true
       this.controls.setTransform(this.window.ctx)
@@ -82,16 +87,20 @@ export class ScriptGraphLayer extends Layer {
     this.redraw = true
   }
   onRender(e) {
+    if (this.selected) {
+      this.redraw = true
+    }
+
     /**
      * @HATODO sometimes the draw doesn't show up, even if this check passes
      */
-    // if (!this.redraw) return
-    // this.redraw = false
+    if (!this.redraw) return
+    this.redraw = false
 
     e.window.ctx.resetTransform()
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
-    this.graphvis.draw(e.window, this.zoom)
+    this.graphvis.draw(e.window, this.controls.zoom)
   }
   checkIntersection() {
     const [mx, my] = [this.input.mouseX, this.input.mouseY]

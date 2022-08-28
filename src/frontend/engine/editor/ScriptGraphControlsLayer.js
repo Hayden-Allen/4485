@@ -14,18 +14,12 @@ export class ScriptGraphControlsLayer extends Layer {
     this.zoom -= e.y * this.zoomSpeed * (this.zoom / this.maxZoom)
     this.zoom = global.clamp(this.zoom, this.minZoom, this.maxZoom)
   }
-  onMouseMove() {
-    if (this.input.rightMousePressed) {
-      this.input.dragOffsetX /= Math.max(this.zoom, 1)
-      this.input.dragOffsetY /= Math.max(this.zoom, 1)
-    }
-  }
   computeTranslation() {
-    let dx = this.input.offsetX * this.zoom + this.window.canvas.width / 2
-    let dy = this.input.offsetY * this.zoom + this.window.canvas.height / 2
+    let dx = this.input.offsetX + this.window.canvas.width / 2
+    let dy = this.input.offsetY + this.window.canvas.height / 2
     if (this.input.rightMousePressed) {
-      dx += this.input.dragOffsetX * this.zoom
-      dy += this.input.dragOffsetY * this.zoom
+      dx += this.input.dragOffsetX
+      dy += this.input.dragOffsetY
     }
     return { dx, dy }
   }

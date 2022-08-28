@@ -25,6 +25,11 @@ export class Window {
     this.canvas = canvas
     this.ctx = this.canvas.getContext('2d')
 
+    this.canvas.addEventListener('click', () => {
+      this.canvas.focus({
+        focusVisible: true,
+      })
+    })
     this.canvas.addEventListener('keydown', (e) => {
       this.propagateEvent('onKeyDown', new KeyDownEvent(e))
     })
@@ -116,18 +121,25 @@ export class Window {
     h,
     r,
     color,
-    { width = 1, shadowBlur = 0, shadowOffsetY = 0, stroke = false } = {}
+    {
+      width = 1,
+      shadowBlur = 0,
+      shadowOffsetY = 0,
+      stroke = false,
+      alpha = 1,
+    } = {}
   ) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cw, ch] = this.transformDims(w, h)
     const [cr] = this.transformDims(r)
     this.ctx.beginPath()
+    this.ctx.globalAlpha = alpha
     if (shadowBlur) {
       const [csb, cso] = this.transformDims(shadowBlur, shadowOffsetY)
       this.ctx.shadowBlur = csb
       this.ctx.shadowOffsetY = cso
       this.ctx.shadowColor = color
-      this.ctx.fillColor = color
+      this.ctx.fillStyle = color
       this.ctx.roundRect(cx, cy, cw, ch, [cr])
       this.ctx.fill()
       this.ctx.shadowBlur = 0
@@ -144,6 +156,7 @@ export class Window {
       this.ctx.fill()
     }
     this.ctx.closePath()
+    this.ctx.globalAlpha = 1
   }
   drawArc(x, y, r, startAngle, endAngle, color, options = {}) {
     const [cx, cy] = this.transformCoords(x, y)

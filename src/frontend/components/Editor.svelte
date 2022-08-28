@@ -271,6 +271,7 @@
         targetAspectRatio={global.canvas.targetWidth /
           global.canvas.targetHeight}
         bind:canvas={gameCanvas}
+        onResize={() => context.propagateResizeEvent()}
       />
     </div>
     <Splitter
@@ -283,7 +284,10 @@
       class="grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
       style={`flex-basis: ${topRightBasis}%;`}
     >
-      <Viewport bind:canvas={scriptCanvas} />
+      <Viewport
+        bind:canvas={scriptCanvas}
+        onResize={() => context.propagateResizeEvent()}
+      />
     </div>
   </div>
   <Splitter

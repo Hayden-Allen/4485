@@ -2,8 +2,7 @@
   export let split = undefined,
     minSplit = 0,
     maxSplit = 1,
-    isVertical = false,
-    context = undefined
+    isVertical = false
   let mouseDown = false
 
   function computeSplit(e) {
@@ -44,6 +43,5 @@
       minSplit,
       Math.min(mouseDown ? computeSplit(e) : split, maxSplit)
     )
-    if (mouseDown) context.propagateResizeEvent()
   }}
 />

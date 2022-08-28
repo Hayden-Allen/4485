@@ -1,6 +1,8 @@
 <script>
   export let canvas = undefined
   export let targetAspectRatio = undefined
+  export let onResize = undefined
+
   let containerWidth = undefined,
     containerHeight = undefined
 
@@ -34,6 +36,9 @@
         canvas.style.width = `${width}px`
         canvas.style.height = `${height}px`
       }
+      if (onResize) {
+        onResize()
+      }
     }
   }
 </script>
@@ -43,5 +48,9 @@
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
 >
-  <canvas bind:this={canvas} tabindex="1" />
+  <canvas
+    class="focus:outline-0 border-2 border-transparent focus:border-slate-500"
+    bind:this={canvas}
+    tabindex={0}
+  />
 </div>

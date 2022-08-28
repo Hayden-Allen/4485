@@ -8,8 +8,10 @@ export class Context {
 
     window.addEventListener('resize', () => this.propagateResizeEvent())
     window.addEventListener('keydown', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
+      if (e.ctrlKey && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        e.stopPropagation()
+      }
     })
   }
   propagateResizeEvent() {

@@ -1,51 +1,8 @@
 import { Varying } from '%component/Varying.js'
+import { PORT_COLOR } from './ScriptGraphVisualizer.js'
 
 const HEIGHT_PADDING = 16
-export const PORT_COLOR = {
-  int: {
-    name: '#f59e0b',
-    dot: '#d97706',
-    edge: '#b45309',
-  },
-  float: {
-    name: '#f59e0b',
-    dot: '#d97706',
-    edge: '#b45309',
-  },
-  number: {
-    name: '#f59e0b',
-    dot: '#d97706',
-    edge: '#b45309',
-  },
-
-  object: {
-    name: '#22c55e',
-    dot: '#16a34a',
-    edge: '#15803d',
-  },
-  bool: {
-    name: '#0ea5e9',
-    dot: '#0284c7',
-    edge: '#0369a1',
-  },
-  string: {
-    name: '#f43f5e',
-    dot: '#e11d48',
-    edge: '#be123c',
-  },
-
-  array: {
-    name: '#e5e7eb',
-    dot: '#d1d5db',
-    edge: '#9ca3af',
-  },
-  any: {
-    name: '#e5e7eb',
-    dot: '#d1d5db',
-    edge: '#9ca3af',
-  },
-}
-export class ScriptGraphProxy {
+export class ScriptGraphNodeProxy {
   constructor(window, node) {
     this.node = node
     this.x = 0

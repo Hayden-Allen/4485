@@ -1,67 +1,94 @@
-import { ScriptGraphProxy, PORT_COLOR } from './ScriptGraphProxy.js'
+import { ScriptGraphNodeProxy } from './ScriptGraphNodeProxy.js'
+import { ScriptGraphEdgeProxy } from './ScriptGraphEdgeProxy.js'
 
 const PADDING_X = 100,
   PADDING_Y = 50
+export const PORT_COLOR = {
+  int: {
+    name: '#f59e0b',
+    dot: '#d97706',
+    edge: '#b45309',
+  },
+  float: {
+    name: '#f59e0b',
+    dot: '#d97706',
+    edge: '#b45309',
+  },
+  number: {
+    name: '#f59e0b',
+    dot: '#d97706',
+    edge: '#b45309',
+  },
+
+  object: {
+    name: '#22c55e',
+    dot: '#16a34a',
+    edge: '#15803d',
+  },
+  bool: {
+    name: '#0ea5e9',
+    dot: '#0284c7',
+    edge: '#0369a1',
+  },
+  string: {
+    name: '#f43f5e',
+    dot: '#e11d48',
+    edge: '#be123c',
+  },
+
+  array: {
+    name: '#e5e7eb',
+    dot: '#d1d5db',
+    edge: '#9ca3af',
+  },
+  any: {
+    name: '#e5e7eb',
+    dot: '#d1d5db',
+    edge: '#9ca3af',
+  },
+}
 export class ScriptGraphVisualizer {
   constructor(window, graph) {
     this.graph = graph
     this.columns = []
     // map ScriptNode.id to its ScriptGraphProxy
     this.proxies = new Map()
+    this.edgeProxies = []
     // mantains draw order as nodes are selected
     this.drawStack = []
+
+    // create all node proxies
     this.graph.nodes.forEach((node) => {
-      const proxy = new ScriptGraphProxy(window, node)
+      const proxy = new ScriptGraphNodeProxy(window, node)
       this.proxies.set(node.id, proxy)
       this.drawStack.push(proxy)
     })
-    this.activationEdgeColor = '#facc15'
-    this.edgeWidth = 2
-  }
-  draw(window, zoom) {
-    // draw edges
+    // create all edge proxies using node proxies
     this.graph.nodes.forEach((node) => {
-      const outboundEdges = this.graph.getEdges(node).out
-      outboundEdges.forEach((edge) => {
-        const startCoords = this.proxies
-          .get(edge.outputNode.id)
-          .getOutPortCoords(edge.outputIndex)
-        const endCoords = this.proxies
-          .get(edge.inputNode.id)
-          .getInPortCoords(edge.inputIndex)
-
-        let color = undefined
-        // if the current edge only carries activation
-        if (
-          edge.inputIndex === -1 ||
-          !edge.outputNode.data.outputPorts.length
-        ) {
-          color = this.activationEdgeColor
-        } else {
-          // get scaled coordinates
-          const [sx, sy] = window.transformCoords(startCoords.x, startCoords.y)
-          const [ex, ey] = window.transformCoords(endCoords.x, endCoords.y)
-          // draw the line using a gradient between the two port's colors
-          color = window.ctx.createLinearGradient(sx, sy, ex, ey)
-          const outType =
-            edge.outputNode.data.outputPorts[edge.outputIndex].typename
-          const inType =
-            edge.inputNode.data.inputPorts[edge.inputIndex].typename
-          color.addColorStop(0, PORT_COLOR[outType].edge)
-          color.addColorStop(1, PORT_COLOR[inType].edge)
-        }
-
-        window.drawLine(
-          startCoords.x,
-          startCoords.y,
-          endCoords.x,
-          endCoords.y,
-          color,
-          { width: this.edgeWidth }
+      this.graph.edges.get(node.id).out.forEach((edge) => {
+        const proxy = new ScriptGraphEdgeProxy(
+          this.proxies.get(edge.outputNode.id),
+          edge.outputIndex,
+          this.proxies.get(edge.inputNode.id),
+          edge.inputIndex
         )
+        this.edgeProxies.push(proxy)
       })
     })
-    // move selected node if necessary
+  }
+  removeEdge(index) {
+    const [edge] = this.edgeProxies.splice(index, 1)
+    this.graph.removeEdge(
+      edge.startProxy.node,
+      edge.startPort,
+      edge.endProxy.node,
+      edge.endPort
+    )
+  }
+  draw(window, zoom) {
+    this.edgeProxies.forEach((proxy) => proxy.draw(window))
+
+    // move selected node to top of stack if necessary
     let selectedIndex = -1
     for (var i = 0; i < this.drawStack.length - 1; i++)
       if (this.drawStack[i].selected) selectedIndex = i
@@ -69,7 +96,6 @@ export class ScriptGraphVisualizer {
       const [selected] = this.drawStack.splice(selectedIndex, 1)
       this.drawStack.push(selected)
     }
-    // draw nodes
     this.drawStack.forEach((proxy) => proxy.draw(window, zoom))
   }
   arrange() {

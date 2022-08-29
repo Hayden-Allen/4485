@@ -15,8 +15,8 @@ export class ScriptGraphControlsLayer extends Layer {
     this.zoom = global.clamp(this.zoom, this.minZoom, this.maxZoom)
   }
   computeTranslation() {
-    let dx = this.input.offsetX + this.window.canvas.width / 2
-    let dy = this.input.offsetY + this.window.canvas.height / 2
+    let dx = this.input.offsetX
+    let dy = this.input.offsetY
     if (this.input.rightMousePressed) {
       dx += this.input.dragOffsetX
       dy += this.input.dragOffsetY

@@ -25,6 +25,7 @@ export class Window {
     this.canvas = canvas
     this.ctx = this.canvas.getContext('2d')
 
+    // necessary for key events to get sent to the canvas
     this.canvas.addEventListener('click', () => {
       this.canvas.focus({
         focusVisible: true,

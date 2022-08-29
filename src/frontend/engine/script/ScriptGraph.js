@@ -60,6 +60,16 @@ export class ScriptGraph extends Component {
     this.edges.get(outputNode.id).out.push(edge)
     this.edges.get(inputNode.id).in.push(edge)
   }
+  removeEdge(outputNode, outputIndex, inputNode, inputIndex) {
+    this.getEdges(inputNode).in = this.getEdges(inputNode).in.filter(
+      (edge) =>
+        !(edge.outputIndex === outputIndex && edge.inputIndex === inputIndex)
+    )
+    this.getEdges(outputNode).out = this.getEdges(outputNode).out.filter(
+      (edge) =>
+        !(edge.outputIndex === outputIndex && edge.inputIndex === inputIndex)
+    )
+  }
   getEdges(node) {
     return this.edges.get(node.id)
   }

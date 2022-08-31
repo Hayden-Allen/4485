@@ -1,21 +1,24 @@
 import { PORT_COLOR } from './ScriptGraphVisualizer.js'
+import { UIElement } from './UIElement.js'
 
-export class ScriptGraphEdgeProxy {
+const COLORS = { activationEdge: '#facc15', hovered: '#e2e8f0' }
+const LINE_WIDTH = [2, 5]
+export class ScriptGraphEdgeProxy extends UIElement {
   constructor(startProxy, startPort, endProxy, endPort) {
+    super(LINE_WIDTH, COLORS)
     this.startProxy = startProxy
     this.startPort = startPort
     this.endProxy = endProxy
     this.endPort = endPort
-    this.activationEdgeColor = '#facc15'
-    this.edgeWidth = 2
   }
-  draw(window) {
+  draw(visualizer, window) {
     const startCoords = this.getStartCoords()
     const endCoords = this.getEndCoords()
     let color = undefined
 
+    // generate color gradient based on port types
     if (this.endPort === -1 || !this.startProxy.node.data.outputPorts.length) {
-      color = this.activationEdgeColor
+      color = this.colors.activationEdge
     } else {
       // get scaled coordinates
       const [sx, sy] = window.transformCoords(startCoords.x, startCoords.y)
@@ -29,13 +32,27 @@ export class ScriptGraphEdgeProxy {
       color.addColorStop(1, PORT_COLOR[endType].edge)
     }
 
+    const selected = this.hovered || this.selected
+    // draw outline if hovered
+    if (selected) {
+      window.drawTransparentLine(
+        startCoords.x,
+        startCoords.y,
+        endCoords.x,
+        endCoords.y,
+        this.colors.hovered,
+        this.lineWidth[~~selected] * 2,
+        visualizer.outlineAlpha.getValue()
+      )
+    }
+    // draw edge
     window.drawLine(
       startCoords.x,
       startCoords.y,
       endCoords.x,
       endCoords.y,
       color,
-      { width: this.edgeWidth }
+      this.lineWidth[~~selected]
     )
   }
   getStartCoords() {

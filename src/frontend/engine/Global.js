@@ -1,8 +1,6 @@
-import { InputCache } from '%window/InputCache.js'
 import { VaryingController } from '%system/VaryingController.js'
 
 export var global = {
-  input: undefined,
   varyingController: undefined,
   fps: 60,
 
@@ -17,7 +15,6 @@ export var global = {
   },
 
   init: (context) => {
-    global.input = new InputCache()
     global.varyingController = new VaryingController()
     context.addSystem(global.varyingController)
   },

@@ -1,9 +1,15 @@
-import { Varying } from '%component/Varying.js'
 import { PORT_COLOR } from './ScriptGraphVisualizer.js'
+import { UIElement } from './UIElement.js'
 
 const HEIGHT_PADDING = 16
-export class ScriptGraphNodeProxy {
+const LINE_WIDTH = [2, 4]
+const COLORS = [
+  { shadow: '#0007', node: '#334155', outline: '#6b7280' },
+  { shadow: '#0007', node: '#334155', outline: '#e2e8f0' },
+]
+export class ScriptGraphNodeProxy extends UIElement {
   constructor(window, node) {
+    super(LINE_WIDTH, COLORS)
     this.node = node
     this.x = 0
     this.y = 0
@@ -59,30 +65,21 @@ export class ScriptGraphNodeProxy {
       this.h =
         this.nameHeight + this.portHeight * this.maxPortCount + HEIGHT_PADDING
     else this.h = this.nameHeight
-
-    this.colors = [
-      { shadow: '#0007', node: '#334155', outline: '#6b7280' },
-      { shadow: '#0007', node: '#334155', outline: '#dc2626' },
-    ]
-    this.outlineSize = [2, 4]
-    this.selected = false
-    this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.0 })
   }
-  draw(window, zoom) {
+  draw(visualizer, window, zoom) {
     const tx = this.x,
       ty = this.y
+    const selected = ~~(this.selected || this.hovered)
     // node
-    window.drawRoundRect(
+    window.drawRoundRectShadow(
       tx,
       ty,
       this.w,
       this.h,
       this.portRadius,
-      this.colors[~~this.selected].shadow,
-      {
-        shadowBlur: 6 * zoom,
-        shadowOffsetY: 4 * zoom,
-      }
+      this.colors[selected].shadow,
+      6 * zoom,
+      4 * zoom
     )
     window.drawRoundRect(
       tx,
@@ -90,9 +87,9 @@ export class ScriptGraphNodeProxy {
       this.w,
       this.h,
       this.portRadius,
-      this.colors[~~this.selected].node
+      this.colors[selected].node
     )
-    const lineWidth = this.outlineSize[~~this.selected] / Math.min(zoom, 1)
+    const lineWidth = this.lineWidth[selected] / Math.min(zoom, 1)
     // name underline
     if (this.maxPortCount)
       window.drawLine(
@@ -101,21 +98,18 @@ export class ScriptGraphNodeProxy {
         tx + this.w,
         ty + this.nameHeight,
         '#6b7280',
-        { width: lineWidth }
+        this.lineWidth[0]
       )
     // node outline
-    window.drawRoundRect(
+    window.strokeRoundRect(
       tx,
       ty,
       this.w,
       this.h,
       this.portRadius,
-      this.colors[~~this.selected].outline,
-      {
-        stroke: true,
-        width: lineWidth,
-        alpha: this.selected ? this.outlineAlpha.getValue() : 1,
-      }
+      this.colors[selected].outline,
+      lineWidth,
+      selected ? visualizer.outlineAlpha.getValue() : 1
     )
     // name
     window.drawCenteredText(

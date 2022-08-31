@@ -9,11 +9,12 @@ import {
   RenderEvent,
 } from './Event.js'
 import { global } from '%engine/Global.js'
+import { InputCache } from './InputCache.js'
 
 export class Window {
   constructor(canvas, clearColor) {
     this.layers = []
-
+    this.inputCache = undefined
     this.setCanvas(canvas)
     this.clearColor = clearColor || undefined
   }
@@ -23,7 +24,9 @@ export class Window {
     }
 
     this.canvas = canvas
+    this.inputCache = new InputCache(this.canvas)
     this.ctx = this.canvas.getContext('2d')
+    this.ctx.lineCap = 'round'
 
     // necessary for key events to get sent to the canvas
     this.canvas.addEventListener('click', () => {
@@ -78,11 +81,6 @@ export class Window {
     // draw everything
     this.propagateEvent('onRender', new RenderEvent(this))
   }
-  rotate(centerX, centerY, theta) {
-    this.ctx.translate(centerX, centerY)
-    this.ctx.rotate(theta)
-    this.ctx.translate(-centerX, -centerY)
-  }
   clear() {
     const w = this.canvas.width
     const h = this.canvas.height
@@ -93,138 +91,140 @@ export class Window {
       this.ctx.clearRect(0, 0, w, h)
     }
   }
-  drawLine(x0, y0, x1, y1, color, { width = 1 } = {}) {
+  drawLine(x0, y0, x1, y1, color, width) {
     const [cx0, cy0] = this.transformCoords(x0, y0)
     const [cx1, cy1] = this.transformCoords(x1, y1)
     this.ctx.strokeStyle = color
     this.ctx.lineWidth = width
-    this.ctx.lineCap = 'round'
     this.ctx.beginPath()
     this.ctx.moveTo(cx0, cy0)
     this.ctx.lineTo(cx1, cy1)
     this.ctx.stroke()
     this.ctx.closePath()
   }
-  drawRect(x, y, w, h, color, { alpha = 1, stroke = false } = {}) {
+  drawTransparentLine(x0, y0, x1, y1, color, width, alpha) {
+    const prevAlpha = this.ctx.globalAlpha
+    this.ctx.globalAlpha = alpha
+    this.drawLine(x0, y0, x1, y1, color, width)
+    this.ctx.globalAlpha = prevAlpha
+  }
+  drawRect(x, y, w, h, color) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cw, ch] = this.transformDims(w, h)
-    this.ctx.globalAlpha = alpha
-    if (stroke) {
-      this.ctx.strokeStyle = color
-      this.ctx.strokeRect(cx, cy, cw, ch)
-    } else {
-      this.ctx.fillStyle = color
-      this.ctx.fillRect(cx, cy, cw, ch)
-    }
+    this.ctx.fillStyle = color
+    this.ctx.fillRect(cx, cy, cw, ch)
   }
-  drawRoundRect(
-    x,
-    y,
-    w,
-    h,
-    r,
-    color,
-    {
-      width = 1,
-      shadowBlur = 0,
-      shadowOffsetY = 0,
-      stroke = false,
-      alpha = 1,
-    } = {}
-  ) {
+  drawTransparentRect(x, y, w, h, color, alpha) {
+    const prevAlpha = this.ctx.globalAlpha
+    this.ctx.globalAlpha = alpha
+    this.drawRect(x, y, w, h, color)
+    this.ctx.globalAlpha = prevAlpha
+  }
+  strokeRoundRect(x, y, w, h, r, color, width, alpha) {
+    const prevAlpha = this.ctx.globalAlpha
+
+    const [cx, cy] = this.transformCoords(x, y)
+    const [cw, ch] = this.transformDims(w, h)
+    const [cr] = this.transformDims(r)
+    this.ctx.strokeStyle = color
+    this.ctx.lineWidth = width
+    this.ctx.globalAlpha = alpha
+    this.ctx.beginPath()
+    this.ctx.roundRect(cx, cy, cw, ch, [cr])
+    this.ctx.stroke()
+
+    this.ctx.globalAlpha = prevAlpha
+  }
+  drawRoundRect(x, y, w, h, r, color) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cw, ch] = this.transformDims(w, h)
     const [cr] = this.transformDims(r)
     this.ctx.beginPath()
-    this.ctx.globalAlpha = alpha
-    if (shadowBlur) {
-      const [csb, cso] = this.transformDims(shadowBlur, shadowOffsetY)
-      this.ctx.shadowBlur = csb
-      this.ctx.shadowOffsetY = cso
-      this.ctx.shadowColor = color
-      this.ctx.fillStyle = color
-      this.ctx.roundRect(cx, cy, cw, ch, [cr])
-      this.ctx.fill()
-      this.ctx.shadowBlur = 0
-      this.ctx.shadowOffsetY = 0
-      this.ctx.shadowColor = 'transparent'
-    } else if (stroke) {
-      this.ctx.strokeStyle = color
-      this.ctx.lineWidth = width
-      this.ctx.roundRect(cx, cy, cw, ch, [cr])
-      this.ctx.stroke()
-    } else {
-      this.ctx.fillStyle = color
-      this.ctx.roundRect(cx, cy, cw, ch, [cr])
-      this.ctx.fill()
-    }
+    this.ctx.fillStyle = color
+    this.ctx.roundRect(cx, cy, cw, ch, [cr])
+    this.ctx.fill()
     this.ctx.closePath()
-    this.ctx.globalAlpha = 1
   }
-  drawArc(x, y, r, startAngle, endAngle, color, options = {}) {
+  drawRoundRectShadow(x, y, w, h, r, color, blur, offsetY) {
+    const [csb, cso] = this.transformDims(blur, offsetY)
+    this.ctx.shadowBlur = csb
+    this.ctx.shadowOffsetY = cso
+    this.ctx.shadowColor = color
+    this.drawRoundRect(x, y, w, h, r, color)
+    this.ctx.shadowBlur = 0
+    this.ctx.shadowOffsetY = 0
+    this.ctx.shadowColor = 'transparent'
+  }
+  strokeArc(x, y, r, startAngle, endAngle, color) {
     const [cx, cy] = this.transformCoords(x, y)
     const [cr] = this.transformDims(r)
+    this.ctx.strokeStyle = color
     this.ctx.beginPath()
-    if (options.stroke) {
-      this.ctx.strokeStyle = color
-      this.ctx.arc(cx, cy, cr, startAngle, endAngle)
-      this.ctx.stroke()
-    } else {
-      this.ctx.fillStyle = color
-      this.ctx.arc(cx, cy, cr, startAngle, endAngle)
-      this.ctx.fill()
-    }
+    this.ctx.arc(cx, cy, cr, startAngle, endAngle)
+    this.ctx.stroke()
+    this.ctx.closePath()
+  }
+  drawArc(x, y, r, startAngle, endAngle, color) {
+    const [cx, cy] = this.transformCoords(x, y)
+    const [cr] = this.transformDims(r)
+    this.ctx.fillStyle = color
+    this.ctx.beginPath()
+    this.ctx.arc(cx, cy, cr, startAngle, endAngle)
+    this.ctx.fill()
     this.ctx.closePath()
   }
   drawText(message, x, y, fontFamily, fontSize, color) {
-    const [cx, cy] = this.transformCoords(x, y)
-    const cs = this.transformFontSize(fontSize)
+    this.ctx.font = `${this.transformFontSize(fontSize)}px ${fontFamily}`
     this.ctx.fillStyle = color
-    this.ctx.font = `${cs}px ${fontFamily}`
     this.ctx.textBaseline = 'top'
+
+    const [cx, cy] = this.transformCoords(x, y)
     this.ctx.fillText(message, cx, cy)
-    // reset to default
-    this.ctx.textBaseline = 'alphabetic'
+  }
+  rotate(cx, cy, theta) {
+    this.ctx.translate(cx, cy)
+    this.ctx.rotate(theta)
+    this.ctx.translate(-cx, -cy)
   }
   drawCenteredText(message, x, y, fontFamily, fontSize, color, options = {}) {
-    const [cx, cy] = this.transformCoords(x, y)
-    const cs = this.transformFontSize(fontSize)
+    this.ctx.font = `${this.transformFontSize(fontSize)}px ${fontFamily}`
     this.ctx.fillStyle = color
     this.ctx.textBaseline = 'middle'
-    this.ctx.font = `${cs}px ${fontFamily}`
 
+    const [cx, cy] = this.transformCoords(x, y)
     if (options.theta) this.rotate(cx, cy, options.theta)
     this.ctx.fillText(message, cx - this.ctx.measureText(message).width / 2, cy)
     if (options.theta) this.rotate(cx, cy, -options.theta)
-
-    // reset to default
-    this.ctx.textBaseline = 'alphabetic'
   }
   textMetrics(string, fontFamily, fontSize) {
     this.ctx.font = `${fontSize}px ${fontFamily}`
     return this.ctx.measureText(string)
   }
-  transformCoords(x, y) {
+  getScalingFactor() {
     const xs = this.canvas.width / global.canvas.targetWidth
     const ys = this.canvas.height / global.canvas.targetHeight
-    const s = Math.min(xs, ys)
+    return Math.min(xs, ys)
+  }
+  // world->window
+  // this.ctx.transform is applied automatically during rendering, which converts window->screen
+  transformCoords(x, y) {
+    const s = this.getScalingFactor()
     return [Math.floor(x * s), Math.floor(y * s)]
   }
+  // screen->world
   inverseTransformCoords(x, y) {
-    const xs = this.canvas.width / global.canvas.targetWidth
-    const ys = this.canvas.height / global.canvas.targetHeight
-    const s = Math.min(xs, ys)
-    return [Math.floor(x / s), Math.floor(y / s)]
+    const t = this.ctx.getTransform()
+    const screenX = (x - t.e) / t.a
+    const screenY = (y - t.f) / t.d
+    const s = this.getScalingFactor()
+    return [Math.floor(screenX / s), Math.floor(screenY / s)]
   }
   transformDims(w, h) {
-    const xs = this.canvas.width / global.canvas.targetWidth
-    const ys = this.canvas.height / global.canvas.targetHeight
-    const s = Math.min(xs, ys)
+    const s = this.getScalingFactor()
     return [Math.ceil(w * s), Math.ceil(h * s)]
   }
-  transformFontSize(s) {
-    const xs = this.canvas.width / global.canvas.targetWidth
-    const ys = this.canvas.height / global.canvas.targetHeight
-    return s * Math.min(xs, ys)
+  transformFontSize(size) {
+    const s = this.getScalingFactor()
+    return s * size
   }
 }

@@ -66,18 +66,22 @@ export class ScriptNode extends Component {
     }
     this.graph.addEdge(this, outputIndex, inputNode, inputIndex)
   }
-  run(inputs, entity) {
+  run(inputs, entity, inputCache) {
     if (!this.active) return
 
     // console.log(inputs)
     // console.log(this.data.inputTypes.types)
     if (!validateScriptDataTypes(inputs, this.inputTypes.types)) {
-      this.logError('Invalid input')
+      this.graph.pushError(`Invalid input to '${this.debugName}'`)
       return
     }
 
     const results =
-      this.data.fn(inputs, { entity, internal: this.internalValues }) || []
+      this.data.fn(inputs, {
+        entity,
+        internal: this.internalValues,
+        input: inputCache,
+      }) || []
     this.outputs = results.map((result) => result.value)
     // propagate activation
     let outboundEdges = this.graph.edges.get(this.id).out

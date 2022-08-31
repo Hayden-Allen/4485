@@ -1,5 +1,6 @@
 import { ScriptGraphNodeProxy } from './ScriptGraphNodeProxy.js'
 import { ScriptGraphEdgeProxy } from './ScriptGraphEdgeProxy.js'
+import { Varying } from '%component/Varying.js'
 
 const PADDING_X = 100,
   PADDING_Y = 50
@@ -75,6 +76,8 @@ export class ScriptGraphVisualizer {
         this.edgeProxies.push(proxy)
       })
     })
+    this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.5 })
+    this.outlineColor = '#fff'
   }
   removeEdge(index) {
     const [edge] = this.edgeProxies.splice(index, 1)
@@ -86,7 +89,7 @@ export class ScriptGraphVisualizer {
     )
   }
   draw(window, zoom) {
-    this.edgeProxies.forEach((proxy) => proxy.draw(window))
+    this.edgeProxies.forEach((proxy) => proxy.draw(this, window))
 
     // move selected node to top of stack if necessary
     let selectedIndex = -1
@@ -96,7 +99,7 @@ export class ScriptGraphVisualizer {
       const [selected] = this.drawStack.splice(selectedIndex, 1)
       this.drawStack.push(selected)
     }
-    this.drawStack.forEach((proxy) => proxy.draw(window, zoom))
+    this.drawStack.forEach((proxy) => proxy.draw(this, window, zoom))
   }
   arrange() {
     let columns = []

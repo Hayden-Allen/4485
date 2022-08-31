@@ -16,8 +16,9 @@ class ScriptNodeEdgeList {
   }
 }
 export class ScriptGraph extends Component {
-  constructor(debugName) {
+  constructor(debugName, inputCache, logError, clearErrors) {
     super(debugName)
+    this.inputCache = inputCache
     // map ScriptNode.id to ScriptNode
     this.nodes = new Map()
     // map ScriptNode.id to ScriptNodeEdgeList
@@ -25,6 +26,14 @@ export class ScriptGraph extends Component {
     // nodes with no inputs
     this.startNodes = []
     this.cachedCompile = undefined
+    this.logError = logError
+    this.clearErrors = clearErrors
+    this.canErr = true
+  }
+  pushError(string) {
+    if (this.canErr) {
+      this.logError(string)
+    }
   }
   addNode(node) {
     if (this.nodes.has(node.id)) {
@@ -74,6 +83,8 @@ export class ScriptGraph extends Component {
     return this.edges.get(node.id)
   }
   compile() {
+    this.clearErrors()
+    this.canErr = true
     // identify nodes to start from
     this.startNodes = []
     this.nodes.forEach((node) => {
@@ -139,11 +150,13 @@ export class ScriptGraph extends Component {
         })
       }
       // run current node with appropriate inputs; this also propagates activation to connected nodes
-      node.run(inputs, entity)
+      node.run(inputs, entity, this.inputCache)
 
       // this is a terminating node, return its output
       if (!edges.out.length) outputs.set(node.id, node.outputs)
     })
+
+    this.canErr = false
     return outputs
   }
 }

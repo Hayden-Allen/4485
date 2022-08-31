@@ -28,30 +28,37 @@ export class ScriptGraphLayer extends Layer {
     if (hit) this.input.cursor = 'default'
   }
   onMouseDown(e) {
-    const hit = this.checkIntersection()
+    const node = this.checkIntersection()
+    const { edge, index } = this.checkEdgeIntersection()
     // moving a node
     if (e.button === 0) {
       this.redraw = true
 
+      // deselect previous
       if (this.selected) this.selected.selected = false
-      this.selected = hit
+      // select new
+      this.selected = node || edge
       if (this.selected) {
         this.selected.selected = true
         this.selectedX = this.selected.x
         this.selectedY = this.selected.y
       }
-    } else if (e.button === 2) {
-      const edgeIndex = this.checkEdgeIntersection()
-      if (edgeIndex > -1) this.graphvis.removeEdge(edgeIndex)
     }
-    if (hit) {
+    // delete an edge
+    else if (e.button === 2) {
+      if (index > -1) {
+        this.graphvis.removeEdge(index)
+        this.graphvis.graph.compile()
+      }
+    }
+    if (node) {
       this.input.cursor = 'default'
       if (e.button === 2) {
         this.input.canDrag = false
         this.capturedRightClick = true
       }
     }
-    return hit
+    return node
   }
   onMouseUp(e) {
     this.input.canDrag = true
@@ -67,19 +74,22 @@ export class ScriptGraphLayer extends Layer {
     if (this.selected && this.input.leftMousePressed) {
       this.redraw = true
       this.controls.setTransform(this.window.ctx)
-      const t = this.window.ctx.getTransform()
       // transform mouse screen->world
-      const sx = (this.input.mouseX - t.e) / t.a
-      const sy = (this.input.mouseY - t.f) / t.d
-      // account for stretching
-      let [wx, wy] = this.window.inverseTransformCoords(sx, sy)
-      // move by center
+      const [wx, wy] = this.window.inverseTransformCoords(
+        this.input.mouseX,
+        this.input.mouseY
+      )
+      // move node by its center
       this.selected.x = wx - this.selected.w / 2
       this.selected.y = wy - this.selected.h / 2
     }
 
+    const { index } = this.checkEdgeIntersection()
+    if (index > -1) this.input.cursor = 'default'
+
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
+
     return this.capturedRightClick && hit
   }
   onKeyDown(e) {
@@ -104,55 +114,13 @@ export class ScriptGraphLayer extends Layer {
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
     this.graphvis.draw(e.window, this.controls.zoom)
-
-    e.window.ctx.resetTransform()
-    const mv = new Vec2(this.input.mouseX, this.input.mouseY)
-    e.window.ctx.fillStyle = '#0f0'
-    e.window.ctx.fillRect(mv.x - 2, mv.y - 2, 5, 5)
-    this.graphvis.edgeProxies.forEach((proxy) => {
-      // get edge bounds
-      const { x: sx, y: sy } = proxy.getStartCoords()
-      const { x: ex, y: ey } = proxy.getEndCoords()
-      // transform into screen-space
-      // edge (x, y) = (1 - t) * (ssx, ssy) + (sex, sey)
-      let [ssx, ssy] = this.transformCoordsWorld2Screen(sx, sy)
-      let [sex, sey] = this.transformCoordsWorld2Screen(ex, ey)
-
-      // project mouse coords onto line
-      const edgeOrigin = new Vec2(ssx, ssy)
-      const edgeDir = new Vec2(ssx - sex, ssy - sey)
-      const n = edgeDir.perpendicular().norm()
-      const d = n.dot(edgeOrigin)
-
-      e.window.ctx.strokeStyle = '#f00'
-      e.window.ctx.beginPath()
-      e.window.ctx.moveTo((ssx + sex) / 2, (ssy + sey) / 2)
-      e.window.ctx.lineTo(
-        (ssx + sex) / 2 + n.x * 10,
-        (ssy + sey) / 2 + n.y * 10
-      )
-      e.window.ctx.stroke()
-      e.window.ctx.closePath()
-
-      const t = n.dot(mv) - d
-      // if the cursor is within the horizontal span of the edge and a reasonable distance from it
-      if (
-        Math.abs(t) <= 10 &&
-        mv.x >= Math.min(sex, ssx) &&
-        mv.x <= Math.max(sex, ssx)
-      ) {
-        e.window.ctx.fillStyle = '#f0f'
-        e.window.ctx.fillRect(ssx - 2, ssy - 2, 5, 5)
-        e.window.ctx.fillRect(sex - 2, sey - 2, 5, 5)
-      }
-    })
   }
   checkIntersection() {
     let hit = undefined
     this.graphvis.proxies.forEach((proxy) => {
       if (hit) return
 
-      const [px, py] = this.transformCoordsWorld2Screen(proxy.x, proxy.y)
+      const [px, py] = this.transformCoords(proxy.x, proxy.y)
       const [pw, ph] = this.transformDims(proxy.w, proxy.h)
 
       if (
@@ -164,53 +132,64 @@ export class ScriptGraphLayer extends Layer {
           pw,
           ph
         )
-      )
+      ) {
         hit = proxy
+        proxy.hovered = true
+      } else proxy.hovered = false
     })
 
     return hit
   }
   checkEdgeIntersection() {
-    let hit = undefined
+    let index = -1,
+      edge = undefined
     this.graphvis.edgeProxies.forEach((proxy, i) => {
-      if (hit) return
-      // get edge bounds
-      const { x: sx, y: sy } = proxy.getStartCoords()
-      const { x: ex, y: ey } = proxy.getEndCoords()
-      // transform into screen-space
-      // edge (x, y) = (1 - t) * (ssx, ssy) + (sex, sey)
-      const [ssx, ssy] = this.transformCoordsWorld2Screen(sx, sy)
-      const [sex, sey] = this.transformCoordsWorld2Screen(ex, ey)
+      // get edge bounds (world space)
+      const { x: startX, y: startY } = proxy.getStartCoords()
+      const { x: endX, y: endY } = proxy.getEndCoords()
+      // transform into canvas space
+      // edge (x, y) = (1 - t) * (startX, startY) + t * (endX, endY)
+      const [screenStartX, screenStartY] = this.transformCoords(startX, startY)
+      const [screenEndX, screenEndY] = this.transformCoords(endX, endY)
 
-      // project mouse coords onto line
-      const edgeOrigin = new Vec2(ssx, ssy)
-      const edgeDir = new Vec2(ssx - sex, ssy - sey)
-      const n = edgeDir.perpendicular().norm()
-      const d = n.dot(edgeOrigin)
-      const mv = new Vec2(this.input.mouseX, this.input.mouseY)
-
-      const t = n.dot(mv) - d
-      if (
-        Math.abs(t) <= 10 &&
-        mv.x >= Math.min(sex, ssx) &&
-        mv.x <= Math.max(sex, ssx)
+      // compute min distance from cursor to edge
+      const edgeOrigin = new Vec2(screenStartX, screenStartY)
+      const edgeDir = new Vec2(
+        screenStartX - screenEndX,
+        screenStartY - screenEndY
       )
-        hit = i
+      // constant-normal form of the line
+      const n = edgeDir.perpendicular().norm()
+      const c = n.dot(edgeOrigin)
+      // project cursor coords (already in canvas space) onto the edge
+      const mv = new Vec2(this.input.mouseX, this.input.mouseY)
+      const distance = n.dot(mv) - c
+
+      // if no other edge has been hit yet and cursor is within a reasonable distance of the line
+      if (
+        index === -1 &&
+        Math.abs(distance) <= 10 &&
+        mv.x >= Math.min(screenEndX, screenStartX) &&
+        mv.x <= Math.max(screenEndX, screenStartX)
+      ) {
+        index = i
+        edge = proxy
+        proxy.hovered = true
+      } else proxy.hovered = false
     })
-    return hit
+    return { index, edge }
   }
-  // world -> screen
-  transformCoordsWorld2Screen(x, y) {
-    this.controls.setTransform(this.window.ctx)
-    const t = this.window.ctx.getTransform()
+  // world->canvas
+  transformCoords(x, y) {
+    const t = this.controls.setTransform(this.window.ctx)
     let [tx, ty] = this.window.transformCoords(x, y)
     tx = t.a * tx + t.e
     ty = t.d * ty + t.f
     return [tx, ty]
   }
+  // world->canvas
   transformDims(w, h) {
-    this.controls.setTransform(this.window.ctx)
-    const t = this.window.ctx.getTransform()
+    const t = this.controls.setTransform(this.window.ctx)
     let [tw, th] = this.window.transformDims(w, h)
     tw *= t.a
     th *= t.d

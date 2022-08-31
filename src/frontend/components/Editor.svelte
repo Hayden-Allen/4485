@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import Viewport from './Viewport.svelte'
   import Splitter from './Splitter.svelte'
+  import Logger from './Logger.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
   import { SceneEntity, ControlledSceneEntity } from '%component/SceneEntity.js'
@@ -28,9 +29,11 @@
     scriptCanvas = undefined
 
   let gameWindow = undefined,
-    scriptWindow = undefined
+    scriptWindow = undefined,
+    playerScript = undefined,
+    playerScriptErrors = []
 
-  function createPlayerScript() {
+  function createPlayerScript(inputCache) {
     const tOnTick = new EventScriptNodeTemplate('OnTick')
     const tKeyPressed = new InternalScriptNodeTemplate(
       'KeyPressed',
@@ -41,8 +44,8 @@
         new ScriptNodePort('F', 'bool'),
         new ScriptNodePort('int', 'int'),
       ],
-      (_, { internal }) => {
-        const pressed = global.input.isKeyPressed(internal[0])
+      (_, { internal, input }) => {
+        const pressed = input.isKeyPressed(internal[0])
         return [
           { value: pressed, active: pressed },
           { value: !pressed, active: !pressed },
@@ -85,7 +88,10 @@
       'Vec2',
       [new ScriptNodePort('x', 'number'), new ScriptNodePort('y', 'number')],
       [new ScriptNodePort('v', 'object')],
-      ([x, y]) => [{ value: new Vec2(x, y) }]
+      ([x, y]) => {
+        //console.log(x, y)
+        return [{ value: new Vec2(x, y) }]
+      }
     )
     const tNormalize = new ScriptNodeTemplate(
       'Normalize',
@@ -105,7 +111,12 @@
       }
     )
 
-    let graph = new ScriptGraph('PlayerController')
+    let graph = new ScriptGraph(
+      'PlayerController',
+      inputCache,
+      (s) => (playerScriptErrors = [...playerScriptErrors, s]),
+      () => (playerScriptErrors = [])
+    )
     const onTick = tOnTick.createNode(graph)
     // get input
     const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
@@ -179,7 +190,8 @@
         )
       }
     }
-    let playerScript = createPlayerScript()
+    gameWindow = new Window(gameCanvas, '#00f')
+    playerScript = createPlayerScript(gameWindow.inputCache)
     let playerController = {
       run: (player /* deltaTimeSeconds */) => {
         playerScript.run(player)
@@ -194,7 +206,6 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    gameWindow = new Window(gameCanvas, '#00f')
     gameWindow.pushLayer(new EditorLayer(game))
 
     scriptWindow = new Window(scriptCanvas)
@@ -281,13 +292,14 @@
       maxSplit={0.9}
     />
     <div
-      class="grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="relative grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
       style={`flex-basis: ${topRightBasis}%;`}
     >
       <Viewport
         bind:canvas={scriptCanvas}
         onResize={() => context.propagateResizeEvent()}
       />
+      <Logger errors={playerScriptErrors} />
     </div>
   </div>
   <Splitter

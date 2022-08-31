@@ -48,7 +48,7 @@ export class EditorLayer extends Layer {
     if (this.paused) {
       const cw = global.canvas.targetWidth,
         ch = global.canvas.targetHeight
-      e.window.drawRect(0, 0, cw, ch, '#000', { alpha: 0.5 })
+      e.window.drawTransparentRect(0, 0, cw, ch, '#000', 0.5)
       e.window.drawCenteredText(
         'PAUSED',
         cw / 2,

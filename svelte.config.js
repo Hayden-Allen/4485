@@ -12,6 +12,7 @@ const config = {
       models: 'src/backend/models',
       routes: 'src/frontend/routes',
       tailwind: 'src/frontend/tailwind',
+      icons: 'src/frontend/icons',
       '%engine': 'src/frontend/engine',
       '%component': 'src/frontend/engine/component',
       '%editor': 'src/frontend/engine/editor',

@@ -92,8 +92,8 @@ export class Window {
     }
   }
   drawLine(x0, y0, x1, y1, color, width) {
-    const [cx0, cy0] = this.transformCoords(x0, y0)
-    const [cx1, cy1] = this.transformCoords(x1, y1)
+    const [cx0, cy0] = this.scaleCoords(x0, y0)
+    const [cx1, cy1] = this.scaleCoords(x1, y1)
     this.ctx.strokeStyle = color
     this.ctx.lineWidth = width
     this.ctx.beginPath()
@@ -109,10 +109,17 @@ export class Window {
     this.ctx.globalAlpha = prevAlpha
   }
   drawRect(x, y, w, h, color) {
-    const [cx, cy] = this.transformCoords(x, y)
-    const [cw, ch] = this.transformDims(w, h)
+    const [cx, cy] = this.scaleCoords(x, y)
+    const [cw, ch] = this.scaleDims(w, h)
     this.ctx.fillStyle = color
     this.ctx.fillRect(cx, cy, cw, ch)
+  }
+  strokeRect(x, y, w, h, color, width) {
+    const [cx, cy] = this.scaleCoords(x, y)
+    const [cw, ch] = this.scaleDims(w, h)
+    this.ctx.strokeStyle = color
+    this.ctx.lineWidth = width
+    this.ctx.strokeRect(cx, cy, cw, ch)
   }
   drawTransparentRect(x, y, w, h, color, alpha) {
     const prevAlpha = this.ctx.globalAlpha
@@ -123,9 +130,9 @@ export class Window {
   strokeRoundRect(x, y, w, h, r, color, width, alpha) {
     const prevAlpha = this.ctx.globalAlpha
 
-    const [cx, cy] = this.transformCoords(x, y)
-    const [cw, ch] = this.transformDims(w, h)
-    const [cr] = this.transformDims(r)
+    const [cx, cy] = this.scaleCoords(x, y)
+    const [cw, ch] = this.scaleDims(w, h)
+    const [cr] = this.scaleDims(r)
     this.ctx.strokeStyle = color
     this.ctx.lineWidth = width
     this.ctx.globalAlpha = alpha
@@ -136,9 +143,9 @@ export class Window {
     this.ctx.globalAlpha = prevAlpha
   }
   drawRoundRect(x, y, w, h, r, color) {
-    const [cx, cy] = this.transformCoords(x, y)
-    const [cw, ch] = this.transformDims(w, h)
-    const [cr] = this.transformDims(r)
+    const [cx, cy] = this.scaleCoords(x, y)
+    const [cw, ch] = this.scaleDims(w, h)
+    const [cr] = this.scaleDims(r)
     this.ctx.beginPath()
     this.ctx.fillStyle = color
     this.ctx.roundRect(cx, cy, cw, ch, [cr])
@@ -146,7 +153,7 @@ export class Window {
     this.ctx.closePath()
   }
   drawRoundRectShadow(x, y, w, h, r, color, blur, offsetY) {
-    const [csb, cso] = this.transformDims(blur, offsetY)
+    const [csb, cso] = this.scaleDims(blur, offsetY)
     this.ctx.shadowBlur = csb
     this.ctx.shadowOffsetY = cso
     this.ctx.shadowColor = color
@@ -156,8 +163,8 @@ export class Window {
     this.ctx.shadowColor = 'transparent'
   }
   strokeArc(x, y, r, startAngle, endAngle, color) {
-    const [cx, cy] = this.transformCoords(x, y)
-    const [cr] = this.transformDims(r)
+    const [cx, cy] = this.scaleCoords(x, y)
+    const [cr] = this.scaleDims(r)
     this.ctx.strokeStyle = color
     this.ctx.beginPath()
     this.ctx.arc(cx, cy, cr, startAngle, endAngle)
@@ -165,8 +172,8 @@ export class Window {
     this.ctx.closePath()
   }
   drawArc(x, y, r, startAngle, endAngle, color) {
-    const [cx, cy] = this.transformCoords(x, y)
-    const [cr] = this.transformDims(r)
+    const [cx, cy] = this.scaleCoords(x, y)
+    const [cr] = this.scaleDims(r)
     this.ctx.fillStyle = color
     this.ctx.beginPath()
     this.ctx.arc(cx, cy, cr, startAngle, endAngle)
@@ -174,11 +181,11 @@ export class Window {
     this.ctx.closePath()
   }
   drawText(message, x, y, fontFamily, fontSize, color) {
-    this.ctx.font = `${this.transformFontSize(fontSize)}px ${fontFamily}`
+    this.ctx.font = `${this.scaleFontSize(fontSize)}px ${fontFamily}`
     this.ctx.fillStyle = color
     this.ctx.textBaseline = 'top'
 
-    const [cx, cy] = this.transformCoords(x, y)
+    const [cx, cy] = this.scaleCoords(x, y)
     this.ctx.fillText(message, cx, cy)
   }
   rotate(cx, cy, theta) {
@@ -187,11 +194,11 @@ export class Window {
     this.ctx.translate(-cx, -cy)
   }
   drawCenteredText(message, x, y, fontFamily, fontSize, color, options = {}) {
-    this.ctx.font = `${this.transformFontSize(fontSize)}px ${fontFamily}`
+    this.ctx.font = `${this.scaleFontSize(fontSize)}px ${fontFamily}`
     this.ctx.fillStyle = color
     this.ctx.textBaseline = 'middle'
 
-    const [cx, cy] = this.transformCoords(x, y)
+    const [cx, cy] = this.scaleCoords(x, y)
     if (options.theta) this.rotate(cx, cy, options.theta)
     this.ctx.fillText(message, cx - this.ctx.measureText(message).width / 2, cy)
     if (options.theta) this.rotate(cx, cy, -options.theta)
@@ -207,7 +214,7 @@ export class Window {
   }
   // world->window
   // this.ctx.transform is applied automatically during rendering, which converts window->screen
-  transformCoords(x, y) {
+  scaleCoords(x, y) {
     const s = this.getScalingFactor()
     return [Math.floor(x * s), Math.floor(y * s)]
   }
@@ -219,11 +226,11 @@ export class Window {
     const s = this.getScalingFactor()
     return [Math.floor(screenX / s), Math.floor(screenY / s)]
   }
-  transformDims(w, h) {
+  scaleDims(w, h) {
     const s = this.getScalingFactor()
     return [Math.ceil(w * s), Math.ceil(h * s)]
   }
-  transformFontSize(size) {
+  scaleFontSize(size) {
     const s = this.getScalingFactor()
     return s * size
   }

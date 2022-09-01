@@ -21,8 +21,8 @@ export class ScriptGraphEdgeProxy extends UIElement {
       color = this.colors.activationEdge
     } else {
       // get scaled coordinates
-      const [sx, sy] = window.transformCoords(startCoords.x, startCoords.y)
-      const [ex, ey] = window.transformCoords(endCoords.x, endCoords.y)
+      const [sx, sy] = window.scaleCoords(startCoords.x, startCoords.y)
+      const [ex, ey] = window.scaleCoords(endCoords.x, endCoords.y)
       // draw the line using a gradient between the two port's colors
       color = window.ctx.createLinearGradient(sx, sy, ex, ey)
       const startType =

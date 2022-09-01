@@ -16,7 +16,7 @@ class ScriptNodeEdgeList {
   }
 }
 export class ScriptGraph extends Component {
-  constructor(debugName, inputCache, logError, clearErrors) {
+  constructor(debugName, inputCache, pushError, clearErrors) {
     super(debugName)
     this.inputCache = inputCache
     // map ScriptNode.id to ScriptNode
@@ -26,13 +26,24 @@ export class ScriptGraph extends Component {
     // nodes with no inputs
     this.startNodes = []
     this.cachedCompile = undefined
-    this.logError = logError
+    this._pushError = pushError
     this.clearErrors = clearErrors
     this.canErr = true
   }
   pushError(string) {
     if (this.canErr) {
-      this.logError(string)
+      this._pushError({
+        level: 'error',
+        message: string,
+      })
+    }
+  }
+  pushWarning(string) {
+    if (this.canErr) {
+      this._pushError({
+        level: 'warning',
+        message: string,
+      })
     }
   }
   addNode(node) {
@@ -74,13 +85,20 @@ export class ScriptGraph extends Component {
       (edge) =>
         !(edge.outputIndex === outputIndex && edge.inputIndex === inputIndex)
     )
+    console.log(this.getEdges(outputNode).out)
     this.getEdges(outputNode).out = this.getEdges(outputNode).out.filter(
       (edge) =>
         !(edge.outputIndex === outputIndex && edge.inputIndex === inputIndex)
     )
+    console.log(this.getEdges(outputNode).out)
   }
   getEdges(node) {
     return this.edges.get(node.id)
+  }
+  hasEdges(node) {
+    if (!this.edges.has(node.id)) return false
+    const edges = this.edges.get(node.id)
+    return edges.in.length || edges.out.length
   }
   compile() {
     this.clearErrors()
@@ -88,9 +106,10 @@ export class ScriptGraph extends Component {
     // identify nodes to start from
     this.startNodes = []
     this.nodes.forEach((node) => {
-      if (!this.edges.has(node.id))
+      if (!this.hasEdges(node)) {
         this.logWarning(`Disconnected ${node.logMessageName()}`)
-      else if (this.edges.get(node.id).in.length === 0)
+        this.pushWarning(`Disconnected ${node.logMessageName()}`)
+      } else if (this.edges.get(node.id).in.length === 0)
         this.startNodes.push(node)
     })
 

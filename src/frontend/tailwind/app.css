@@ -28,3 +28,31 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #d1d5db;
 }
+
+@keyframes fade-out-toggle0 {
+  0% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out-toggle1 {
+  0% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}

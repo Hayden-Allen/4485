@@ -182,7 +182,7 @@ export class ScriptGraphLayer extends Layer {
   // world->canvas
   transformCoords(x, y) {
     const t = this.controls.setTransform(this.window.ctx)
-    let [tx, ty] = this.window.transformCoords(x, y)
+    let [tx, ty] = this.window.scaleCoords(x, y)
     tx = t.a * tx + t.e
     ty = t.d * ty + t.f
     return [tx, ty]
@@ -190,7 +190,7 @@ export class ScriptGraphLayer extends Layer {
   // world->canvas
   transformDims(w, h) {
     const t = this.controls.setTransform(this.window.ctx)
-    let [tw, th] = this.window.transformDims(w, h)
+    let [tw, th] = this.window.scaleDims(w, h)
     tw *= t.a
     th *= t.d
     return [tw, th]

@@ -18,7 +18,7 @@ export class ScriptGraphNodeProxy extends UIElement {
     this.nameFontSize = 32
     this.portFontSize = 24
     this.portRadius = 8
-    this.portNameXPadding = this.portRadius * 2
+    this.portNamePaddingX = this.portRadius * 2
     this.portDotOffset = 10
 
     // compute name height
@@ -40,13 +40,13 @@ export class ScriptGraphNodeProxy extends UIElement {
         inWidth = Math.max(
           inWidth,
           window.textMetrics(inPorts[i].name, this.font, this.portFontSize)
-            .width + this.portNameXPadding
+            .width + this.portNamePaddingX
         )
       if (i < outPorts.length)
         outWidth = Math.max(
           outWidth,
           window.textMetrics(outPorts[i].name, this.font, this.portFontSize)
-            .width + this.portNameXPadding
+            .width + this.portNamePaddingX
         )
     }
     this.w = Math.max(inWidth + outWidth, Math.ceil(text.width)) + 32
@@ -134,11 +134,24 @@ export class ScriptGraphNodeProxy extends UIElement {
       )
       window.drawText(
         port.name,
-        tx + this.portNameXPadding,
+        tx + this.portNamePaddingX,
         portY,
         this.font,
         this.portFontSize,
         PORT_COLOR[port.typename].name
+      )
+      const width = window.textMetrics(
+        port.name,
+        this.font,
+        this.portFontSize
+      ).width
+      window.strokeRect(
+        tx,
+        portY,
+        this.portNamePaddingX + width,
+        2 * this.portRadius,
+        '#f00',
+        1
       )
     })
     this.node.data.outputPorts.forEach((port, i) => {
@@ -158,11 +171,19 @@ export class ScriptGraphNodeProxy extends UIElement {
       ).width
       window.drawText(
         port.name,
-        tx + this.w - width - this.portNameXPadding,
+        tx + this.w - width - this.portNamePaddingX,
         portY,
         this.font,
         this.portFontSize,
         PORT_COLOR[port.typename].name
+      )
+      window.strokeRect(
+        tx + this.w - width - this.portNamePaddingX,
+        portY,
+        width + this.portNamePaddingX,
+        2 * this.portRadius,
+        '#f00',
+        1
       )
     })
     /**

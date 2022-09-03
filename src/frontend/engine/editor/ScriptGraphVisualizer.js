@@ -165,8 +165,11 @@ export class ScriptGraphVisualizer {
 
       // update proxies with new x values (all proxies within a column are left-justified)
       this.proxies.forEach((proxy) => {
-        proxy.x = baseX[columnIndex.get(proxy.node.id)]
+        const index = columnIndex.get(proxy.node.id)
+        // console.log(index)
+        proxy.x = baseX[index]
       })
+      // this.proxies.forEach((proxy) => console.log(proxy.x))
     }
     //y-axis
     {
@@ -216,16 +219,18 @@ export class ScriptGraphVisualizer {
         columns[i].forEach((parent) => {
           let averageY = 0
           let currentChildren = children.get(parent.id)
-          currentChildren.forEach((child) => {
-            // base y of current child
-            averageY += this.proxies.get(child.id).y
-            // account for the port of the current child the current parent is attached to
-            const port = this.graph
-              .getEdges(child)
-              .in.find((edge) => edge.outputNode.id === parent.id).inputIndex
-            averageY += port
-          })
-          averageY /= currentChildren.length
+          if (currentChildren.length) {
+            currentChildren.forEach((child) => {
+              // base y of current child
+              averageY += this.proxies.get(child.id).y
+              // account for the port of the current child the current parent is attached to
+              const port = this.graph
+                .getEdges(child)
+                .in.find((edge) => edge.outputNode.id === parent.id).inputIndex
+              averageY += port
+            })
+            averageY /= currentChildren.length
+          }
           sortedColumn.push({ y: averageY, node: parent })
         })
         // sort all nodes in current column based on their current y value
@@ -257,7 +262,7 @@ export class ScriptGraphVisualizer {
           this.proxies.get(sorted[0].node.id).y = this.computeAverageParentY(
             columns,
             i,
-            sorted[0].node
+            sorted[0]
           )
         }
         // if there are multiple nodes in current column, try to set them to their ideal positions, but prevent overlapping with other nodes
@@ -266,11 +271,7 @@ export class ScriptGraphVisualizer {
           for (var j = sorted.length - 1; j > 0; j--) {
             let currentProxy = this.proxies.get(sorted[j].node.id)
             const aboveProxy = this.proxies.get(sorted[j - 1].node.id)
-            const averageY = this.computeAverageParentY(
-              columns,
-              i,
-              sorted[j].node
-            )
+            const averageY = this.computeAverageParentY(columns, i, sorted[j])
 
             // if the ideal position is sufficiently beneath the proxy above
             if (averageY >= aboveProxy.y + aboveProxy.h + PADDING_Y) {
@@ -296,9 +297,12 @@ export class ScriptGraphVisualizer {
     columns[column - 1].forEach((parent) => {
       const outboundEdges = this.graph.getEdges(parent).out
       outboundEdges.forEach((edge) => {
-        if (edge.inputNode.id === child.id) parents.push(parent)
+        if (edge.inputNode.id === child.node.id) parents.push(parent)
       })
     })
+
+    if (!parents.length) return child.y
+
     let avgy = 0
     parents.forEach((parent) => (avgy += this.proxies.get(parent.id).y))
     return avgy / parents.length

@@ -81,16 +81,20 @@ export class ScriptGraph extends Component {
     this.edges.get(inputNode.id).in.push(edge)
   }
   removeEdge(outputNode, outputIndex, inputNode, inputIndex) {
-    this.getEdges(inputNode).in = this.getEdges(inputNode).in.filter(
+    let outputEdges = this.getEdges(outputNode).out
+    let inputEdges = this.getEdges(inputNode).in
+    console.log(this.getEdges(outputNode).out)
+    this.getEdges(outputNode).out = outputEdges.filter(
       (edge) =>
-        !(edge.outputIndex === outputIndex && edge.inputIndex === inputIndex)
+        !(edge.inputNode === inputNode && edge.inputIndex === inputIndex)
     )
     console.log(this.getEdges(outputNode).out)
-    this.getEdges(outputNode).out = this.getEdges(outputNode).out.filter(
+    console.log(this.getEdges(inputNode).in)
+    this.getEdges(inputNode).in = inputEdges.filter(
       (edge) =>
-        !(edge.outputIndex === outputIndex && edge.inputIndex === inputIndex)
+        !(edge.outputNode === outputNode && edge.inputIndex === inputIndex)
     )
-    console.log(this.getEdges(outputNode).out)
+    console.log(this.getEdges(inputNode).in)
   }
   getEdges(node) {
     return this.edges.get(node.id)
@@ -103,14 +107,12 @@ export class ScriptGraph extends Component {
   compile() {
     this.clearErrors()
     this.canErr = true
-    // identify nodes to start from
+    /**
+     * @HATODO this is where all event nodes will be detected
+     */
     this.startNodes = []
     this.nodes.forEach((node) => {
-      if (!this.hasEdges(node)) {
-        this.logWarning(`Disconnected ${node.logMessageName()}`)
-        this.pushWarning(`Disconnected ${node.logMessageName()}`)
-      } else if (this.edges.get(node.id).in.length === 0)
-        this.startNodes.push(node)
+      if (node.debugName === 'OnTick') this.startNodes.push(node)
     })
 
     let visited = new Map()
@@ -121,15 +123,7 @@ export class ScriptGraph extends Component {
     return order
   }
   dfs(node, visited, order) {
-    if (visited.has(node.id)) {
-      // this node has been visited, but not fully; found a cycle
-      if (visited.get(node.id) == 1) {
-        this.logError(`${node.logMessageName()} causes a cycle`)
-        return
-      }
-      // node has been fully visited
-      return
-    }
+    if (visited.has(node.id)) return
 
     // being visited
     visited.set(node.id, 1)
@@ -142,6 +136,10 @@ export class ScriptGraph extends Component {
     visited.set(node.id, 2)
     // add to topological sort results
     order.unshift(node)
+
+    // visit parents
+    let inboundEdges = this.edges.get(node.id).in
+    inboundEdges.forEach((edge) => this.dfs(edge.outputNode, visited, order))
   }
   run(entity) {
     // graph has changed, need to recompile
@@ -149,8 +147,13 @@ export class ScriptGraph extends Component {
 
     // reset activation for all nodes
     this.nodes.forEach((node) => (node.active = false))
-    // always run start nodes
-    this.startNodes.forEach((node) => (node.active = true))
+    /**
+     * @HATODO maybe this shouldn't be the case?
+     */
+    // always run nodes with no inputs
+    this.nodes.forEach((node) => {
+      if (!this.getEdges(node).in.length) node.active = true
+    })
 
     let outputs = new Map()
 

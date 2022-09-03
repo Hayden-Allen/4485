@@ -193,7 +193,7 @@ export class ScriptGraphNodeProxy extends UIElement {
       const portY = portBaseY + i * this.portHeight
       window.drawText(
         `${port.name}: ${this.node.internalValues[i]}`,
-        tx + this.portNameXPadding,
+        tx + this.portNamePaddingX,
         portY,
         this.font,
         this.portFontSize,

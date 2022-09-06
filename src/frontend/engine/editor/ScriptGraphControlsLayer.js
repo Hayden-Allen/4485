@@ -15,6 +15,7 @@ export class ScriptGraphControlsLayer extends Layer {
   onMouseScroll(e) {
     this.zoom -= e.y * this.zoomSpeed * (this.zoom / this.maxZoom)
     this.zoom = global.clamp(this.zoom, this.minZoom, this.maxZoom)
+    this.input.dragSpeed = 1 / this.zoom
   }
   setTransform(ctx) {
     const z = this.zoom

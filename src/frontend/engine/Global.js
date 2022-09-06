@@ -17,6 +17,10 @@ export var global = {
   init: (context) => {
     global.varyingController = new VaryingController()
     context.addSystem(global.varyingController)
+    window.oncontextmenu = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
   },
   padZeroes: (s, n) => {
     while (s.length < n) s = '0' + s

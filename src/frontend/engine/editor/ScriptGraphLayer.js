@@ -15,6 +15,7 @@ export class ScriptGraphLayer extends Layer {
     this.selected = undefined
     this.selectedX = 0
     this.selectedY = 0
+    this.hovered = undefined
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -84,11 +85,19 @@ export class ScriptGraphLayer extends Layer {
       this.selected.y = wy - this.selected.h / 2
     }
 
-    const { index } = this.checkEdgeIntersection()
-    if (index > -1) this.input.cursor = 'default'
-
+    const { index, edge } = this.checkEdgeIntersection()
     const hit = this.checkIntersection()
-    if (hit) this.input.cursor = 'default'
+    if (index > -1) {
+      this.input.cursor = 'default'
+      this.hovered = edge
+    } else if (hit) {
+      this.input.cursor = 'default'
+      this.hovered = hit
+    } else {
+      this.hovered = undefined
+      // need to redraw once to get rid of the outline
+      this.redraw = true
+    }
 
     return this.capturedRightClick && hit
   }
@@ -103,25 +112,17 @@ export class ScriptGraphLayer extends Layer {
   }
   onRender(e) {
     // outline opacity changes over time
-    if (this.selected) {
+    if (this.selected || this.hovered) {
       this.redraw = true
     }
 
-    // if (!this.redraw) return
-    // this.redraw = false
+    if (!this.redraw) return
+    this.redraw = false
 
     e.window.ctx.resetTransform()
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
     this.graphvis.draw(e.window, this.controls.zoom)
-    e.window.ctx.resetTransform()
-    e.window.ctx.fillStyle = '#f00'
-    e.window.ctx.fillRect(
-      e.window.canvas.width / 2 - 2,
-      e.window.canvas.height / 2 - 2,
-      4,
-      4
-    )
   }
   checkIntersection() {
     let hit = undefined

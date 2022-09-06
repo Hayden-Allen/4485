@@ -114,6 +114,14 @@ export class ScriptGraphLayer extends Layer {
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
     this.graphvis.draw(e.window, this.controls.zoom)
+    e.window.ctx.resetTransform()
+    e.window.ctx.fillStyle = '#f00'
+    e.window.ctx.fillRect(
+      e.window.canvas.width / 2 - 2,
+      e.window.canvas.height / 2 - 2,
+      4,
+      4
+    )
   }
   checkIntersection() {
     let hit = undefined

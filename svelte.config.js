@@ -13,6 +13,7 @@ const config = {
       routes: 'src/frontend/routes',
       tailwind: 'src/frontend/tailwind',
       icons: 'src/frontend/icons',
+      utils: 'src/frontend/utils',
       '%engine': 'src/frontend/engine',
       '%component': 'src/frontend/engine/component',
       '%editor': 'src/frontend/engine/editor',
@@ -20,6 +21,8 @@ const config = {
       '%system': 'src/frontend/engine/system',
       '%util': 'src/frontend/engine/util',
       '%window': 'src/frontend/engine/window',
+      '%glMatrix': 'src/deps/glMatrix',
+      '%graphics': 'src/frontend/engine/graphics',
     },
     files: {
       routes: 'src/frontend/routes',

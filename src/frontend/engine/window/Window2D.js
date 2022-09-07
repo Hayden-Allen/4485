@@ -151,14 +151,6 @@ export class Window2D extends Window {
     const s = this.getScalingFactor()
     return [Math.floor(x * s), Math.floor(y * s)]
   }
-  // screen->world
-  inverseTransformCoords(x, y) {
-    const t = this.ctx.getTransform()
-    const screenX = (x - t.e) / t.a
-    const screenY = (y - t.f) / t.d
-    const s = this.getScalingFactor()
-    return [Math.floor(screenX / s), Math.floor(screenY / s)]
-  }
   scaleDims(w, h) {
     const s = this.getScalingFactor()
     return [Math.ceil(w * s), Math.ceil(h * s)]

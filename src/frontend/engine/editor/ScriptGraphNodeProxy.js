@@ -1,5 +1,6 @@
 import { PORT_COLOR } from './ScriptGraphVisualizer.js'
 import { UIElement } from './UIElement.js'
+import { global } from '%engine/Global.js'
 
 const HEIGHT_PADDING = 16
 const LINE_WIDTH = [2, 4]
@@ -13,6 +14,7 @@ export class ScriptGraphNodeProxy extends UIElement {
     this.node = node
     this.x = 0
     this.y = 0
+    this.selectedPort = undefined
 
     this.font = 'sans-serif'
     this.nameFontSize = 32
@@ -150,7 +152,7 @@ export class ScriptGraphNodeProxy extends UIElement {
         portY,
         this.portNamePaddingX + width,
         2 * this.portRadius,
-        '#f00',
+        this.selectedPort === port ? '#00f' : '#f00',
         1
       )
     })
@@ -182,7 +184,7 @@ export class ScriptGraphNodeProxy extends UIElement {
         portY,
         width + this.portNamePaddingX,
         2 * this.portRadius,
-        '#f00',
+        this.selectedPort === port ? '#00f' : '#f00',
         1
       )
     })
@@ -218,5 +220,55 @@ export class ScriptGraphNodeProxy extends UIElement {
       y = this.nameHeight + this.portHeight * (0.5 + i) + this.portDotOffset
     }
     return { x: this.x + this.w, y: this.y + y }
+  }
+  checkPortIntersection(window, x, y) {
+    let hit = {}
+    const portBaseY = this.y + this.nameHeight + this.portHeight / 2
+
+    this.node.data.inputPorts.forEach((port, i) => {
+      const portX = this.x
+      const portY = portBaseY + i * this.portHeight
+      const width = window.textMetrics(
+        port.name,
+        this.font,
+        this.portFontSize
+      ).width
+      if (
+        global.rectIntersect(
+          x,
+          y,
+          portX,
+          portY,
+          width + this.portNamePaddingX,
+          2 * this.portRadius
+        )
+      ) {
+        hit = { port, portX, portY, in: true, index: i }
+      }
+    })
+
+    this.node.data.outputPorts.forEach((port, i) => {
+      const portY = portBaseY + i * this.portHeight
+      const width = window.textMetrics(
+        port.name,
+        this.font,
+        this.portFontSize
+      ).width
+      const portX = this.x + this.w - width - this.portNamePaddingX
+      if (
+        global.rectIntersect(
+          x,
+          y,
+          portX,
+          portY,
+          width + this.portNamePaddingX,
+          2 * this.portRadius
+        )
+      ) {
+        hit = { port, portX, portY, in: false, index: i }
+      }
+    })
+
+    return hit
   }
 }

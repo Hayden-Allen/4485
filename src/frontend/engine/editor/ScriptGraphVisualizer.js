@@ -57,7 +57,13 @@ export class ScriptGraphVisualizer {
     this.edgeProxies = []
     // mantains draw order as nodes are selected
     this.drawStack = []
+    this.generateProxies(window)
+    this.window = window
 
+    this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.5 })
+    this.outlineColor = '#fff'
+  }
+  generateProxies(window) {
     // create all node proxies
     this.graph.nodes.forEach((node) => {
       const proxy = new ScriptGraphNodeProxy(window, node)
@@ -76,8 +82,6 @@ export class ScriptGraphVisualizer {
         this.edgeProxies.push(proxy)
       })
     })
-    this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.5 })
-    this.outlineColor = '#fff'
   }
   removeEdge(index) {
     const [edge] = this.edgeProxies.splice(index, 1)
@@ -106,6 +110,9 @@ export class ScriptGraphVisualizer {
     // x-axis
     {
       const order = this.graph.compile()
+      console.log(this.graph.nodes)
+      console.log(this.graph.edges)
+      this.generateProxies(this.window)
       let columnIndex = new Map()
 
       // traverse nodes in topological order; this corresponds to left->right visual order

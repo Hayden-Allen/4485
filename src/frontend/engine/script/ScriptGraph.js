@@ -80,21 +80,20 @@ export class ScriptGraph extends Component {
     this.edges.get(outputNode.id).out.push(edge)
     this.edges.get(inputNode.id).in.push(edge)
   }
+  /**
+   * @HATODO cleanup
+   */
   removeEdge(outputNode, outputIndex, inputNode, inputIndex) {
     let outputEdges = this.getEdges(outputNode).out
     let inputEdges = this.getEdges(inputNode).in
-    console.log(this.getEdges(outputNode).out)
     this.getEdges(outputNode).out = outputEdges.filter(
       (edge) =>
         !(edge.inputNode === inputNode && edge.inputIndex === inputIndex)
     )
-    console.log(this.getEdges(outputNode).out)
-    console.log(this.getEdges(inputNode).in)
     this.getEdges(inputNode).in = inputEdges.filter(
       (edge) =>
         !(edge.outputNode === outputNode && edge.inputIndex === inputIndex)
     )
-    console.log(this.getEdges(inputNode).in)
   }
   getEdges(node) {
     return this.edges.get(node.id)

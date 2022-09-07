@@ -58,6 +58,32 @@ export class ScriptGraphLayer extends Layer {
         this.input.canDrag = false
         this.capturedRightClick = true
       }
+      if (e.button === 0) {
+        const port = node.checkPortIntersection(
+          this.window,
+          ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
+        )
+        if (this.selectedPort && this.selectedPort.in ^ port.in) {
+          console.log(this.selectedPort)
+          if (this.selectedPort.in)
+            this.selectedPort.node.attachAsInput(
+              node.node,
+              port.index,
+              this.selectedPort.index
+            )
+          else
+            this.selectedPort.node.attachAsOutput(
+              this.selectedPort.index,
+              node.node,
+              port.index
+            )
+          this.graphvis.arrange()
+          this.selectedPort = undefined
+        } else {
+          this.selectedPort = port
+          this.selectedPort.node = node.node
+        }
+      }
     }
     return node
   }
@@ -76,7 +102,7 @@ export class ScriptGraphLayer extends Layer {
       this.redraw = true
       this.controls.setTransform(this.window.ctx)
       // transform mouse screen->world
-      const [wx, wy] = this.window.inverseTransformCoords(
+      const [wx, wy] = this.inverseTransformCoords(
         this.input.mouseX,
         this.input.mouseY
       )
@@ -116,13 +142,23 @@ export class ScriptGraphLayer extends Layer {
       this.redraw = true
     }
 
-    if (!this.redraw) return
-    this.redraw = false
+    // if (!this.redraw) return
+    // this.redraw = false
 
     e.window.ctx.resetTransform()
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
     this.graphvis.draw(e.window, this.controls.zoom)
+
+    if (this.selectedPort) {
+      this.window.drawLine(
+        this.selectedPort.portX,
+        this.selectedPort.portY,
+        ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY),
+        '#0f0',
+        2
+      )
+    }
   }
   checkIntersection() {
     let hit = undefined
@@ -195,6 +231,14 @@ export class ScriptGraphLayer extends Layer {
     tx = t.a * tx + t.e
     ty = t.d * ty + t.f
     return [tx, ty]
+  }
+  // screen->world
+  inverseTransformCoords(x, y) {
+    const t = this.controls.setTransform(this.window.ctx)
+    const screenX = (x - t.e) / t.a
+    const screenY = (y - t.f) / t.d
+    const s = this.window.getScalingFactor()
+    return [Math.floor(screenX / s), Math.floor(screenY / s)]
   }
   // world->canvas
   transformDims(w, h) {

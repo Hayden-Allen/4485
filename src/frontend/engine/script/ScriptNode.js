@@ -56,6 +56,9 @@ export class ScriptNode extends Component {
       this.logError(`Cannot attach two ScriptNodes from different Graphs`)
       return
     }
+    // remove existing edge first
+    if (this.graph.hasInputEdge(this, inputIndex))
+      this.graph.removeEdge(outputNode, outputIndex, this, inputIndex)
     this.graph.addEdge(outputNode, outputIndex, this, inputIndex)
   }
   // this.outputs[outputIndex] => inputNode.inputs[inputIndex]
@@ -64,6 +67,9 @@ export class ScriptNode extends Component {
       this.logError(`Cannot attach two ScriptNodes from different Graphs`)
       return
     }
+    // remove existing edge first
+    if (this.graph.hasInputEdge(inputNode, inputIndex))
+      this.graph.removeEdge(this, outputIndex, inputNode, inputIndex)
     this.graph.addEdge(this, outputIndex, inputNode, inputIndex)
   }
   run(inputs, entity, inputCache) {

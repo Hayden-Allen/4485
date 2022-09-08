@@ -57,19 +57,20 @@ export class ScriptGraphVisualizer {
     this.edgeProxies = []
     // mantains draw order as nodes are selected
     this.drawStack = []
-    this.generateProxies(window)
     this.window = window
 
     this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.5 })
     this.outlineColor = '#fff'
   }
-  generateProxies(window) {
+  generateProxies() {
+    this.drawStack = []
     // create all node proxies
     this.graph.nodes.forEach((node) => {
-      const proxy = new ScriptGraphNodeProxy(window, node)
+      const proxy = new ScriptGraphNodeProxy(this.window, node)
       this.proxies.set(node.id, proxy)
       this.drawStack.push(proxy)
     })
+    this.edgeProxies = []
     // create all edge proxies using node proxies
     this.graph.nodes.forEach((node) => {
       this.graph.edges.get(node.id).out.forEach((edge) => {
@@ -110,9 +111,7 @@ export class ScriptGraphVisualizer {
     // x-axis
     {
       const order = this.graph.compile()
-      console.log(this.graph.nodes)
-      console.log(this.graph.edges)
-      this.generateProxies(this.window)
+      this.generateProxies()
       let columnIndex = new Map()
 
       // traverse nodes in topological order; this corresponds to left->right visual order
@@ -173,7 +172,6 @@ export class ScriptGraphVisualizer {
       // update proxies with new x values (all proxies within a column are left-justified)
       this.proxies.forEach((proxy) => {
         const index = columnIndex.get(proxy.node.id)
-        // console.log(index)
         proxy.x = baseX[index]
       })
       // this.proxies.forEach((proxy) => console.log(proxy.x))

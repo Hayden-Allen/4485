@@ -103,21 +103,35 @@ export class ScriptGraph extends Component {
     const edges = this.edges.get(node.id)
     return edges.in.length || edges.out.length
   }
+  hasInputEdge(node, inputIndex) {
+    if (!this.hasEdges(node)) return false
+    return this.getEdges(node).in.filter(
+      (edge) => edge.inputIndex === inputIndex
+    ).length
+  }
   compile() {
     this.clearErrors()
     this.canErr = true
     /**
      * @HATODO this is where all event nodes will be detected
      */
+    // nodes that execution will start from (event nodes)
     this.startNodes = []
+    // nodes that order-building will start from (any node with no input edges)
+    let sourceNodes = []
     this.nodes.forEach((node) => {
-      if (node.debugName === 'OnTick') this.startNodes.push(node)
+      if (node.debugName === 'OnTick') {
+        this.startNodes.push(node)
+        sourceNodes.push(node)
+      } else if (!this.getEdges(node).in.length) {
+        sourceNodes.push(node)
+      }
     })
 
     let visited = new Map()
     // a valid order to traverse this DAG, as identified by a topological sort
     let order = []
-    this.startNodes.forEach((node) => this.dfs(node, visited, order))
+    sourceNodes.forEach((node) => this.dfs(node, visited, order))
 
     return order
   }
@@ -135,10 +149,6 @@ export class ScriptGraph extends Component {
     visited.set(node.id, 2)
     // add to topological sort results
     order.unshift(node)
-
-    // visit parents
-    let inboundEdges = this.edges.get(node.id).in
-    inboundEdges.forEach((edge) => this.dfs(edge.outputNode, visited, order))
   }
   run(entity) {
     // graph has changed, need to recompile

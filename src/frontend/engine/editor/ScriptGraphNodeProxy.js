@@ -222,10 +222,11 @@ export class ScriptGraphNodeProxy extends UIElement {
     return { x: this.x + this.w, y: this.y + y }
   }
   checkPortIntersection(window, x, y) {
-    let hit = {}
     const portBaseY = this.y + this.nameHeight + this.portHeight / 2
 
-    this.node.data.inputPorts.forEach((port, i) => {
+    const data = this.node.data
+    for (let i = 0; i < data.inputPorts.length; i++) {
+      const port = data.inputPorts[i]
       const portX = this.x
       const portY = portBaseY + i * this.portHeight
       const width = window.textMetrics(
@@ -233,6 +234,7 @@ export class ScriptGraphNodeProxy extends UIElement {
         this.font,
         this.portFontSize
       ).width
+
       if (
         global.rectIntersect(
           x,
@@ -243,11 +245,18 @@ export class ScriptGraphNodeProxy extends UIElement {
           2 * this.portRadius
         )
       ) {
-        hit = { port, portX, portY, in: true, index: i }
+        return {
+          port,
+          pos: { x: portX, y: portY },
+          in: true,
+          index: i,
+          node: this.node,
+        }
       }
-    })
+    }
 
-    this.node.data.outputPorts.forEach((port, i) => {
+    for (let i = 0; i < data.outputPorts.length; i++) {
+      const port = data.outputPorts[i]
       const portY = portBaseY + i * this.portHeight
       const width = window.textMetrics(
         port.name,
@@ -255,6 +264,7 @@ export class ScriptGraphNodeProxy extends UIElement {
         this.portFontSize
       ).width
       const portX = this.x + this.w - width - this.portNamePaddingX
+
       if (
         global.rectIntersect(
           x,
@@ -265,10 +275,14 @@ export class ScriptGraphNodeProxy extends UIElement {
           2 * this.portRadius
         )
       ) {
-        hit = { port, portX, portY, in: false, index: i }
+        return {
+          port,
+          pos: { x: portX, y: portY },
+          in: false,
+          index: i,
+          node: this.node,
+        }
       }
-    })
-
-    return hit
+    }
   }
 }

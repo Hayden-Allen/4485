@@ -59,29 +59,30 @@ export class ScriptGraphLayer extends Layer {
         this.capturedRightClick = true
       }
       if (e.button === 0) {
+        // convert mouse pos to world space and check for intersection with any port in the hit node
         const port = node.checkPortIntersection(
           this.window,
           ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
         )
-        if (this.selectedPort && this.selectedPort.in ^ port.in) {
+        // if we already have a port selected and it can be connected to the new port, add an edge
+        if (port && this.selectedPort && this.selectedPort.in ^ port.in) {
           console.log(this.selectedPort)
           if (this.selectedPort.in)
             this.selectedPort.node.attachAsInput(
-              node.node,
+              port.node,
               port.index,
               this.selectedPort.index
             )
           else
             this.selectedPort.node.attachAsOutput(
               this.selectedPort.index,
-              node.node,
+              port.node,
               port.index
             )
           this.graphvis.arrange()
           this.selectedPort = undefined
         } else {
           this.selectedPort = port
-          this.selectedPort.node = node.node
         }
       }
     }
@@ -152,8 +153,8 @@ export class ScriptGraphLayer extends Layer {
 
     if (this.selectedPort) {
       this.window.drawLine(
-        this.selectedPort.portX,
-        this.selectedPort.portY,
+        this.selectedPort.pos.x,
+        this.selectedPort.pos.y,
         ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY),
         '#0f0',
         2

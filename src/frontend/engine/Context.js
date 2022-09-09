@@ -1,5 +1,4 @@
 import { global } from './Global.js'
-import { ResizeEvent } from '%window/Event.js'
 
 export class Context {
   constructor() {
@@ -15,9 +14,7 @@ export class Context {
     })
   }
   propagateResizeEvent() {
-    this.windows.forEach((window) =>
-      window.propagateEvent('onResize', new ResizeEvent())
-    )
+    this.windows.forEach((window) => window.propagateResizeEvent())
   }
   run() {
     requestAnimationFrame(this.run.bind(this))

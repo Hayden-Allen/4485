@@ -16,8 +16,9 @@ class ScriptNodeEdgeList {
   }
 }
 export class ScriptGraph extends Component {
-  constructor(debugName) {
+  constructor(debugName, inputCache, pushError, clearErrors) {
     super(debugName)
+    this.inputCache = inputCache
     // map ScriptNode.id to ScriptNode
     this.nodes = new Map()
     // map ScriptNode.id to ScriptNodeEdgeList
@@ -25,6 +26,25 @@ export class ScriptGraph extends Component {
     // nodes with no inputs
     this.startNodes = []
     this.cachedCompile = undefined
+    this._pushError = pushError
+    this.clearErrors = clearErrors
+    this.canErr = true
+  }
+  pushError(string) {
+    if (this.canErr) {
+      this._pushError({
+        level: 'error',
+        message: string,
+      })
+    }
+  }
+  pushWarning(string) {
+    if (this.canErr) {
+      this._pushError({
+        level: 'warning',
+        message: string,
+      })
+    }
   }
   addNode(node) {
     if (this.nodes.has(node.id)) {
@@ -60,36 +80,73 @@ export class ScriptGraph extends Component {
     this.edges.get(outputNode.id).out.push(edge)
     this.edges.get(inputNode.id).in.push(edge)
   }
+  /**
+   * @HATODO cleanup
+   */
+  removeEdge(outputNode, outputIndex, inputNode, inputIndex) {
+    let outputEdges = this.getEdges(outputNode).out
+    let inputEdges = this.getEdges(inputNode).in
+    this.getEdges(outputNode).out = outputEdges.filter(
+      (edge) =>
+        !(
+          edge.inputNode === inputNode &&
+          edge.inputIndex === inputIndex &&
+          edge.outputNode === outputNode &&
+          edge.outputIndex === outputIndex
+        )
+    )
+    this.getEdges(inputNode).in = inputEdges.filter(
+      (edge) =>
+        !(
+          edge.inputNode === inputNode &&
+          edge.inputIndex === inputIndex &&
+          edge.outputNode === outputNode &&
+          edge.outputIndex === outputIndex
+        )
+    )
+  }
   getEdges(node) {
     return this.edges.get(node.id)
   }
+  hasEdges(node) {
+    if (!this.edges.has(node.id)) return false
+    const edges = this.edges.get(node.id)
+    return edges.in.length || edges.out.length
+  }
+  hasInputEdge(node, inputIndex) {
+    if (!this.hasEdges(node)) return false
+    return this.getEdges(node).in.filter(
+      (edge) => edge.inputIndex === inputIndex
+    )[0]
+  }
   compile() {
-    // identify nodes to start from
+    this.clearErrors()
+    this.canErr = true
+    /**
+     * @HATODO this is where all event nodes will be detected
+     */
+    // nodes that execution will start from (event nodes)
     this.startNodes = []
+    // nodes that order-building will start from (any node with no input edges)
+    let sourceNodes = []
     this.nodes.forEach((node) => {
-      if (!this.edges.has(node.id))
-        this.logWarning(`Disconnected ${node.logMessageName()}`)
-      else if (this.edges.get(node.id).in.length === 0)
+      if (node.debugName === 'OnTick') {
         this.startNodes.push(node)
+        sourceNodes.push(node)
+      } else if (!this.getEdges(node).in.length) {
+        sourceNodes.push(node)
+      }
     })
 
     let visited = new Map()
     // a valid order to traverse this DAG, as identified by a topological sort
     let order = []
-    this.startNodes.forEach((node) => this.dfs(node, visited, order))
+    sourceNodes.forEach((node) => this.dfs(node, visited, order))
 
     return order
   }
   dfs(node, visited, order) {
-    if (visited.has(node.id)) {
-      // this node has been visited, but not fully; found a cycle
-      if (visited.get(node.id) == 1) {
-        this.logError(`${node.logMessageName()} causes a cycle`)
-        return
-      }
-      // node has been fully visited
-      return
-    }
+    if (visited.has(node.id)) return
 
     // being visited
     visited.set(node.id, 1)
@@ -109,8 +166,13 @@ export class ScriptGraph extends Component {
 
     // reset activation for all nodes
     this.nodes.forEach((node) => (node.active = false))
-    // always run start nodes
-    this.startNodes.forEach((node) => (node.active = true))
+    /**
+     * @HATODO maybe this shouldn't be the case?
+     */
+    // always run nodes with no inputs
+    this.nodes.forEach((node) => {
+      if (!this.getEdges(node).in.length) node.active = true
+    })
 
     let outputs = new Map()
 
@@ -129,11 +191,13 @@ export class ScriptGraph extends Component {
         })
       }
       // run current node with appropriate inputs; this also propagates activation to connected nodes
-      node.run(inputs, entity)
+      node.run(inputs, entity, this.inputCache)
 
       // this is a terminating node, return its output
       if (!edges.out.length) outputs.set(node.id, node.outputs)
     })
+
+    this.canErr = false
     return outputs
   }
 }

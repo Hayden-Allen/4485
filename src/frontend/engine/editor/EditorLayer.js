@@ -1,6 +1,5 @@
 import { Layer } from '%window/Layer.js'
 import { Varying } from '%component/Varying.js'
-import { global } from '%engine/Global.js'
 
 export class EditorLayer extends Layer {
   constructor(game) {
@@ -34,30 +33,30 @@ export class EditorLayer extends Layer {
     e.window.clear()
     this.game.draw(e.window)
 
-    if (this.showDebug) {
-      e.window.drawText(
-        `FPS: ${parseInt(this.fps)}`,
-        0,
-        0,
-        'Courier',
-        20,
-        '#0f0'
-      )
-    }
+    // if (this.showDebug) {
+    //   e.window.drawText(
+    //     `FPS: ${parseInt(this.fps)}`,
+    //     0,
+    //     0,
+    //     'Courier',
+    //     20,
+    //     '#0f0'
+    //   )
+    // }
 
-    if (this.paused) {
-      const cw = global.canvas.targetWidth,
-        ch = global.canvas.targetHeight
-      e.window.drawRect(0, 0, cw, ch, '#000', { alpha: 0.5 })
-      e.window.drawCenteredText(
-        'PAUSED',
-        cw / 2,
-        ch / 2,
-        'Courier',
-        this.textSize.getValue(),
-        '#0f0',
-        { theta: this.textTheta.getValue() }
-      )
-    }
+    // if (this.paused) {
+    //   const cw = global.canvas.targetWidth,
+    //     ch = global.canvas.targetHeight
+    //   e.window.drawTransparentRect(0, 0, cw, ch, '#000', 0.5)
+    //   e.window.drawCenteredText(
+    //     'PAUSED',
+    //     cw / 2,
+    //     ch / 2,
+    //     'Courier',
+    //     this.textSize.getValue(),
+    //     '#0f0',
+    //     { theta: this.textTheta.getValue() }
+    //   )
+    // }
   }
 }

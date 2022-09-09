@@ -1,6 +1,7 @@
 import { Layer } from '%window/Layer.js'
 import { ScriptGraphVisualizer } from './ScriptGraphVisualizer.js'
 import { global } from '%engine/Global.js'
+import { Vec2 } from '%util/Vec2.js'
 
 export class ScriptGraphLayer extends Layer {
   constructor(input, controls, playerScript) {
@@ -14,6 +15,7 @@ export class ScriptGraphLayer extends Layer {
     this.selected = undefined
     this.selectedX = 0
     this.selectedY = 0
+    this.hovered = undefined
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -27,26 +29,67 @@ export class ScriptGraphLayer extends Layer {
     if (hit) this.input.cursor = 'default'
   }
   onMouseDown(e) {
-    const hit = this.checkIntersection()
+    const node = this.checkIntersection()
+    const { edge, index } = this.checkEdgeIntersection()
+    // moving a node
     if (e.button === 0) {
       this.redraw = true
 
+      // deselect previous
       if (this.selected) this.selected.selected = false
-      this.selected = hit
+      // select new
+      this.selected = node || edge
       if (this.selected) {
         this.selected.selected = true
         this.selectedX = this.selected.x
         this.selectedY = this.selected.y
       }
     }
-    if (hit) {
+    // delete an edge
+    else if (e.button === 2) {
+      if (index > -1) {
+        this.graphvis.removeEdge(index)
+        this.graphvis.graph.compile()
+      }
+    }
+    if (node) {
       this.input.cursor = 'default'
       if (e.button === 2) {
         this.input.canDrag = false
         this.capturedRightClick = true
       }
+      if (e.button === 0) {
+        // convert mouse pos to world space and check for intersection with any port in the hit node
+        const port = node.checkPortIntersection(
+          this.window,
+          ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
+        )
+        // if we already have a port selected and it can be connected to the new port, add an edge
+        if (port && this.selectedPort && this.selectedPort.in ^ port.in) {
+          console.log(this.graphvis.graph.getEdges(this.selectedPort.node))
+          console.log(this.graphvis.graph.getEdges(port.node))
+          if (this.selectedPort.in)
+            this.selectedPort.node.attachAsInput(
+              port.node,
+              port.index,
+              this.selectedPort.index
+            )
+          else
+            this.selectedPort.node.attachAsOutput(
+              this.selectedPort.index,
+              port.node,
+              port.index
+            )
+          console.log(this.graphvis.graph.getEdges(this.selectedPort.node))
+          console.log(this.graphvis.graph.getEdges(port.node))
+          this.graphvis.arrange()
+          this.selectedPort = undefined
+        } else {
+          this.selectedPort = port
+        }
+      }
     }
-    return hit
+    return node
   }
   onMouseUp(e) {
     this.input.canDrag = true
@@ -62,19 +105,30 @@ export class ScriptGraphLayer extends Layer {
     if (this.selected && this.input.leftMousePressed) {
       this.redraw = true
       this.controls.setTransform(this.window.ctx)
-      const t = this.window.ctx.getTransform()
       // transform mouse screen->world
-      const sx = (this.input.mouseX - t.e) / t.a
-      const sy = (this.input.mouseY - t.f) / t.d
-      // account for stretching
-      let [wx, wy] = this.window.inverseTransformCoords(sx, sy)
-      // move by center
+      const [wx, wy] = this.inverseTransformCoords(
+        this.input.mouseX,
+        this.input.mouseY
+      )
+      // move node by its center
       this.selected.x = wx - this.selected.w / 2
       this.selected.y = wy - this.selected.h / 2
     }
 
+    const { index, edge } = this.checkEdgeIntersection()
     const hit = this.checkIntersection()
-    if (hit) this.input.cursor = 'default'
+    if (index > -1) {
+      this.input.cursor = 'default'
+      this.hovered = edge
+    } else if (hit) {
+      this.input.cursor = 'default'
+      this.hovered = hit
+    } else {
+      this.hovered = undefined
+      // need to redraw once to get rid of the outline
+      this.redraw = true
+    }
+
     return this.capturedRightClick && hit
   }
   onKeyDown(e) {
@@ -87,66 +141,116 @@ export class ScriptGraphLayer extends Layer {
     this.redraw = true
   }
   onRender(e) {
-    if (this.selected) {
+    // outline opacity changes over time
+    if (this.selected || this.hovered) {
       this.redraw = true
     }
 
-    /**
-     * @HATODO sometimes the draw doesn't show up, even if this check passes
-     */
-    if (!this.redraw) return
-    this.redraw = false
+    // if (!this.redraw) return
+    // this.redraw = false
 
     e.window.ctx.resetTransform()
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
     this.graphvis.draw(e.window, this.controls.zoom)
+
+    if (this.selectedPort) {
+      const { x, y } = this.selectedPort.in
+        ? this.selectedPort.proxy.getInPortCoords(this.selectedPort.index)
+        : this.selectedPort.proxy.getOutPortCoords(this.selectedPort.index)
+      this.window.drawLine(
+        x,
+        y,
+        ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY),
+        this.selectedPort.color,
+        2
+      )
+    }
   }
   checkIntersection() {
-    const [mx, my] = [this.input.mouseX, this.input.mouseY]
-
     let hit = undefined
     this.graphvis.proxies.forEach((proxy) => {
       if (hit) return
 
-      const [px, py] = this.transformCoordsWorld2Screen(proxy.x, proxy.y)
+      const [px, py] = this.transformCoords(proxy.x, proxy.y)
       const [pw, ph] = this.transformDims(proxy.w, proxy.h)
 
-      if (global.rectIntersect(mx, my, px, py, pw, ph)) hit = proxy
+      if (
+        global.rectIntersect(
+          this.input.mouseX,
+          this.input.mouseY,
+          px,
+          py,
+          pw,
+          ph
+        )
+      ) {
+        hit = proxy
+        proxy.hovered = true
+      } else proxy.hovered = false
     })
 
     return hit
   }
-  // world -> screen
-  transformCoordsWorld2Screen(x, y) {
-    this.controls.setTransform(this.window.ctx)
-    const t = this.window.ctx.getTransform()
-    let [tx, ty] = this.window.transformCoords(x, y)
+  checkEdgeIntersection() {
+    let index = -1,
+      edge = undefined
+    this.graphvis.edgeProxies.forEach((proxy, i) => {
+      // get edge bounds (world space)
+      const { x: startX, y: startY } = proxy.getStartCoords()
+      const { x: endX, y: endY } = proxy.getEndCoords()
+      // transform into canvas space
+      // edge (x, y) = (1 - t) * (startX, startY) + t * (endX, endY)
+      const [screenStartX, screenStartY] = this.transformCoords(startX, startY)
+      const [screenEndX, screenEndY] = this.transformCoords(endX, endY)
+
+      // compute min distance from cursor to edge
+      const edgeOrigin = new Vec2(screenStartX, screenStartY)
+      const edgeDir = new Vec2(
+        screenStartX - screenEndX,
+        screenStartY - screenEndY
+      )
+      // constant-normal form of the line
+      const n = edgeDir.perpendicular().norm()
+      const c = n.dot(edgeOrigin)
+      // project cursor coords (already in canvas space) onto the edge
+      const mv = new Vec2(this.input.mouseX, this.input.mouseY)
+      const distance = n.dot(mv) - c
+
+      // if no other edge has been hit yet and cursor is within a reasonable distance of the line
+      if (
+        index === -1 &&
+        Math.abs(distance) <= 10 &&
+        mv.x >= Math.min(screenEndX, screenStartX) &&
+        mv.x <= Math.max(screenEndX, screenStartX)
+      ) {
+        index = i
+        edge = proxy
+        proxy.hovered = true
+      } else proxy.hovered = false
+    })
+    return { index, edge }
+  }
+  // world->canvas
+  transformCoords(x, y) {
+    const t = this.controls.setTransform(this.window.ctx)
+    let [tx, ty] = this.window.scaleCoords(x, y)
     tx = t.a * tx + t.e
     ty = t.d * ty + t.f
     return [tx, ty]
   }
-  // screen -> world
-  transformCoordsScreen2World(x, y) {
-    this.controls.setTransform(this.window.ctx)
-    const t = this.window.ctx.getTransform()
-    x = (x - t.e) / t.a
-    y = (y - t.f) / t.d
-    return [x, y]
+  // screen->world
+  inverseTransformCoords(x, y) {
+    const t = this.controls.setTransform(this.window.ctx)
+    const screenX = (x - t.e) / t.a
+    const screenY = (y - t.f) / t.d
+    const s = this.window.getScalingFactor()
+    return [Math.floor(screenX / s), Math.floor(screenY / s)]
   }
-  // screen -> world
-  transformCoordsScreen2World2(x, y) {
-    this.controls.setTransform(this.window.ctx)
-    const t = this.window.ctx.getTransform()
-    let [tx, ty] = this.window.inverseTransformCoords(x, y)
-    tx = (tx - t.e) / t.a
-    ty = (ty - t.f) / t.d
-    return [tx, ty]
-  }
+  // world->canvas
   transformDims(w, h) {
-    this.controls.setTransform(this.window.ctx)
-    const t = this.window.ctx.getTransform()
-    let [tw, th] = this.window.transformDims(w, h)
+    const t = this.controls.setTransform(this.window.ctx)
+    let [tw, th] = this.window.scaleDims(w, h)
     tw *= t.a
     th *= t.d
     return [tw, th]

@@ -1,67 +1,102 @@
-import { ScriptGraphProxy, PORT_COLOR } from './ScriptGraphProxy.js'
+import { ScriptGraphNodeProxy } from './ScriptGraphNodeProxy.js'
+import { ScriptGraphEdgeProxy } from './ScriptGraphEdgeProxy.js'
+import { Varying } from '%component/Varying.js'
 
 const PADDING_X = 100,
   PADDING_Y = 50
+export const PORT_COLOR = {
+  int: {
+    name: '#f59e0b',
+    dot: '#d97706',
+    edge: '#b45309',
+  },
+  float: {
+    name: '#f59e0b',
+    dot: '#d97706',
+    edge: '#b45309',
+  },
+  number: {
+    name: '#f59e0b',
+    dot: '#d97706',
+    edge: '#b45309',
+  },
+
+  object: {
+    name: '#22c55e',
+    dot: '#16a34a',
+    edge: '#15803d',
+  },
+  bool: {
+    name: '#0ea5e9',
+    dot: '#0284c7',
+    edge: '#0369a1',
+  },
+  string: {
+    name: '#f43f5e',
+    dot: '#e11d48',
+    edge: '#be123c',
+  },
+
+  array: {
+    name: '#e5e7eb',
+    dot: '#d1d5db',
+    edge: '#9ca3af',
+  },
+  any: {
+    name: '#e5e7eb',
+    dot: '#d1d5db',
+    edge: '#9ca3af',
+  },
+}
 export class ScriptGraphVisualizer {
   constructor(window, graph) {
     this.graph = graph
     this.columns = []
     // map ScriptNode.id to its ScriptGraphProxy
     this.proxies = new Map()
+    this.edgeProxies = []
     // mantains draw order as nodes are selected
     this.drawStack = []
+    this.window = window
+
+    this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.5 })
+    this.outlineColor = '#fff'
+  }
+  generateProxies() {
+    this.drawStack = []
+    // create all node proxies
     this.graph.nodes.forEach((node) => {
-      const proxy = new ScriptGraphProxy(window, node)
+      const proxy = new ScriptGraphNodeProxy(this.window, node)
       this.proxies.set(node.id, proxy)
       this.drawStack.push(proxy)
     })
-    this.activationEdgeColor = '#facc15'
-    this.edgeWidth = 2
-  }
-  draw(window, zoom) {
-    // draw edges
+    this.edgeProxies = []
+    // create all edge proxies using node proxies
     this.graph.nodes.forEach((node) => {
-      const outboundEdges = this.graph.getEdges(node).out
-      outboundEdges.forEach((edge) => {
-        const startCoords = this.proxies
-          .get(edge.outputNode.id)
-          .getOutPortCoords(edge.outputIndex)
-        const endCoords = this.proxies
-          .get(edge.inputNode.id)
-          .getInPortCoords(edge.inputIndex)
-
-        let color = undefined
-        // if the current edge only carries activation
-        if (
-          edge.inputIndex === -1 ||
-          !edge.outputNode.data.outputPorts.length
-        ) {
-          color = this.activationEdgeColor
-        } else {
-          // get scaled coordinates
-          const [sx, sy] = window.transformCoords(startCoords.x, startCoords.y)
-          const [ex, ey] = window.transformCoords(endCoords.x, endCoords.y)
-          // draw the line using a gradient between the two port's colors
-          color = window.ctx.createLinearGradient(sx, sy, ex, ey)
-          const outType =
-            edge.outputNode.data.outputPorts[edge.outputIndex].typename
-          const inType =
-            edge.inputNode.data.inputPorts[edge.inputIndex].typename
-          color.addColorStop(0, PORT_COLOR[outType].edge)
-          color.addColorStop(1, PORT_COLOR[inType].edge)
-        }
-
-        window.drawLine(
-          startCoords.x,
-          startCoords.y,
-          endCoords.x,
-          endCoords.y,
-          color,
-          { width: this.edgeWidth }
+      this.graph.edges.get(node.id).out.forEach((edge) => {
+        const proxy = new ScriptGraphEdgeProxy(
+          this.proxies.get(edge.outputNode.id),
+          edge.outputIndex,
+          this.proxies.get(edge.inputNode.id),
+          edge.inputIndex
         )
+        this.edgeProxies.push(proxy)
       })
     })
-    // move selected node if necessary
+  }
+  removeEdge(index) {
+    const [edge] = this.edgeProxies.splice(index, 1)
+    this.graph.removeEdge(
+      edge.startProxy.node,
+      edge.startPort,
+      edge.endProxy.node,
+      edge.endPort
+    )
+  }
+  draw(window, zoom) {
+    this.edgeProxies.forEach((proxy) => proxy.draw(this, window))
+
+    // move selected node to top of stack if necessary
     let selectedIndex = -1
     for (var i = 0; i < this.drawStack.length - 1; i++)
       if (this.drawStack[i].selected) selectedIndex = i
@@ -69,14 +104,15 @@ export class ScriptGraphVisualizer {
       const [selected] = this.drawStack.splice(selectedIndex, 1)
       this.drawStack.push(selected)
     }
-    // draw nodes
-    this.drawStack.forEach((proxy) => proxy.draw(window, zoom))
+    this.drawStack.forEach((proxy) => proxy.draw(this, window, zoom))
   }
   arrange() {
     let columns = []
     // x-axis
     {
       const order = this.graph.compile()
+      console.log(order)
+      this.generateProxies()
       let columnIndex = new Map()
 
       // traverse nodes in topological order; this corresponds to left->right visual order
@@ -88,6 +124,8 @@ export class ScriptGraphVisualizer {
           let maxColumn = 0
           inboundEdges.forEach((edge) => {
             // find the rightmost parent of the current node
+            if (!columnIndex.has(edge.outputNode.id))
+              console.log(`Missing ${edge.outputNode.debugName}`)
             maxColumn = Math.max(maxColumn, columnIndex.get(edge.outputNode.id))
           })
           // put current node one column right of rightmost parent
@@ -97,6 +135,7 @@ export class ScriptGraphVisualizer {
         // create new column if necessary
         if (!columns[column]) columns[column] = new Map()
         // add current node to column
+        console.log(`set ${node.debugName} ${column}`)
         columns[column].set(node.id, node)
         columnIndex.set(node.id, column)
       })
@@ -136,8 +175,10 @@ export class ScriptGraphVisualizer {
 
       // update proxies with new x values (all proxies within a column are left-justified)
       this.proxies.forEach((proxy) => {
-        proxy.x = baseX[columnIndex.get(proxy.node.id)]
+        const index = columnIndex.get(proxy.node.id)
+        proxy.x = baseX[index]
       })
+      // this.proxies.forEach((proxy) => console.log(proxy.x))
     }
     //y-axis
     {
@@ -187,16 +228,18 @@ export class ScriptGraphVisualizer {
         columns[i].forEach((parent) => {
           let averageY = 0
           let currentChildren = children.get(parent.id)
-          currentChildren.forEach((child) => {
-            // base y of current child
-            averageY += this.proxies.get(child.id).y
-            // account for the port of the current child the current parent is attached to
-            const port = this.graph
-              .getEdges(child)
-              .in.find((edge) => edge.outputNode.id === parent.id).inputIndex
-            averageY += port
-          })
-          averageY /= currentChildren.length
+          if (currentChildren.length) {
+            currentChildren.forEach((child) => {
+              // base y of current child
+              averageY += this.proxies.get(child.id).y
+              // account for the port of the current child the current parent is attached to
+              const port = this.graph
+                .getEdges(child)
+                .in.find((edge) => edge.outputNode.id === parent.id).inputIndex
+              averageY += port
+            })
+            averageY /= currentChildren.length
+          }
           sortedColumn.push({ y: averageY, node: parent })
         })
         // sort all nodes in current column based on their current y value
@@ -228,7 +271,7 @@ export class ScriptGraphVisualizer {
           this.proxies.get(sorted[0].node.id).y = this.computeAverageParentY(
             columns,
             i,
-            sorted[0].node
+            sorted[0]
           )
         }
         // if there are multiple nodes in current column, try to set them to their ideal positions, but prevent overlapping with other nodes
@@ -237,11 +280,7 @@ export class ScriptGraphVisualizer {
           for (var j = sorted.length - 1; j > 0; j--) {
             let currentProxy = this.proxies.get(sorted[j].node.id)
             const aboveProxy = this.proxies.get(sorted[j - 1].node.id)
-            const averageY = this.computeAverageParentY(
-              columns,
-              i,
-              sorted[j].node
-            )
+            const averageY = this.computeAverageParentY(columns, i, sorted[j])
 
             // if the ideal position is sufficiently beneath the proxy above
             if (averageY >= aboveProxy.y + aboveProxy.h + PADDING_Y) {
@@ -267,9 +306,12 @@ export class ScriptGraphVisualizer {
     columns[column - 1].forEach((parent) => {
       const outboundEdges = this.graph.getEdges(parent).out
       outboundEdges.forEach((edge) => {
-        if (edge.inputNode.id === child.id) parents.push(parent)
+        if (edge.inputNode.id === child.node.id) parents.push(parent)
       })
     })
+
+    if (!parents.length) return child.y
+
     let avgy = 0
     parents.forEach((parent) => (avgy += this.proxies.get(parent.id).y))
     return avgy / parents.length

@@ -2,12 +2,14 @@
   import { onMount } from 'svelte'
   import Viewport from './Viewport.svelte'
   import Splitter from './Splitter.svelte'
+  import Logger from './Logger.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
   import { SceneEntity, ControlledSceneEntity } from '%component/SceneEntity.js'
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
-  import { Window } from '%window/Window.js'
+  import { Window2D } from '%window/Window2D.js'
+  import { Window3D } from '%window/Window3D.js'
   import { EditorLayer } from '%editor/EditorLayer.js'
   import { ScriptGraphInputLayer } from '%editor/ScriptGraphInputLayer.js'
   import { ScriptGraphLayer } from '%editor/ScriptGraphLayer.js'
@@ -28,9 +30,11 @@
     scriptCanvas = undefined
 
   let gameWindow = undefined,
-    scriptWindow = undefined
+    scriptWindow = undefined,
+    playerScript = undefined,
+    playerScriptErrors = []
 
-  function createPlayerScript() {
+  function createPlayerScript(inputCache) {
     const tOnTick = new EventScriptNodeTemplate('OnTick')
     const tKeyPressed = new InternalScriptNodeTemplate(
       'KeyPressed',
@@ -41,8 +45,8 @@
         new ScriptNodePort('F', 'bool'),
         new ScriptNodePort('int', 'int'),
       ],
-      (_, { internal }) => {
-        const pressed = global.input.isKeyPressed(internal[0])
+      (_, { internal, input }) => {
+        const pressed = input.isKeyPressed(internal[0])
         return [
           { value: pressed, active: pressed },
           { value: !pressed, active: !pressed },
@@ -85,7 +89,10 @@
       'Vec2',
       [new ScriptNodePort('x', 'number'), new ScriptNodePort('y', 'number')],
       [new ScriptNodePort('v', 'object')],
-      ([x, y]) => [{ value: new Vec2(x, y) }]
+      ([x, y]) => {
+        //console.log(x, y)
+        return [{ value: new Vec2(x, y) }]
+      }
     )
     const tNormalize = new ScriptNodeTemplate(
       'Normalize',
@@ -105,7 +112,12 @@
       }
     )
 
-    let graph = new ScriptGraph('PlayerController')
+    let graph = new ScriptGraph(
+      'PlayerController',
+      inputCache,
+      (s) => (playerScriptErrors = [...playerScriptErrors, s]),
+      () => (playerScriptErrors = [])
+    )
     const onTick = tOnTick.createNode(graph)
     // get input
     const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
@@ -133,8 +145,8 @@
     norm.attachAsInput(vec2, 0, 0)
 
     // boost if shift pressed
-    const ci1 = tConstInt.createNode(graph, [500])
-    const ci2 = tConstInt.createNode(graph, [1000])
+    const ci1 = tConstInt.createNode(graph, [25])
+    const ci2 = tConstInt.createNode(graph, [50])
     const mux = tMux2.createNode(graph)
     mux.attachAsInput(keyShiftPressed, 2, 0)
     mux.attachAsInput(ci1, 0, 1)
@@ -161,43 +173,73 @@
     global.init(context)
     var game = new Game(context)
 
+    gameWindow = new Window3D(gameCanvas, [0, 0, 1, 1])
+
     var scene = new Scene()
     game.setCurrentScene(scene)
     const size = 10
+    let vertices = [],
+      indices = [],
+      i = 0
     for (var y = 0; y < 500; y += size) {
       for (var x = 0; x < 500; x += size) {
-        const red = parseInt((((x + y) * (x + y)) / 1000000) * 255)
-        const color = `#${global.padZeroes(red.toString(16), 2)}0000`
-        // create grid at z-index 0
-        game.addStaticSceneEntity(
-          new SceneEntity(
-            new Vec2(x + 100, y + 100),
-            new Vec2(size, size),
-            color
-          ),
-          0
+        const sx = x / 10,
+          sy = y / 10
+        const s = 1
+        vertices.push(
+          sx,
+          sy,
+          0,
+          0,
+          sx + s,
+          sy,
+          1,
+          0,
+          sx + s,
+          sy + s,
+          1,
+          1,
+          sx,
+          sy + s,
+          0,
+          1,
         )
+        const b = i * 4
+        indices.push(b, b + 1, b + 2, b, b + 2, b + 3)
+        i++
       }
     }
-    let playerScript = createPlayerScript()
+    game.addStaticSceneEntity(
+      new SceneEntity(
+        gameWindow,
+        new Vec2(0, 0),
+        new Vec2(0, 0),
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        { vertices, indices }
+      ),
+      0
+    )
+
+    playerScript = createPlayerScript(gameWindow.inputCache)
     let playerController = {
       run: (player /* deltaTimeSeconds */) => {
         playerScript.run(player)
       },
     }
     let player = new ControlledSceneEntity(
-      new Vec2(1000, 100),
+      gameWindow,
+      // new Vec2(1000, 100),
+      new Vec2(0, 0),
       new Vec2(50, 50),
-      '#0f0',
+      'https://art.pixilart.com/840bcbc293e372f.png',
       { controllers: [playerController] }
     )
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    gameWindow = new Window(gameCanvas, '#00f')
     gameWindow.pushLayer(new EditorLayer(game))
 
-    scriptWindow = new Window(scriptCanvas)
+    scriptWindow = new Window2D(scriptCanvas)
     let scriptGraphInputLayer = new ScriptGraphInputLayer()
     let scriptGraphControlsLayer = new ScriptGraphControlsLayer(
       scriptGraphInputLayer,
@@ -281,13 +323,14 @@
       maxSplit={0.9}
     />
     <div
-      class="grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="relative grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
       style={`flex-basis: ${topRightBasis}%;`}
     >
       <Viewport
         bind:canvas={scriptCanvas}
         onResize={() => context.propagateResizeEvent()}
       />
+      <Logger errors={playerScriptErrors} />
     </div>
   </div>
   <Splitter
@@ -304,7 +347,9 @@
     <div
       class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
       style={`flex-basis: ${bottomLeftBasis}%;`}
-    />
+    >
+      <p id="fps" class="text-gray-100" />
+    </div>
     <Splitter
       bind:context
       bind:split={leftSplit}

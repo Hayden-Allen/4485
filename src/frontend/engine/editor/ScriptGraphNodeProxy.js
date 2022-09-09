@@ -1,61 +1,26 @@
-import { Varying } from '%component/Varying.js'
+import { PORT_COLOR } from './ScriptGraphVisualizer.js'
+import { UIElement } from './UIElement.js'
+import { global } from '%engine/Global.js'
 
 const HEIGHT_PADDING = 16
-export const PORT_COLOR = {
-  int: {
-    name: '#f59e0b',
-    dot: '#d97706',
-    edge: '#b45309',
-  },
-  float: {
-    name: '#f59e0b',
-    dot: '#d97706',
-    edge: '#b45309',
-  },
-  number: {
-    name: '#f59e0b',
-    dot: '#d97706',
-    edge: '#b45309',
-  },
-
-  object: {
-    name: '#22c55e',
-    dot: '#16a34a',
-    edge: '#15803d',
-  },
-  bool: {
-    name: '#0ea5e9',
-    dot: '#0284c7',
-    edge: '#0369a1',
-  },
-  string: {
-    name: '#f43f5e',
-    dot: '#e11d48',
-    edge: '#be123c',
-  },
-
-  array: {
-    name: '#e5e7eb',
-    dot: '#d1d5db',
-    edge: '#9ca3af',
-  },
-  any: {
-    name: '#e5e7eb',
-    dot: '#d1d5db',
-    edge: '#9ca3af',
-  },
-}
-export class ScriptGraphProxy {
+const LINE_WIDTH = [2, 4]
+const COLORS = [
+  { shadow: '#0007', node: '#334155', outline: '#6b7280' },
+  { shadow: '#0007', node: '#334155', outline: '#e2e8f0' },
+]
+export class ScriptGraphNodeProxy extends UIElement {
   constructor(window, node) {
+    super(LINE_WIDTH, COLORS)
     this.node = node
     this.x = 0
     this.y = 0
+    this.selectedPort = undefined
 
     this.font = 'sans-serif'
     this.nameFontSize = 32
     this.portFontSize = 24
     this.portRadius = 8
-    this.portNameXPadding = this.portRadius * 2
+    this.portNamePaddingX = this.portRadius * 2
     this.portDotOffset = 10
 
     // compute name height
@@ -77,13 +42,13 @@ export class ScriptGraphProxy {
         inWidth = Math.max(
           inWidth,
           window.textMetrics(inPorts[i].name, this.font, this.portFontSize)
-            .width + this.portNameXPadding
+            .width + this.portNamePaddingX
         )
       if (i < outPorts.length)
         outWidth = Math.max(
           outWidth,
           window.textMetrics(outPorts[i].name, this.font, this.portFontSize)
-            .width + this.portNameXPadding
+            .width + this.portNamePaddingX
         )
     }
     this.w = Math.max(inWidth + outWidth, Math.ceil(text.width)) + 32
@@ -102,30 +67,21 @@ export class ScriptGraphProxy {
       this.h =
         this.nameHeight + this.portHeight * this.maxPortCount + HEIGHT_PADDING
     else this.h = this.nameHeight
-
-    this.colors = [
-      { shadow: '#0007', node: '#334155', outline: '#6b7280' },
-      { shadow: '#0007', node: '#334155', outline: '#dc2626' },
-    ]
-    this.outlineSize = [2, 4]
-    this.selected = false
-    this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.0 })
   }
-  draw(window, zoom) {
+  draw(visualizer, window, zoom) {
     const tx = this.x,
       ty = this.y
+    const selected = ~~(this.selected || this.hovered)
     // node
-    window.drawRoundRect(
+    window.drawRoundRectShadow(
       tx,
       ty,
       this.w,
       this.h,
       this.portRadius,
-      this.colors[~~this.selected].shadow,
-      {
-        shadowBlur: 6 * zoom,
-        shadowOffsetY: 4 * zoom,
-      }
+      this.colors[selected].shadow,
+      6 * zoom,
+      4 * zoom
     )
     window.drawRoundRect(
       tx,
@@ -133,9 +89,9 @@ export class ScriptGraphProxy {
       this.w,
       this.h,
       this.portRadius,
-      this.colors[~~this.selected].node
+      this.colors[selected].node
     )
-    const lineWidth = this.outlineSize[~~this.selected] / Math.min(zoom, 1)
+    const lineWidth = this.lineWidth[selected] / Math.min(zoom, 1)
     // name underline
     if (this.maxPortCount)
       window.drawLine(
@@ -144,21 +100,18 @@ export class ScriptGraphProxy {
         tx + this.w,
         ty + this.nameHeight,
         '#6b7280',
-        { width: lineWidth }
+        this.lineWidth[0]
       )
     // node outline
-    window.drawRoundRect(
+    window.strokeRoundRect(
       tx,
       ty,
       this.w,
       this.h,
       this.portRadius,
-      this.colors[~~this.selected].outline,
-      {
-        stroke: true,
-        width: lineWidth,
-        alpha: this.selected ? this.outlineAlpha.getValue() : 1,
-      }
+      this.colors[selected].outline,
+      lineWidth,
+      selected ? visualizer.outlineAlpha.getValue() : 1
     )
     // name
     window.drawCenteredText(
@@ -183,11 +136,24 @@ export class ScriptGraphProxy {
       )
       window.drawText(
         port.name,
-        tx + this.portNameXPadding,
+        tx + this.portNamePaddingX,
         portY,
         this.font,
         this.portFontSize,
         PORT_COLOR[port.typename].name
+      )
+      const width = window.textMetrics(
+        port.name,
+        this.font,
+        this.portFontSize
+      ).width
+      window.strokeRect(
+        tx,
+        portY,
+        this.portNamePaddingX + width,
+        2 * this.portRadius,
+        this.selectedPort === port ? '#00f' : '#f00',
+        1
       )
     })
     this.node.data.outputPorts.forEach((port, i) => {
@@ -207,11 +173,19 @@ export class ScriptGraphProxy {
       ).width
       window.drawText(
         port.name,
-        tx + this.w - width - this.portNameXPadding,
+        tx + this.w - width - this.portNamePaddingX,
         portY,
         this.font,
         this.portFontSize,
         PORT_COLOR[port.typename].name
+      )
+      window.strokeRect(
+        tx + this.w - width - this.portNamePaddingX,
+        portY,
+        width + this.portNamePaddingX,
+        2 * this.portRadius,
+        this.selectedPort === port ? '#00f' : '#f00',
+        1
       )
     })
     /**
@@ -221,7 +195,7 @@ export class ScriptGraphProxy {
       const portY = portBaseY + i * this.portHeight
       window.drawText(
         `${port.name}: ${this.node.internalValues[i]}`,
-        tx + this.portNameXPadding,
+        tx + this.portNamePaddingX,
         portY,
         this.font,
         this.portFontSize,
@@ -246,5 +220,71 @@ export class ScriptGraphProxy {
       y = this.nameHeight + this.portHeight * (0.5 + i) + this.portDotOffset
     }
     return { x: this.x + this.w, y: this.y + y }
+  }
+  checkPortIntersection(window, x, y) {
+    const portBaseY = this.y + this.nameHeight + this.portHeight / 2
+
+    const data = this.node.data
+    for (let i = 0; i < data.inputPorts.length; i++) {
+      const port = data.inputPorts[i]
+      const portX = this.x
+      const portY = portBaseY + i * this.portHeight
+      const width = window.textMetrics(
+        port.name,
+        this.font,
+        this.portFontSize
+      ).width
+
+      if (
+        global.rectIntersect(
+          x,
+          y,
+          portX,
+          portY,
+          width + this.portNamePaddingX,
+          2 * this.portRadius
+        )
+      ) {
+        return {
+          port,
+          in: true,
+          index: i,
+          proxy: this,
+          node: this.node,
+          color: PORT_COLOR[port.typename].edge,
+        }
+      }
+    }
+
+    for (let i = 0; i < data.outputPorts.length; i++) {
+      const port = data.outputPorts[i]
+      const portY = portBaseY + i * this.portHeight
+      const width = window.textMetrics(
+        port.name,
+        this.font,
+        this.portFontSize
+      ).width
+      const portX = this.x + this.w - width - this.portNamePaddingX
+
+      if (
+        global.rectIntersect(
+          x,
+          y,
+          portX,
+          portY,
+          width + this.portNamePaddingX,
+          2 * this.portRadius
+        )
+      ) {
+        return {
+          port,
+          in: false,
+          index: i,
+          proxy: this,
+          node: this.node,
+          color: PORT_COLOR[port.typename].edge,
+        }
+      }
+    }
   }
 }

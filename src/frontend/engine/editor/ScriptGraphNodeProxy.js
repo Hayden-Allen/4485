@@ -2,59 +2,81 @@ import { PORT_COLOR } from './ScriptGraphVisualizer.js'
 import { UIElement } from './UIElement.js'
 import { global } from '%engine/Global.js'
 
-const HEIGHT_PADDING = 16
 const LINE_WIDTH = [2, 4]
 const COLORS = [
   { shadow: '#0007', node: '#334155', outline: '#6b7280' },
   { shadow: '#0007', node: '#334155', outline: '#e2e8f0' },
 ]
+const FONT_FAMILY = 'sans-serif',
+  NAME_FONT_SIZE = 32,
+  PORT_FONT_SIZE = 32,
+  PORT_RADIUS = 12,
+  PORT_NAME_PADDING_X = PORT_RADIUS * 2,
+  PORT_DOT_OFFSET = 10,
+  WIDTH_PADDING = 32,
+  HEIGHT_PADDING = 16,
+  SHADOW_BLUR_FACTOR = 6,
+  SHADOW_OFFSET_Y_FACTOR = 4
 export class ScriptGraphNodeProxy extends UIElement {
   constructor(window, node) {
     super(LINE_WIDTH, COLORS)
     this.node = node
     this.x = 0
     this.y = 0
-    this.selectedPort = undefined
-
-    this.font = 'sans-serif'
-    this.nameFontSize = 32
-    this.portFontSize = 32
-    this.portRadius = 12
-    this.portNamePaddingX = this.portRadius * 2
-    this.portDotOffset = 10
-
+    this.nameHeight = 0
+    this.w = 0
+    this.h = 0
+    this.portHeight = 0
+    this.maxPortCount = 0
+    this.init(window)
+  }
+  init(window) {
     // compute name height
     let text = window.textMetrics(
       this.node.debugName,
-      this.font,
-      this.nameFontSize
+      FONT_FAMILY,
+      NAME_FONT_SIZE
     )
     this.nameHeight =
       (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent) * 2
 
     // compute node width
-    const inPorts = this.node.data.inputPorts,
-      outPorts = this.node.data.outputPorts
+    const { inputPorts, outputPorts, internalPorts } = this.node.data
     let inWidth = 0,
+      internalWidth = 0,
       outWidth = 0
-    for (var i = 0; i < Math.max(inPorts.length, outPorts.length); i++) {
-      if (i < inPorts.length)
+    for (
+      var i = 0;
+      i < Math.max(inputPorts.length, outputPorts.length, internalPorts.length);
+      i++
+    ) {
+      if (i < inputPorts.length)
         inWidth = Math.max(
           inWidth,
-          window.textMetrics(inPorts[i].name, this.font, this.portFontSize)
-            .width + this.portNamePaddingX
+          window.textMetrics(inputPorts[i].name, FONT_FAMILY, PORT_FONT_SIZE)
+            .width + PORT_NAME_PADDING_X
         )
-      if (i < outPorts.length)
+      if (i < outputPorts.length)
         outWidth = Math.max(
           outWidth,
-          window.textMetrics(outPorts[i].name, this.font, this.portFontSize)
-            .width + this.portNamePaddingX
+          window.textMetrics(outputPorts[i].name, FONT_FAMILY, PORT_FONT_SIZE)
+            .width + PORT_NAME_PADDING_X
+        )
+      if (i < internalPorts.length)
+        internalWidth = Math.max(
+          internalWidth,
+          window.textMetrics(internalPorts[i].name, FONT_FAMILY, PORT_FONT_SIZE)
+            .width + PORT_NAME_PADDING_X
         )
     }
-    this.w = Math.max(inWidth + outWidth, Math.ceil(text.width)) + 32
+    if (internalWidth)
+      console.log(inWidth + internalWidth + outWidth, Math.ceil(text.width))
+    this.w =
+      Math.max(inWidth + internalWidth + outWidth, Math.ceil(text.width)) +
+      WIDTH_PADDING
 
     // compute port height
-    text = window.textMetrics(this.node.debugName, this.font, this.portFontSize)
+    text = window.textMetrics(this.node.debugName, FONT_FAMILY, PORT_FONT_SIZE)
     this.portHeight =
       (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent) * 2
 
@@ -78,19 +100,20 @@ export class ScriptGraphNodeProxy extends UIElement {
       ty,
       this.w,
       this.h,
-      this.portRadius,
+      PORT_RADIUS,
       this.colors[selected].shadow,
-      6 * zoom,
-      4 * zoom
+      SHADOW_BLUR_FACTOR * zoom,
+      SHADOW_OFFSET_Y_FACTOR * zoom
     )
     window.drawRoundRect(
       tx,
       ty,
       this.w,
       this.h,
-      this.portRadius,
+      PORT_RADIUS,
       this.colors[selected].node
     )
+    // make sure lines are still visible when zoomed out
     const lineWidth = this.lineWidth[selected] / Math.min(zoom, 1)
     // name underline
     if (this.maxPortCount)
@@ -108,7 +131,7 @@ export class ScriptGraphNodeProxy extends UIElement {
       ty,
       this.w,
       this.h,
-      this.portRadius,
+      PORT_RADIUS,
       this.colors[selected].outline,
       lineWidth,
       selected ? visualizer.outlineAlpha.getValue() : 1
@@ -118,73 +141,74 @@ export class ScriptGraphNodeProxy extends UIElement {
       this.node.debugName,
       tx + this.w / 2,
       ty + this.nameHeight / 2,
-      this.font,
-      this.nameFontSize,
+      FONT_FAMILY,
+      NAME_FONT_SIZE,
       '#f9fafb'
     )
     // ports
-    const portBaseY = ty + this.nameHeight + this.portHeight / 2
     this.node.data.inputPorts.forEach((port, i) => {
-      const portY = portBaseY + i * this.portHeight - this.portDotOffset / 2
+      const portY =
+        this.getPortBaseY() + i * this.portHeight - PORT_DOT_OFFSET / 2
       window.drawArc(
         tx - 2,
-        portY + this.portDotOffset,
-        this.portRadius,
+        portY + PORT_DOT_OFFSET,
+        PORT_RADIUS,
         -Math.PI / 2,
         Math.PI / 2,
         PORT_COLOR[port.typename].dot
       )
       window.drawText(
         port.name,
-        tx + this.portNamePaddingX,
+        tx + PORT_NAME_PADDING_X,
         portY,
-        this.font,
-        this.portFontSize,
+        FONT_FAMILY,
+        PORT_FONT_SIZE,
         PORT_COLOR[port.typename].name
       )
       const width = window.textMetrics(
         port.name,
-        this.font,
-        this.portFontSize
+        FONT_FAMILY,
+        PORT_FONT_SIZE
       ).width
       window.strokeRect(
         tx,
         portY,
-        this.portNamePaddingX + width,
-        2 * this.portRadius,
-        this.selectedPort === port ? '#00f' : '#f00',
+        PORT_NAME_PADDING_X + width,
+        2 * PORT_RADIUS,
+        '#f00',
         1
       )
     })
     this.node.data.outputPorts.forEach((port, i) => {
-      const portY = portBaseY + i * this.portHeight - this.portDotOffset / 2
+      const portY =
+        this.getPortBaseY() + i * this.portHeight - PORT_DOT_OFFSET / 2
       window.drawArc(
         tx + this.w + 2,
-        portY + this.portDotOffset,
-        this.portRadius,
+        portY + PORT_DOT_OFFSET,
+        PORT_RADIUS,
         Math.PI / 2,
         -Math.PI / 2,
         PORT_COLOR[port.typename].dot
       )
       const width = window.textMetrics(
         port.name,
-        this.font,
-        this.portFontSize
+        FONT_FAMILY,
+        PORT_FONT_SIZE
       ).width
       window.drawText(
         port.name,
-        tx + this.w - width - this.portNamePaddingX,
+        tx + this.w - width - PORT_NAME_PADDING_X,
         portY,
-        this.font,
-        this.portFontSize,
+        FONT_FAMILY,
+        PORT_FONT_SIZE,
         PORT_COLOR[port.typename].name
       )
       window.strokeRect(
-        tx + this.w - width - this.portNamePaddingX,
+        tx + this.w - width - PORT_NAME_PADDING_X,
         portY,
-        width + this.portNamePaddingX,
-        2 * this.portRadius,
-        this.selectedPort === port ? '#00f' : '#f00',
+        width + PORT_NAME_PADDING_X,
+        2 * PORT_RADIUS,
+        '#f00',
         1
       )
     })
@@ -192,34 +216,43 @@ export class ScriptGraphNodeProxy extends UIElement {
      * @HATODO internals
      */
     this.node.data.internalPorts.forEach((port, i) => {
-      const portY = portBaseY + i * this.portHeight
+      const portY = this.getPortBaseY() + i * this.portHeight
       window.drawText(
         `${port.name}: ${this.node.internalValues[i]}`,
-        tx + this.portNamePaddingX,
+        tx + PORT_NAME_PADDING_X,
         portY,
-        this.font,
-        this.portFontSize,
+        FONT_FAMILY,
+        PORT_FONT_SIZE,
         PORT_COLOR[port.typename].name
       )
     })
   }
+  getPortBaseY() {
+    return this.y + this.nameHeight + this.portHeight / 2
+  }
   getInPortCoords(i) {
     let y = 0
+    // activation edges map to middle of title bar
     if (i === -1) {
-      y = this.nameHeight / 2
-    } else {
-      y = this.nameHeight + this.portHeight * (0.5 + i) + this.portDotOffset
+      y = this.y + this.nameHeight / 2
     }
-    return { x: this.x, y: this.y + y }
+    // normal edges map to the port they're attached to
+    else {
+      y = this.getPortBaseY() + this.portHeight * i + PORT_DOT_OFFSET
+    }
+    return { x: this.x, y }
   }
   getOutPortCoords(i) {
     let y = 0
+    // activation edges map to middle of title bar
     if (i === -1) {
-      y = this.nameHeight / 2
-    } else {
-      y = this.nameHeight + this.portHeight * (0.5 + i) + this.portDotOffset
+      y = this.y + this.nameHeight / 2
     }
-    return { x: this.x + this.w, y: this.y + y }
+    // normal edges map to the port they're attached to
+    else {
+      y = this.getPortBaseY() + this.portHeight * i + PORT_DOT_OFFSET
+    }
+    return { x: this.x + this.w, y }
   }
   checkPortIntersection(window, x, y) {
     const portBaseY = this.y + this.nameHeight + this.portHeight / 2
@@ -231,8 +264,8 @@ export class ScriptGraphNodeProxy extends UIElement {
       const portY = portBaseY + i * this.portHeight
       const width = window.textMetrics(
         port.name,
-        this.font,
-        this.portFontSize
+        FONT_FAMILY,
+        PORT_FONT_SIZE
       ).width
 
       if (
@@ -241,8 +274,8 @@ export class ScriptGraphNodeProxy extends UIElement {
           y,
           portX,
           portY,
-          width + this.portNamePaddingX,
-          2 * this.portRadius
+          width + PORT_NAME_PADDING_X,
+          2 * PORT_RADIUS
         )
       ) {
         return {
@@ -261,10 +294,10 @@ export class ScriptGraphNodeProxy extends UIElement {
       const portY = portBaseY + i * this.portHeight
       const width = window.textMetrics(
         port.name,
-        this.font,
-        this.portFontSize
+        FONT_FAMILY,
+        PORT_FONT_SIZE
       ).width
-      const portX = this.x + this.w - width - this.portNamePaddingX
+      const portX = this.x + this.w - width - PORT_NAME_PADDING_X
 
       if (
         global.rectIntersect(
@@ -272,8 +305,8 @@ export class ScriptGraphNodeProxy extends UIElement {
           y,
           portX,
           portY,
-          width + this.portNamePaddingX,
-          2 * this.portRadius
+          width + PORT_NAME_PADDING_X,
+          2 * PORT_RADIUS
         )
       ) {
         return {

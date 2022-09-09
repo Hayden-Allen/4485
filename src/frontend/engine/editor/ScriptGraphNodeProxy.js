@@ -18,8 +18,8 @@ export class ScriptGraphNodeProxy extends UIElement {
 
     this.font = 'sans-serif'
     this.nameFontSize = 32
-    this.portFontSize = 24
-    this.portRadius = 8
+    this.portFontSize = 32
+    this.portRadius = 12
     this.portNamePaddingX = this.portRadius * 2
     this.portDotOffset = 10
 
@@ -125,7 +125,7 @@ export class ScriptGraphNodeProxy extends UIElement {
     // ports
     const portBaseY = ty + this.nameHeight + this.portHeight / 2
     this.node.data.inputPorts.forEach((port, i) => {
-      const portY = portBaseY + i * this.portHeight
+      const portY = portBaseY + i * this.portHeight - this.portDotOffset / 2
       window.drawArc(
         tx - 2,
         portY + this.portDotOffset,
@@ -157,7 +157,7 @@ export class ScriptGraphNodeProxy extends UIElement {
       )
     })
     this.node.data.outputPorts.forEach((port, i) => {
-      const portY = portBaseY + i * this.portHeight
+      const portY = portBaseY + i * this.portHeight - this.portDotOffset / 2
       window.drawArc(
         tx + this.w + 2,
         portY + this.portDotOffset,

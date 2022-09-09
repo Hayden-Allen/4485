@@ -35,129 +35,52 @@
     playerScriptErrors = []
 
   function createPlayerScript(inputCache) {
-    const tOnTick = new EventScriptNodeTemplate('OnTick')
-    const tKeyPressed = new InternalScriptNodeTemplate(
-      'KeyPressed',
-      [],
-      [new ScriptNodePort('key', 'string')],
-      [
-        new ScriptNodePort('T', 'bool'),
-        new ScriptNodePort('F', 'bool'),
-        new ScriptNodePort('int', 'int'),
-      ],
-      (_, { internal, input }) => {
-        const pressed = input.isKeyPressed(internal[0])
-        return [
-          { value: pressed, active: pressed },
-          { value: !pressed, active: !pressed },
-          { value: ~~pressed },
-        ]
-      }
-    )
-    const tSubtract = new ScriptNodeTemplate(
-      'Subtract',
-      [new ScriptNodePort('a', 'number'), new ScriptNodePort('b', 'number')],
-      [new ScriptNodePort('a-b', 'number')],
-      ([a, b]) => [{ value: a - b }]
-    )
-    const tConstInt = new ConstantScriptNodeTemplate('ConstInt', [
-      new ScriptNodePort('int', 'int'),
-    ])
-    const tMux2 = new ScriptNodeTemplate(
-      'Mux2',
-      [
-        new ScriptNodePort('index', 'int'),
-        new ScriptNodePort('0', 'any'),
-        new ScriptNodePort('1', 'any'),
-      ],
-      [new ScriptNodePort('out', 'any')],
-      ([index, a0, a1]) => [{ value: index ? a1 : a0 }]
-    )
-    const tScaleVec2 = new ScriptNodeTemplate(
-      'ScaleVec2',
-      [new ScriptNodePort('v', 'object'), new ScriptNodePort('s', 'number')],
-      [new ScriptNodePort('v', 'object')],
-      ([v, s]) => [{ value: v.scale(s) }]
-    )
-    const tGetControlledEntity = new ScriptNodeTemplate(
-      'GetControlledEntity',
-      [],
-      [new ScriptNodePort('entity', 'object')],
-      (_, { entity }) => [{ value: entity }]
-    )
-    const tVec2 = new ScriptNodeTemplate(
-      'Vec2',
-      [new ScriptNodePort('x', 'number'), new ScriptNodePort('y', 'number')],
-      [new ScriptNodePort('v', 'object')],
-      ([x, y]) => {
-        //console.log(x, y)
-        return [{ value: new Vec2(x, y) }]
-      }
-    )
-    const tNormalize = new ScriptNodeTemplate(
-      'Normalize',
-      [new ScriptNodePort('v', 'object')],
-      [new ScriptNodePort('n', 'object')],
-      ([v]) => [{ value: v.norm() }]
-    )
-    const tSetEntityVelocity = new ScriptNodeTemplate(
-      'SetEntityVelocity',
-      [
-        new ScriptNodePort('entity', 'object'),
-        new ScriptNodePort('v', 'object'),
-      ],
-      [],
-      ([entity, v]) => {
-        entity.vel = v
-      }
-    )
-
     let graph = new ScriptGraph(
       'PlayerController',
       inputCache,
       (s) => (playerScriptErrors = [...playerScriptErrors, s]),
       () => (playerScriptErrors = [])
     )
-    const onTick = tOnTick.createNode(graph)
+    const onTick = graph.createNode('OnTick')
     // get input
-    const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
+    const keyShiftPressed = graph.createNode('KeyPressed', ['shift'])
     keyShiftPressed.attachAsInput(onTick, -1, -1)
-    const keyWPressed = tKeyPressed.createNode(graph, ['w'])
+    const keyWPressed = graph.createNode('KeyPressed', ['w'])
     keyWPressed.attachAsInput(onTick, -1, -1)
-    const keyAPressed = tKeyPressed.createNode(graph, ['a'])
+    const keyAPressed = graph.createNode('KeyPressed', ['a'])
     keyAPressed.attachAsInput(onTick, -1, -1)
-    const keySPressed = tKeyPressed.createNode(graph, ['s'])
+    const keySPressed = graph.createNode('KeyPressed', ['s'])
     keySPressed.attachAsInput(onTick, -1, -1)
-    const keyDPressed = tKeyPressed.createNode(graph, ['d'])
+    const keyDPressed = graph.createNode('KeyPressed', ['d'])
     keyDPressed.attachAsInput(onTick, -1, -1)
 
     // compute normalized velocity vector
-    const dx = tSubtract.createNode(graph)
+    const dx = graph.createNode('Subtract')
     dx.attachAsInput(keyDPressed, 2, 0)
     dx.attachAsInput(keyAPressed, 2, 1)
-    const dy = tSubtract.createNode(graph)
+    const dy = graph.createNode('Subtract')
     dy.attachAsInput(keySPressed, 2, 0)
     dy.attachAsInput(keyWPressed, 2, 1)
-    const vec2 = tVec2.createNode(graph)
+    const vec2 = graph.createNode('Vec2')
     vec2.attachAsInput(dx, 0, 0)
     vec2.attachAsInput(dy, 0, 1)
-    const norm = tNormalize.createNode(graph)
+    const norm = graph.createNode('Normalize')
     norm.attachAsInput(vec2, 0, 0)
 
     // boost if shift pressed
-    const ci1 = tConstInt.createNode(graph, [25])
-    const ci2 = tConstInt.createNode(graph, [50])
-    const mux = tMux2.createNode(graph)
+    const ci1 = graph.createNode('ConstInt', [25])
+    const ci2 = graph.createNode('ConstInt', [50])
+    const mux = graph.createNode('Mux2')
     mux.attachAsInput(keyShiftPressed, 2, 0)
     mux.attachAsInput(ci1, 0, 1)
     mux.attachAsInput(ci2, 0, 2)
-    const scale = tScaleVec2.createNode(graph)
+    const scale = graph.createNode('ScaleVec2')
     scale.attachAsInput(norm, 0, 0)
     scale.attachAsInput(mux, 0, 1)
 
     // set velocity
-    const entity = tGetControlledEntity.createNode(graph)
-    const setVel = tSetEntityVelocity.createNode(graph)
+    const entity = graph.createNode('GetControlledEntity')
+    const setVel = graph.createNode('SetEntityVelocity')
     setVel.attachAsInput(entity, 0, 0)
     setVel.attachAsInput(scale, 0, 1)
 
@@ -202,7 +125,7 @@
           sx,
           sy + s,
           0,
-          1,
+          1
         )
         const b = i * 4
         indices.push(b, b + 1, b + 2, b, b + 2, b + 3)

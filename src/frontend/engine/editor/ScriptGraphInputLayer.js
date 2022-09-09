@@ -42,7 +42,6 @@ export class ScriptGraphInputLayer extends Layer {
     }
   }
   onMouseMove(e) {
-    console.log(e.x, e.y)
     this.mouseX = e.x
     this.mouseY = e.y
     if (this.canDrag && this.rightMousePressed) {

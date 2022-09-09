@@ -42,8 +42,10 @@ export class Window {
     })
     this.canvas.addEventListener('pointermove', (e) => {
       const rect = this.canvas.getBoundingClientRect()
-      const x = e.clientX - Math.floor(rect.x),
-        y = e.clientY - Math.floor(rect.y)
+      // transform from DOM pixels to canvas pixels
+      const x = (e.clientX - Math.floor(rect.x)) * (e.target.width / rect.width)
+      const y =
+        (e.clientY - Math.floor(rect.y)) * (e.target.height / rect.height)
       this.propagateEvent('onMouseMove', new MouseMoveEvent(e, x, y))
     })
     this.canvas.addEventListener('pointerdown', (e) => {

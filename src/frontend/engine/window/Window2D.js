@@ -1,6 +1,35 @@
 import { global } from '%engine/Global.js'
 import { Window } from './Window.js'
 
+function _roundRectPolyfill(
+  ctx,
+  x,
+  y,
+  width,
+  height,
+  radius,
+  fill,
+  stroke
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  if (fill) {
+    ctx.fill();
+  }
+  if (stroke) {
+    ctx.stroke();
+  }
+  ctx.closePath();
+}
+
 export class Window2D extends Window {
   constructor(canvas, clearColor) {
     super(canvas, clearColor)
@@ -69,9 +98,7 @@ export class Window2D extends Window {
     this.ctx.strokeStyle = color
     this.ctx.lineWidth = width
     this.ctx.globalAlpha = alpha
-    this.ctx.beginPath()
-    this.ctx.roundRect(cx, cy, cw, ch, [cr])
-    this.ctx.stroke()
+    _roundRectPolyfill(this.ctx, cx, cy, cw, ch, cr, false, true)
 
     this.ctx.globalAlpha = prevAlpha
   }
@@ -79,11 +106,8 @@ export class Window2D extends Window {
     const [cx, cy] = this.scaleCoords(x, y)
     const [cw, ch] = this.scaleDims(w, h)
     const [cr] = this.scaleDims(r)
-    this.ctx.beginPath()
     this.ctx.fillStyle = color
-    this.ctx.roundRect(cx, cy, cw, ch, [cr])
-    this.ctx.fill()
-    this.ctx.closePath()
+    _roundRectPolyfill(this.ctx, cx, cy, cw, ch, cr, true, false)
   }
   drawRoundRectShadow(x, y, w, h, r, color, blur, offsetY) {
     const [csb, cso] = this.scaleDims(blur, offsetY)

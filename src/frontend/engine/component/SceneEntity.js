@@ -9,7 +9,8 @@ export class SceneEntity extends Component {
   constructor(gameWindow, pos, dim, url, { vertices, indices } = {}) {
     super('SceneEntity')
     this.renderable = new Renderable(
-      gameWindow,
+      gameWindow.gl,
+      gameWindow.shaderProgram,
       vertices || VERTEX_DATA,
       indices || INDEX_DATA,
       url

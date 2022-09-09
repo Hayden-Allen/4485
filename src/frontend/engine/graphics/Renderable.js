@@ -4,11 +4,11 @@ import { Texture } from './Texture.js'
 let textureCache = new Map()
 
 export class Renderable {
-  constructor(gl, vertices, indices, url) {
+  constructor(gl, program, vertices, indices, url) {
     this.vertexArray = undefined
     this.vertexBuffer = undefined
     this.indexBuffer = undefined
-    this.init(gl, vertices, indices)
+    this.init(gl, program, vertices, indices)
     this.elementCount = indices.length
     this.transform = mat4.create()
 
@@ -21,7 +21,7 @@ export class Renderable {
   setTransform(vec2) {
     mat4.fromTranslation(this.transform, [vec2.x, vec2.y, -25])
   }
-  init(gl, vertices, indices) {
+  init(gl, program, vertices, indices) {
     this.vertexArray = gl.createVertexArray()
     gl.bindVertexArray(this.vertexArray)
 
@@ -32,11 +32,13 @@ export class Renderable {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
     // x, y
-    gl.enableVertexAttribArray(0)
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 4 * 4, 0)
+    const posLoc = program.getAttribLocation('i_pos')
+    gl.enableVertexAttribArray(posLoc)
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 4 * 4, 0)
     // s, t
-    gl.enableVertexAttribArray(1)
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 4 * 4, 2 * 4)
+    const texLoc = program.getAttribLocation('i_tex')
+    gl.enableVertexAttribArray(texLoc)
+    gl.vertexAttribPointer(texLoc, 2, gl.FLOAT, false, 4 * 4, 2 * 4)
 
     this.indexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)

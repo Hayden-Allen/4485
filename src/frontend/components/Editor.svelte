@@ -174,7 +174,6 @@
     var game = new Game(context)
 
     gameWindow = new Window3D(gameCanvas, [0, 0, 1, 1])
-    let gl = gameWindow.gl
 
     var scene = new Scene()
     game.setCurrentScene(scene)
@@ -188,33 +187,31 @@
           sy = y / 10
         const s = 1
         vertices.push(
-          ...[
-            sx,
-            sy,
-            0,
-            0,
-            sx + s,
-            sy,
-            1,
-            0,
-            sx + s,
-            sy + s,
-            1,
-            1,
-            sx,
-            sy + s,
-            0,
-            1,
-          ]
+          sx,
+          sy,
+          0,
+          0,
+          sx + s,
+          sy,
+          1,
+          0,
+          sx + s,
+          sy + s,
+          1,
+          1,
+          sx,
+          sy + s,
+          0,
+          1,
         )
         const b = i * 4
-        indices.push(...[b, b + 1, b + 2, b, b + 2, b + 3])
+        indices.push(b, b + 1, b + 2, b, b + 2, b + 3)
         i++
       }
     }
     game.addStaticSceneEntity(
       new SceneEntity(
-        gl,
+        gameWindow,
         new Vec2(0, 0),
         new Vec2(0, 0),
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
@@ -230,7 +227,7 @@
       },
     }
     let player = new ControlledSceneEntity(
-      gl,
+      gameWindow,
       // new Vec2(1000, 100),
       new Vec2(0, 0),
       new Vec2(50, 50),

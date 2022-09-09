@@ -1,7 +1,8 @@
 export class ShaderProgram {
   constructor(gl, vertsrc, fragsrc) {
+    this.attribs = new Map()
+    this.uniforms = new Map()
     this.program = this.initProgram(gl, vertsrc, fragsrc)
-    this.uniformCache = new Map()
   }
   initProgram(gl, vertsrc, fragsrc) {
     const vert = this.createShader(gl, gl.VERTEX_SHADER, vertsrc)
@@ -14,6 +15,18 @@ export class ShaderProgram {
       console.error(gl.getProgramInfoLog(program))
     gl.deleteShader(vert)
     gl.deleteShader(frag)
+
+    const attribCount = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES)
+    for (let i = 0; i < attribCount; ++i) {
+      const info = gl.getActiveAttrib(program, i)
+      this.attribs.set(info.name, gl.getAttribLocation(program, info.name))
+    }
+
+    const uniformCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS)
+    for (let i = 0; i < uniformCount; ++i) {
+      const info = gl.getActiveUniform(program, i)
+      this.uniforms.set(info.name, gl.getUniformLocation(program, info.name))
+    }
 
     return program
   }
@@ -29,24 +42,16 @@ export class ShaderProgram {
     }
     return shader
   }
-  getUniformLocation(gl, name) {
-    if (this.uniformCache.has(name)) return this.uniformCache.get(name)
-    gl.useProgram(this.program)
-    const loc = gl.getUniformLocation(this.program, name)
-    if (loc === -1) {
-      console.error(`Uniform '${name}' does not exist`)
-      return -1
-    }
-    this.uniformCache.set(name, loc)
-    return loc
+  getAttribLocation(name) {
+    return this.attribs.get(name)
+  }
+  getUniformLocation(name) {
+    return this.uniforms.get(name)
   }
   uniform1i(gl, name, i) {
-    let loc = 0
-    if ((loc = this.getUniformLocation(gl, name)) !== -1) gl.uniform1i(loc, i)
+    gl.uniform1i(this.getUniformLocation(name), i)
   }
   uniformMatrix4fv(gl, name, matrices, { transpose = false } = {}) {
-    let loc = 0
-    if ((loc = this.getUniformLocation(gl, name)) !== -1)
-      gl.uniformMatrix4fv(loc, transpose, matrices)
+    gl.uniformMatrix4fv(this.getUniformLocation(name), transpose, matrices)
   }
 }

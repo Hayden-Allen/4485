@@ -25,6 +25,7 @@ const FRAGMENT_SOURCE = `
     gl_FragColor = texture2D(u_texture, v_tex);
   }
 `
+
 export class Window3D extends Window {
   constructor(canvas, clearColor) {
     super(canvas, clearColor)

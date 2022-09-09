@@ -6,10 +6,10 @@ const VERTEX_DATA = [-1, -1, 0, 0, 1, -1, 1, 0, 1, 1, 1, 1, -1, 1, 0, 1]
 const INDEX_DATA = [0, 1, 2, 0, 2, 3]
 // base class for everything that exists in the scene
 export class SceneEntity extends Component {
-  constructor(gl, pos, dim, url, { vertices, indices } = {}) {
+  constructor(gameWindow, pos, dim, url, { vertices, indices } = {}) {
     super('SceneEntity')
     this.renderable = new Renderable(
-      gl,
+      gameWindow,
       vertices || VERTEX_DATA,
       indices || INDEX_DATA,
       url
@@ -22,8 +22,8 @@ export class SceneEntity extends Component {
 }
 
 export class DynamicSceneEntity extends SceneEntity {
-  constructor(gl, pos, dim, url, { vel } = {}) {
-    super(gl, pos, dim, url)
+  constructor(gameWindow, pos, dim, url, { vel } = {}) {
+    super(gameWindow, pos, dim, url)
     this.vel = vel || new Vec2(0, 0)
   }
   move(deltaTimeSeconds) {
@@ -35,8 +35,8 @@ export class DynamicSceneEntity extends SceneEntity {
 }
 
 export class ControlledSceneEntity extends DynamicSceneEntity {
-  constructor(gl, pos, dim, url, { vel, controllers } = {}) {
-    super(gl, pos, dim, url, { vel })
+  constructor(gameWindow, pos, dim, url, { vel, controllers } = {}) {
+    super(gameWindow, pos, dim, url, { vel })
     this.controllers = controllers || []
   }
   runControllers(deltaTimeSeconds) {

@@ -247,10 +247,11 @@ export class ScriptGraphNodeProxy extends UIElement {
       ) {
         return {
           port,
-          pos: { x: portX, y: portY },
           in: true,
           index: i,
+          proxy: this,
           node: this.node,
+          color: PORT_COLOR[port.typename].edge,
         }
       }
     }
@@ -277,10 +278,11 @@ export class ScriptGraphNodeProxy extends UIElement {
       ) {
         return {
           port,
-          pos: { x: portX, y: portY },
           in: false,
           index: i,
+          proxy: this,
           node: this.node,
+          color: PORT_COLOR[port.typename].edge,
         }
       }
     }

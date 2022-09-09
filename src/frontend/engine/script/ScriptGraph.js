@@ -88,11 +88,21 @@ export class ScriptGraph extends Component {
     let inputEdges = this.getEdges(inputNode).in
     this.getEdges(outputNode).out = outputEdges.filter(
       (edge) =>
-        !(edge.inputNode === inputNode && edge.inputIndex === inputIndex)
+        !(
+          edge.inputNode === inputNode &&
+          edge.inputIndex === inputIndex &&
+          edge.outputNode === outputNode &&
+          edge.outputIndex === outputIndex
+        )
     )
     this.getEdges(inputNode).in = inputEdges.filter(
       (edge) =>
-        !(edge.outputNode === outputNode && edge.inputIndex === inputIndex)
+        !(
+          edge.inputNode === inputNode &&
+          edge.inputIndex === inputIndex &&
+          edge.outputNode === outputNode &&
+          edge.outputIndex === outputIndex
+        )
     )
   }
   getEdges(node) {
@@ -107,7 +117,7 @@ export class ScriptGraph extends Component {
     if (!this.hasEdges(node)) return false
     return this.getEdges(node).in.filter(
       (edge) => edge.inputIndex === inputIndex
-    ).length
+    )[0]
   }
   compile() {
     this.clearErrors()

@@ -111,6 +111,7 @@ export class ScriptGraphVisualizer {
     // x-axis
     {
       const order = this.graph.compile()
+      console.log(order)
       this.generateProxies()
       let columnIndex = new Map()
 
@@ -123,6 +124,8 @@ export class ScriptGraphVisualizer {
           let maxColumn = 0
           inboundEdges.forEach((edge) => {
             // find the rightmost parent of the current node
+            if (!columnIndex.has(edge.outputNode.id))
+              console.log(`Missing ${edge.outputNode.debugName}`)
             maxColumn = Math.max(maxColumn, columnIndex.get(edge.outputNode.id))
           })
           // put current node one column right of rightmost parent
@@ -132,6 +135,7 @@ export class ScriptGraphVisualizer {
         // create new column if necessary
         if (!columns[column]) columns[column] = new Map()
         // add current node to column
+        console.log(`set ${node.debugName} ${column}`)
         columns[column].set(node.id, node)
         columnIndex.set(node.id, column)
       })

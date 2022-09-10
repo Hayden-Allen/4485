@@ -2,6 +2,8 @@ import { Layer } from '%window/Layer.js'
 import { ScriptGraphVisualizer } from './ScriptGraphVisualizer.js'
 import { global } from '%engine/Global.js'
 import { Vec2 } from '%util/Vec2.js'
+import ScriptGraphAddNodeMenu from 'components/ScriptGraphAddNodeMenu.svelte'
+import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
 
 export class ScriptGraphLayer extends Layer {
   constructor(input, controls, playerScript) {
@@ -16,6 +18,7 @@ export class ScriptGraphLayer extends Layer {
     this.selectedX = 0
     this.selectedY = 0
     this.hovered = undefined
+    this._addNodeMenu = null
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -51,6 +54,37 @@ export class ScriptGraphLayer extends Layer {
         this.graphvis.removeEdge(index)
         this.graphvis.graph.compile()
       }
+
+      const canvas = this.window.canvas
+      const bounds = canvas.getBoundingClientRect()
+      const x = bounds.left + this.input.mouseX
+      const y = bounds.top + this.input.mouseY
+      const self = this
+      this._addNodeMenu = new ScriptGraphAddNodeMenu({
+        target: document.body,
+        props: {
+          x,
+          y,
+          nodeTypeNames: scriptNodeTemplateBank.getNodeTypeNames(),
+          checkCanReposition: (x, y) => {
+            const bounds = canvas.getBoundingClientRect()
+            return (
+              x > bounds.left &&
+              x < bounds.right &&
+              y > bounds.top &&
+              y < bounds.bottom
+            )
+          },
+          onAddNode: (name) => {
+            scriptNodeTemplateBank.get(name).createNode(self.graphvis.graph)
+          },
+          onDestroy: () => {
+            self._addNodeMenu.$destroy()
+            self._addNodeMenu = null
+            canvas.focus()
+          },
+        },
+      })
     }
     if (node) {
       this.input.cursor = 'default'
@@ -78,7 +112,8 @@ export class ScriptGraphLayer extends Layer {
               port.node,
               port.index
             )
-          this.graphvis.arrange()
+          this.graphvis.graph.compile()
+          this.graphvis.generateProxies()
           this.selectedPort = undefined
         } else {
           this.selectedPort = port

@@ -1,5 +1,5 @@
 import { Component } from '%component/Component.js'
-import { ScriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
+import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
 
 class ScriptGraphEdge {
   // data flows from outputNode.outputs[outputIndex] to inputNode.inputs[inputIndex]
@@ -20,7 +20,6 @@ export class ScriptGraph extends Component {
   constructor(debugName, inputCache, pushError, clearErrors) {
     super(debugName)
     this.inputCache = inputCache
-    this.templateBank = new ScriptNodeTemplateBank()
     // map ScriptNode.id to ScriptNode
     this.nodes = new Map()
     // map ScriptNode.id to ScriptNodeEdgeList
@@ -33,7 +32,7 @@ export class ScriptGraph extends Component {
     this.canErr = true
   }
   createNode(name, values) {
-    return this.templateBank.get(name).createNode(this, values)
+    return scriptNodeTemplateBank.get(name).createNode(this, values)
   }
   pushError(string) {
     if (this.canErr) {
@@ -59,6 +58,7 @@ export class ScriptGraph extends Component {
     // graph has changed, need to recompile
     this.cachedCompile = undefined
     this.nodes.set(node.id, node)
+    this.edges.set(node.id, new ScriptNodeEdgeList())
   }
   addEdge(outputNode, outputIndex, inputNode, inputIndex) {
     if (

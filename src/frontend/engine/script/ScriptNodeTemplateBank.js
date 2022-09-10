@@ -7,11 +7,14 @@ import {
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
 
-export class ScriptNodeTemplateBank {
+class ScriptNodeTemplateBank {
   constructor() {
     // map name to template
     this.bank = new Map()
     this.init()
+  }
+  getNodeTypeNames() {
+    return [...this.bank.keys()].sort()
   }
   get(name) {
     return this.bank.get(name)
@@ -150,3 +153,5 @@ export class ScriptNodeTemplateBank {
     )
   }
 }
+
+export const scriptNodeTemplateBank = new ScriptNodeTemplateBank()

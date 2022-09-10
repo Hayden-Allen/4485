@@ -1,6 +1,7 @@
 import { validateScriptDataTypes } from './ScriptDataType.js'
 import { ScriptNodeData } from './ScriptNodeData.js'
 import { Component } from '%component/Component.js'
+import { ScriptDataTypeList } from './ScriptDataType.js'
 
 export class ScriptNodePort {
   constructor(name, typename) {
@@ -10,17 +11,30 @@ export class ScriptNodePort {
 }
 
 export class ScriptNode extends Component {
-  constructor(debugName, graph, inputTypes, outputTypes, fn) {
+  constructor(
+    debugName,
+    graph,
+    inputPorts,
+    outputPorts,
+    fn,
+    { internalPorts = [], internalValues = [] } = {}
+  ) {
     super(debugName)
     this.graph = graph
     this.graph.addNode(this)
-    this.data = new ScriptNodeData(inputTypes, outputTypes, fn)
+    this.data = new ScriptNodeData(inputPorts, internalPorts, outputPorts, fn)
+    this.inputTypes = new ScriptDataTypeList(
+      inputPorts.map((port) => port.typename)
+    )
+    this.outputTypes = new ScriptDataTypeList(
+      outputPorts.map((port) => port.typename)
+    )
     // cached outputs from last run
     this.outputs = []
     // whether or not this node should be evaluated during current graph execution
     this.active = false
     // internal constants
-    this.internal = []
+    this.internalValues = internalValues
   }
   checkIndex(types, index) {
     // -1 signals that an edge carries activation, but not value
@@ -31,10 +45,10 @@ export class ScriptNode extends Component {
     return true
   }
   checkInputIndex(index) {
-    return this.checkIndex(this.data.inputTypes, index)
+    return this.checkIndex(this.inputTypes, index)
   }
   checkOutputIndex(index) {
-    return this.checkIndex(this.data.outputTypes, index)
+    return this.checkIndex(this.outputTypes, index)
   }
   // outputNode.outputs[outputIndex] => this.inputs[inputIndex]
   attachAsInput(outputNode, outputIndex, inputIndex) {
@@ -42,6 +56,9 @@ export class ScriptNode extends Component {
       this.logError(`Cannot attach two ScriptNodes from different Graphs`)
       return
     }
+    // remove existing edge first
+    if (this.graph.hasInputEdge(this, inputIndex))
+      this.graph.removeEdge(outputNode, outputIndex, this, inputIndex)
     this.graph.addEdge(outputNode, outputIndex, this, inputIndex)
   }
   // this.outputs[outputIndex] => inputNode.inputs[inputIndex]
@@ -50,20 +67,33 @@ export class ScriptNode extends Component {
       this.logError(`Cannot attach two ScriptNodes from different Graphs`)
       return
     }
+    // remove existing edge first
+    const existing = this.graph.hasInputEdge(inputNode, inputIndex)
+    if (existing)
+      this.graph.removeEdge(
+        existing.outputNode,
+        existing.outputIndex,
+        inputNode,
+        inputIndex
+      )
     this.graph.addEdge(this, outputIndex, inputNode, inputIndex)
   }
-  run(inputs, entity) {
+  run(inputs, entity, inputCache) {
     if (!this.active) return
 
     // console.log(inputs)
     // console.log(this.data.inputTypes.types)
-    if (!validateScriptDataTypes(inputs, this.data.inputTypes.types)) {
-      this.logError('Invalid input')
+    if (!validateScriptDataTypes(inputs, this.inputTypes.types)) {
+      this.graph.pushError(`Invalid input to '${this.debugName}'`)
       return
     }
 
     const results =
-      this.data.fn(inputs, { entity, internal: this.internal }) || []
+      this.data.fn(inputs, {
+        entity,
+        internal: this.internalValues,
+        input: inputCache,
+      }) || []
     this.outputs = results.map((result) => result.value)
     // propagate activation
     let outboundEdges = this.graph.edges.get(this.id).out

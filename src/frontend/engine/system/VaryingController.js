@@ -4,7 +4,8 @@ export class VaryingController extends System {
   constructor() {
     super('VaryingController')
   }
-  innerUpdate(deltaTimeSeconds, component) {
+  innerUpdate(deltaTime, component) {
+    const deltaTimeSeconds = deltaTime / 1000
     component.value +=
       component.step * (component.end - component.start) * deltaTimeSeconds
     if (component.value > component.end) this.clamp(component, component.end)

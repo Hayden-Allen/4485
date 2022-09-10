@@ -10,6 +10,6 @@ export class GameLayer extends Layer {
     return false
   }
   onRender(e) {
-    this.game.currentScene.layers.forEach((layer) => layer.draw(e.renderer))
+    this.game.draw(e.renderer)
   }
 }

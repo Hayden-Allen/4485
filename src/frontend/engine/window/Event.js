@@ -21,8 +21,8 @@ class MouseVectorEvent extends InputEvent {
   }
 }
 export class MouseMoveEvent extends MouseVectorEvent {
-  constructor(e) {
-    super(e, e.clientX, e.clientY)
+  constructor(e, x, y) {
+    super(e, x, y)
   }
 }
 export class MouseScrollEvent extends MouseVectorEvent {
@@ -74,9 +74,18 @@ export class AppTickEvent {
 }
 
 export class RenderEvent {
-  constructor(renderer, canvas) {
-    this.renderer = renderer
-    this.canvas = canvas
+  constructor(window) {
+    this.window = window
+  }
+}
+
+export class ResizeEvent {
+  /**
+   * @HATODO implement?
+   */
+  constructor(w, h) {
+    this.w = w
+    this.h = h
   }
 }
 
@@ -91,28 +100,40 @@ export class EventHandler extends Component {
     return `(${this.debugName})`
   }
   // the following functions are passed an *Event object with the corresponding name (onMouseMove recieves a MouseMoveEvent)
+  // eslint-disable-next-line
   onMouseMove(e) {
     return false
   }
+  // eslint-disable-next-line
   onMouseScroll(e) {
     return false
   }
+  // eslint-disable-next-line
   onMouseDown(e) {
     return false
   }
+  // eslint-disable-next-line
   onMouseUp(e) {
     return false
   }
+  // eslint-disable-next-line
   onKeyDown(e) {
     return false
   }
+  // eslint-disable-next-line
   onKeyUp(e) {
     return false
   }
+  // eslint-disable-next-line
   onAppTick(e) {
     return false
   }
+  // eslint-disable-next-line
   onRender(e) {
+    return false
+  }
+  // eslint-disable-next-line
+  onResize(e) {
     return false
   }
 }

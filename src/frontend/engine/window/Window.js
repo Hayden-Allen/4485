@@ -7,40 +7,67 @@ import {
   MouseUpEvent,
   AppTickEvent,
   RenderEvent,
+  ResizeEvent,
 } from './Event.js'
-import { global } from '%engine/Global.js'
-import { Renderer } from '%system/Renderer.js'
-import { Canvas } from '%component/Canvas.js'
+import { InputCache } from './InputCache.js'
 
 export class Window {
   constructor(canvas, clearColor) {
     this.layers = []
+    this.inputCache = undefined
+    this.clearColor = clearColor || undefined
+    this.canvas = undefined
+    this.setCanvas(canvas)
+  }
+  clear() {}
+  setCanvas(canvas) {
+    if (this.canvas === canvas) {
+      return
+    }
 
-    this.renderer = new Renderer(clearColor)
-    this.canvas = new Canvas(canvas)
-    this.renderer.addComponent(this.canvas)
+    this.canvas = canvas
+    this.inputCache = new InputCache(this.canvas)
 
-    window.addEventListener('keydown', (e) => {
+    // necessary for key events to get sent to the canvas
+    this.canvas.addEventListener('click', () => {
+      this.canvas.focus({
+        focusVisible: true,
+      })
+    })
+    this.canvas.addEventListener('keydown', (e) => {
       this.propagateEvent('onKeyDown', new KeyDownEvent(e))
     })
-    window.addEventListener('keyup', (e) => {
+    this.canvas.addEventListener('keyup', (e) => {
       this.propagateEvent('onKeyUp', new KeyUpEvent(e))
     })
-    window.addEventListener('mousemove', (e) => {
-      this.propagateEvent('onMouseMove', new MouseMoveEvent(e))
+    this.canvas.addEventListener('pointermove', (e) => {
+      const rect = this.canvas.getBoundingClientRect()
+      // transform from DOM pixels to canvas pixels
+      const x = (e.clientX - Math.floor(rect.x)) * (e.target.width / rect.width)
+      const y =
+        (e.clientY - Math.floor(rect.y)) * (e.target.height / rect.height)
+      this.propagateEvent('onMouseMove', new MouseMoveEvent(e, x, y))
     })
-    window.addEventListener('mousedown', (e) => {
+    this.canvas.addEventListener('pointerdown', (e) => {
+      this.canvas.setPointerCapture(e.pointerId)
       this.propagateEvent('onMouseDown', new MouseDownEvent(e))
     })
-    window.addEventListener('mouseup', (e) => {
+    this.canvas.addEventListener('pointerup', (e) => {
+      this.canvas.releasePointerCapture(e.pointerId)
       this.propagateEvent('onMouseUp', new MouseUpEvent(e))
     })
-    window.addEventListener('wheel', (e) => {
+    this.canvas.addEventListener('wheel', (e) => {
       this.propagateEvent('onMouseScroll', new MouseScrollEvent(e))
+    })
+    this.canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
     })
   }
   pushLayer(layer) {
     this.layers.push(layer)
+    layer.window = this
+    layer.onAttach()
   }
   removeLayer(layer) {
     this.layers = this.layers.filter((l) => l.debugName !== layer.debugName)
@@ -50,22 +77,16 @@ export class Window {
     for (var i = this.layers.length - 1; i >= 0; i--)
       if (this.layers[i][fn](e)) break
   }
-  run() {
-    const deltaTime = global.beginFrame()
-
+  propagateResizeEvent() {
+    this.propagateEvent(
+      'onResize',
+      new ResizeEvent(this.canvas.width, this.canvas.height)
+    )
+  }
+  update(deltaTime) {
     // update everything
     this.propagateEvent('onAppTick', new AppTickEvent(deltaTime))
-    // submit all render commands
-    this.renderer.components.forEach((component) =>
-      this.propagateEvent('onRender', new RenderEvent(this.renderer, component))
-    )
     // draw everything
-    this.renderer.update(deltaTime)
-
-    if (global.vsync) requestAnimationFrame(this.run.bind(this))
-    else {
-      const frameTime = performance.now() - global.time.now
-      setTimeout(this.run.bind(this), 1000 / global.fps - frameTime)
-    }
+    this.propagateEvent('onRender', new RenderEvent(this))
   }
 }

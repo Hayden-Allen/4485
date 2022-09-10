@@ -1,14 +1,19 @@
 <script>
   import { onMount } from 'svelte'
   import Viewport from './Viewport.svelte'
+  import Splitter from './Splitter.svelte'
+  import Logger from './Logger.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
   import { SceneEntity, ControlledSceneEntity } from '%component/SceneEntity.js'
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
-  import { Window } from '%window/Window.js'
-  import { UILayer } from '%window/Layer.js'
-  import { EditorLayer } from '%engine/editor/EditorLayer.js'
+  import { Window2D } from '%window/Window2D.js'
+  import { Window3D } from '%window/Window3D.js'
+  import { EditorLayer } from '%editor/EditorLayer.js'
+  import { ScriptGraphInputLayer } from '%editor/ScriptGraphInputLayer.js'
+  import { ScriptGraphLayer } from '%editor/ScriptGraphLayer.js'
+  import { ScriptGraphControlsLayer } from '%editor/ScriptGraphControlsLayer.js'
   import {
     ScriptNodeTemplate,
     EventScriptNodeTemplate,
@@ -17,180 +22,65 @@
   } from '%script/ScriptNodeTemplate.js'
   import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
+  import { Context } from '%engine/Context.js'
 
-  let framebuffer = undefined
+  let context = undefined
 
-  function createPlayerScript() {
-    {
-      // const trun = new ScriptNodeTemplate('run', [], [], () => [
-      //   { activate: true },
-      // ])
-      // // const tmux2 = new ScriptNodeTemplate(
-      // //   'mux2',
-      // //   ['int', 'any', 'any'],
-      // //   ['any'],
-      // //   ([index, x0, x1]) => [{ value: (index ? x1 : x0) }]
-      // // )
-      // const tbranch = new ScriptNodeTemplate(
-      //   'branch',
-      //   ['bool'],
-      //   ['bool', 'bool', 'int'],
-      //   ([b]) => [
-      //     { value: b, activate: b },
-      //     { value: !b, activate: !b },
-      //     { value: ~~b, activate: true },
-      //   ]
-      // )
-      // const tmul = new ScriptNodeTemplate(
-      //   'mul',
-      //   ['number', 'number'],
-      //   ['number'],
-      //   ([a, b]) => [{ value: a * b }]
-      // )
-      // const tcf = new ConstantScriptNodeTemplate('cf', ['float'])
-      // const tcb = new ConstantScriptNodeTemplate('cb', ['bool'])
-      // let graph = new ScriptGraph('graph')
-      // let run = trun.createNode(graph)
-      // let mulA = tmul.createNode(graph)
-      // let mulB = tmul.createNode(graph)
-      // let cf2 = tcf.createNode(graph, [2])
-      // let cf3 = tcf.createNode(graph, [3])
-      // let cf4 = tcf.createNode(graph, [4])
-      // let branch = tbranch.createNode(graph)
-      // let cb = tcb.createNode(graph, [false])
-      // // run.attachAsOutput(-1, mulA, -1)
-      // // mulA.attachAsInput(cf2, 0, 0)
-      // // mulA.attachAsInput(cf3, 0, 1)
-      // // mulB.attachAsInput(mulA, 0, 0)
-      // // mulB.attachAsInput(cf4, 0, 1)
-      // run.attachAsOutput(-1, branch, -1)
-      // // 2 * 3
-      // cf2.attachAsOutput(0, mulA, 0)
-      // cf3.attachAsOutput(0, mulA, 1)
-      // // 3 * 4
-      // cf3.attachAsOutput(0, mulB, 0)
-      // cf4.attachAsOutput(0, mulB, 1)
-      // // cb ? 2 * 3 : 3 * 4
-      // cb.attachAsOutput(0, branch, 0)
-      // branch.attachAsOutput(0, mulA, -1)
-      // branch.attachAsOutput(1, mulB, -1)
-    }
+  let gameCanvas = undefined,
+    scriptCanvas = undefined
 
-    const tOnTick = new EventScriptNodeTemplate('OnTick')
-    const tKeyPressed = new InternalScriptNodeTemplate(
-      'KeyPressed',
-      [],
-      [new ScriptNodePort('key', 'string')],
-      [
-        new ScriptNodePort('T', 'bool'),
-        new ScriptNodePort('F', 'bool'),
-        new ScriptNodePort('int', 'int'),
-      ],
-      (_, { internal }) => {
-        const pressed = global.input.isKeyPressed(internal[0])
-        return [
-          { value: pressed, active: pressed },
-          { value: !pressed, active: !pressed },
-          { value: ~~pressed },
-        ]
-      }
-    )
-    const tSubtract = new ScriptNodeTemplate(
-      'Subtract',
-      [new ScriptNodePort('a', 'number'), new ScriptNodePort('b', 'number')],
-      [new ScriptNodePort('a-b', 'number')],
-      ([a, b]) => [{ value: a - b }]
-    )
-    const tConstInt = new ConstantScriptNodeTemplate('ConstInt', [
-      new ScriptNodePort('int', 'int'),
-    ])
-    const tMux2 = new ScriptNodeTemplate(
-      'Mux2',
-      [
-        new ScriptNodePort('index', 'int'),
-        new ScriptNodePort('0', 'any'),
-        new ScriptNodePort('1', 'any'),
-      ],
-      [new ScriptNodePort('out', 'any')],
-      ([index, a0, a1]) => [{ value: index ? a1 : a0 }]
-    )
-    const tScaleVec2 = new ScriptNodeTemplate(
-      'ScaleVec2',
-      [new ScriptNodePort('v', 'object'), new ScriptNodePort('s', 'number')],
-      [new ScriptNodePort('v', 'object')],
-      ([v, s]) => [{ value: v.scale(s) }]
-    )
-    const tGetControlledEntity = new ScriptNodeTemplate(
-      'GetControlledEntity',
-      [],
-      [new ScriptNodePort('entity', 'object')],
-      (_, { entity }) => [{ value: entity }]
-    )
-    const tVec2 = new ScriptNodeTemplate(
-      'Vec2',
-      [new ScriptNodePort('x', 'number'), new ScriptNodePort('y', 'number')],
-      [new ScriptNodePort('v', 'object')],
-      ([x, y]) => [{ value: new Vec2(x, y) }]
-    )
-    const tNormalize = new ScriptNodeTemplate(
-      'Normalize',
-      [new ScriptNodePort('v', 'object')],
-      [new ScriptNodePort('n', 'object')],
-      ([v]) => [{ value: v.norm() }]
-    )
-    const tSetEntityVelocity = new ScriptNodeTemplate(
-      'SetEntityVelocity',
-      [
-        new ScriptNodePort('entity', 'object'),
-        new ScriptNodePort('v', 'object'),
-      ],
-      [],
-      ([entity, v]) => {
-        entity.vel = v
-      }
-    )
+  let gameWindow = undefined,
+    scriptWindow = undefined,
+    playerScript = undefined,
+    playerScriptErrors = []
 
-    let graph = new ScriptGraph('PlayerController')
-    const onTick = tOnTick.createNode(graph)
+  function createPlayerScript(inputCache) {
+    let graph = new ScriptGraph(
+      'PlayerController',
+      inputCache,
+      (s) => (playerScriptErrors = [...playerScriptErrors, s]),
+      () => (playerScriptErrors = [])
+    )
+    const onTick = graph.createNode('OnTick')
     // get input
-    const keyWPressed = tKeyPressed.createNode(graph, ['w'])
-    keyWPressed.attachAsInput(onTick, -1, -1)
-    const keyAPressed = tKeyPressed.createNode(graph, ['a'])
-    keyAPressed.attachAsInput(onTick, -1, -1)
-    const keySPressed = tKeyPressed.createNode(graph, ['s'])
-    keySPressed.attachAsInput(onTick, -1, -1)
-    const keyDPressed = tKeyPressed.createNode(graph, ['d'])
-    keyDPressed.attachAsInput(onTick, -1, -1)
-    const keyShiftPressed = tKeyPressed.createNode(graph, ['shift'])
+    const keyShiftPressed = graph.createNode('KeyPressed', ['shift'])
     keyShiftPressed.attachAsInput(onTick, -1, -1)
+    const keyWPressed = graph.createNode('KeyPressed', ['w'])
+    keyWPressed.attachAsInput(onTick, -1, -1)
+    const keyAPressed = graph.createNode('KeyPressed', ['a'])
+    keyAPressed.attachAsInput(onTick, -1, -1)
+    const keySPressed = graph.createNode('KeyPressed', ['s'])
+    keySPressed.attachAsInput(onTick, -1, -1)
+    const keyDPressed = graph.createNode('KeyPressed', ['d'])
+    keyDPressed.attachAsInput(onTick, -1, -1)
 
     // compute normalized velocity vector
-    const dx = tSubtract.createNode(graph)
+    const dx = graph.createNode('Subtract')
     dx.attachAsInput(keyDPressed, 2, 0)
     dx.attachAsInput(keyAPressed, 2, 1)
-    const dy = tSubtract.createNode(graph)
+    const dy = graph.createNode('Subtract')
     dy.attachAsInput(keySPressed, 2, 0)
     dy.attachAsInput(keyWPressed, 2, 1)
-    const vec2 = tVec2.createNode(graph)
+    const vec2 = graph.createNode('Vec2')
     vec2.attachAsInput(dx, 0, 0)
     vec2.attachAsInput(dy, 0, 1)
-    const norm = tNormalize.createNode(graph)
+    const norm = graph.createNode('Normalize')
     norm.attachAsInput(vec2, 0, 0)
 
     // boost if shift pressed
-    const ci1 = tConstInt.createNode(graph, [500])
-    const ci2 = tConstInt.createNode(graph, [1000])
-    const mux = tMux2.createNode(graph)
+    const ci1 = graph.createNode('ConstInt', [25])
+    const ci2 = graph.createNode('ConstInt', [50])
+    const mux = graph.createNode('Mux2')
     mux.attachAsInput(keyShiftPressed, 2, 0)
     mux.attachAsInput(ci1, 0, 1)
     mux.attachAsInput(ci2, 0, 2)
-    const scale = tScaleVec2.createNode(graph)
+    const scale = graph.createNode('ScaleVec2')
     scale.attachAsInput(norm, 0, 0)
     scale.attachAsInput(mux, 0, 1)
 
     // set velocity
-    const entity = tGetControlledEntity.createNode(graph)
-    const setVel = tSetEntityVelocity.createNode(graph)
+    const entity = graph.createNode('GetControlledEntity')
+    const setVel = graph.createNode('SetEntityVelocity')
     setVel.attachAsInput(entity, 0, 0)
     setVel.attachAsInput(scale, 0, 1)
 
@@ -198,78 +88,210 @@
   }
 
   onMount(() => {
-    global.init()
+    if (context) {
+      return
+    }
 
-    var game = new Game()
+    context = new Context()
+    global.init(context)
+    var game = new Game(context)
+
+    gameWindow = new Window3D(gameCanvas, [0, 0, 1, 1])
 
     var scene = new Scene()
     game.setCurrentScene(scene)
     const size = 10
+    let vertices = [],
+      indices = [],
+      i = 0
     for (var y = 0; y < 500; y += size) {
       for (var x = 0; x < 500; x += size) {
-        const red = parseInt((((x + y) * (x + y)) / 1000000) * 255)
-        const color = `#${global.padZeroes(red.toString(16), 2)}0000`
-        // create grid at z-index 0
-        game.addStaticSceneEntity(
-          new SceneEntity(
-            new Vec2(x + 100, y + 100),
-            new Vec2(size, size),
-            color
-          ),
-          0
+        const sx = x / 10,
+          sy = y / 10
+        const s = 1
+        vertices.push(
+          sx,
+          sy,
+          0,
+          0,
+          sx + s,
+          sy,
+          1,
+          0,
+          sx + s,
+          sy + s,
+          1,
+          1,
+          sx,
+          sy + s,
+          0,
+          1
         )
+        const b = i * 4
+        indices.push(b, b + 1, b + 2, b, b + 2, b + 3)
+        i++
       }
     }
-    let playerScript = createPlayerScript()
+    game.addStaticSceneEntity(
+      new SceneEntity(
+        gameWindow,
+        new Vec2(0, 0),
+        new Vec2(0, 0),
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        { vertices, indices }
+      ),
+      0
+    )
+
+    playerScript = createPlayerScript(gameWindow.inputCache)
     let playerController = {
-      run: (player, deltaTimeSeconds) => {
-        // player.vel = new Vec2(
-        //   global.input.isKeyPressed('d') - global.input.isKeyPressed('a'),
-        //   global.input.isKeyPressed('s') - global.input.isKeyPressed('w')
-        // )
-        //   .norm()
-        //   .scale(500)
+      run: (player /* deltaTimeSeconds */) => {
         playerScript.run(player)
       },
     }
     let player = new ControlledSceneEntity(
-      new Vec2(1000, 100),
+      gameWindow,
+      // new Vec2(1000, 100),
+      new Vec2(0, 0),
       new Vec2(50, 50),
-      '#0f0',
+      'https://art.pixilart.com/840bcbc293e372f.png',
       { controllers: [playerController] }
     )
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    var window = new Window(framebuffer, '#00f')
-    window.pushLayer(new EditorLayer(game))
-    window.pushLayer(new UILayer())
-    window.run()
+    gameWindow.pushLayer(new EditorLayer(game))
+
+    scriptWindow = new Window2D(scriptCanvas)
+    let scriptGraphInputLayer = new ScriptGraphInputLayer()
+    let scriptGraphControlsLayer = new ScriptGraphControlsLayer(
+      scriptGraphInputLayer,
+      scriptWindow
+    )
+    scriptWindow.pushLayer(scriptGraphControlsLayer)
+    scriptWindow.pushLayer(
+      new ScriptGraphLayer(
+        scriptGraphInputLayer,
+        scriptGraphControlsLayer,
+        playerScript
+      )
+    )
+    scriptWindow.pushLayer(scriptGraphInputLayer)
+
+    context.windows.push(gameWindow)
+    context.windows.push(scriptWindow)
+    context.run()
   })
+
+  $: {
+    if (gameCanvas) {
+      gameWindow.setCanvas(gameCanvas)
+    }
+  }
+
+  $: {
+    if (scriptCanvas) {
+      scriptWindow.setCanvas(scriptCanvas)
+    }
+  }
+
+  /*
+   * Handles
+   */
+
+  let topSplit = 1 / 2
+  let midSplit = 2 / 3
+  let leftSplit = 1 / 3
+  let rightSplit = 2 / 3
+
+  let topLeftBasis = null,
+    topRightBasis = null
+  let midTopBasis = null,
+    midBottomBasis = null
+  let bottomLeftBasis = null,
+    bottomMidBasis = null,
+    bottomRightBasis = null
+
+  $: {
+    topLeftBasis = topSplit * 100
+    topRightBasis = (1 - topSplit) * 100
+    midTopBasis = midSplit * 100
+    midBottomBasis = (1 - midSplit) * 100
+    bottomLeftBasis = leftSplit * 100
+    bottomMidBasis = (rightSplit - leftSplit) * 100
+    bottomRightBasis = (1 - rightSplit) * 100
+  }
 </script>
 
-<div
-  class="w-full h-full p-1 flex flex-col space-y-1 bg-gray-900 overflow-hidden"
->
-  <div class="grow shrink basis-0 overflow-hidden flex flex-row space-x-1">
+<div class="w-full h-full p-1 flex flex-col bg-gray-900 overflow-hidden">
+  <div
+    class="grow shrink basis-0 overflow-hidden flex flex-row"
+    style={`flex-basis: ${midTopBasis}%;`}
+  >
     <div
-      class="grow shrink basis-0 p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${topLeftBasis}%;`}
     >
-      <Viewport bind:framebuffer />
+      <Viewport
+        targetAspectRatio={global.canvas.targetWidth /
+          global.canvas.targetHeight}
+        bind:canvas={gameCanvas}
+        onResize={() => context.propagateResizeEvent()}
+      />
     </div>
-    <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+    <Splitter
+      bind:context
+      bind:split={topSplit}
+      minSplit={0.1}
+      maxSplit={0.9}
     />
+    <div
+      class="relative grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${topRightBasis}%;`}
+    >
+      <Viewport
+        bind:canvas={scriptCanvas}
+        onResize={() => context.propagateResizeEvent()}
+      />
+      <Logger errors={playerScriptErrors} />
+    </div>
   </div>
-  <div class="grow shrink basis-0 overflow-hidden flex flex-row space-x-1">
+  <Splitter
+    bind:context
+    bind:split={midSplit}
+    isVertical={true}
+    minSplit={0.1}
+    maxSplit={0.9}
+  />
+  <div
+    class="grow shrink overflow-hidden flex flex-row"
+    style={`flex-basis: ${midBottomBasis}%;`}
+  >
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${bottomLeftBasis}%;`}
+    >
+      <p id="fps" class="text-gray-100" />
+    </div>
+    <Splitter
+      bind:context
+      bind:split={leftSplit}
+      minSplit={0.1}
+      maxSplit={rightSplit - 0.1}
     />
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${bottomMidBasis}%;`}
+    />
+    <Splitter
+      bind:context
+      bind:split={rightSplit}
+      minSplit={leftSplit + 0.1}
+      maxSplit={0.9}
     />
     <div
-      class="grow shrink basis-0 overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      style={`flex-basis: ${bottomRightBasis}%;`}
     />
   </div>
 </div>

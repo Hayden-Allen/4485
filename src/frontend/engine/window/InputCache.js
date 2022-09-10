@@ -1,28 +1,35 @@
 import { Vec2 } from '%util/Vec2.js'
 
 export class InputCache {
-  constructor() {
+  constructor(element) {
+    this.element = element
     this.keys = new Map()
     this.mouseButton = -1
     this.mousePos = new Vec2(0, 0)
     this.mouseScroll = new Vec2(0, 0)
 
-    window.addEventListener('keydown', (e) => {
+    this.element.addEventListener('keydown', (e) => {
       this.keys.set(e.key.toLowerCase(), true)
     })
-    window.addEventListener('keyup', (e) => {
+    this.element.addEventListener('keyup', (e) => {
       this.keys.set(e.key.toLowerCase(), false)
     })
-    window.addEventListener('mousemove', (e) => {
-      this.mousePos = new Vec2(e.clientX, e.clientY)
+    this.element.addEventListener('pointermove', (e) => {
+      const rect = this.element.getBoundingClientRect()
+      this.mousePos = new Vec2(
+        e.clientX - Math.floor(rect.x),
+        e.clientY - Math.floor(rect.y)
+      )
     })
-    window.addEventListener('mousedown', (e) => {
+    this.element.addEventListener('pointerdown', (e) => {
+      this.element.setPointerCapture(e.pointerId)
       this.mouseButton = e.button
     })
-    window.addEventListener('mouseup', () => {
+    this.element.addEventListener('pointerup', (e) => {
+      this.element.releasePointerCapture(e.pointerId)
       this.mouseButton = -1
     })
-    window.addEventListener('wheel', (e) => {
+    this.element.addEventListener('wheel', (e) => {
       this.mouseScroll = new Vec2(e.deltaX, e.deltaY)
     })
   }

@@ -33,7 +33,7 @@ export function validateScriptDataTypes(input, expected) {
   return true
 }
 export class ScriptDataTypeList {
-  constructor(typenames) {
+  constructor(typenames = []) {
     this.types = typenames.map((name) => {
       if (name === 'number') return scriptDataType.int | scriptDataType.float
       return scriptDataType[name]

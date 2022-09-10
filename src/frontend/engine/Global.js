@@ -1,10 +1,7 @@
-import { InputCache } from '%window/InputCache.js'
 import { VaryingController } from '%system/VaryingController.js'
 
 export var global = {
-  input: undefined,
-  varyingController: new VaryingController(),
-  vsync: false,
+  varyingController: undefined,
   fps: 60,
 
   canvas: {
@@ -17,9 +14,9 @@ export var global = {
     delta: 0,
   },
 
-  init: () => {
-    global.input = new InputCache()
-
+  init: (context) => {
+    global.varyingController = new VaryingController()
+    context.addSystem(global.varyingController)
     window.oncontextmenu = (e) => {
       e.preventDefault()
       e.stopPropagation()
@@ -37,7 +34,12 @@ export var global = {
   },
   beginFrame: () => {
     const deltaTime = global.updateTime()
-    global.varyingController.update(deltaTime / 1000)
     return deltaTime
+  },
+  clamp: (x, min, max) => {
+    return Math.min(max, Math.max(x, min))
+  },
+  rectIntersect: (x0, y0, x, y, w, h) => {
+    return y0 >= y && y0 <= y + h && x0 >= x && x0 <= x + w
   },
 }

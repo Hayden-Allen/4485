@@ -7,10 +7,9 @@
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
   import { Window } from '%window/Window.js'
-  import { UILayer } from '%window/Layer.js'
   import { GameLayer } from '%engine/game/GameLayer.js'
 
-  let framebuffer = undefined
+  let canvas = undefined
 
   onMount(() => {
     global.init()
@@ -35,7 +34,7 @@
       }
     }
     let playerController = {
-      run: (player, deltaTimeSeconds) => {
+      run: (player /* deltaTimeSeconds */) => {
         player.vel = new Vec2(
           global.input.isKeyPressed('d') - global.input.isKeyPressed('a'),
           global.input.isKeyPressed('s') - global.input.isKeyPressed('w')
@@ -53,11 +52,10 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    var window = new Window(framebuffer, '#000')
+    var window = new Window(canvas, '#000')
     window.pushLayer(new GameLayer(game))
-    window.pushLayer(new UILayer())
     window.run()
   })
 </script>
 
-<Viewport bind:framebuffer />
+<Viewport bind:canvas />

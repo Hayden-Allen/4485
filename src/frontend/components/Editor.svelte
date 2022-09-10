@@ -14,20 +14,13 @@
   import { ScriptGraphInputLayer } from '%editor/ScriptGraphInputLayer.js'
   import { ScriptGraphLayer } from '%editor/ScriptGraphLayer.js'
   import { ScriptGraphControlsLayer } from '%editor/ScriptGraphControlsLayer.js'
-  import {
-    ScriptNodeTemplate,
-    EventScriptNodeTemplate,
-    InternalScriptNodeTemplate,
-    ConstantScriptNodeTemplate,
-  } from '%script/ScriptNodeTemplate.js'
-  import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
   import { Context } from '%engine/Context.js'
 
   let context = undefined
 
   let gameCanvas = undefined,
-    gameUiCanvas = undefined,
+    uiCanvas = undefined,
     scriptCanvas = undefined
 
   let gameWindow = undefined,
@@ -97,7 +90,7 @@
     global.init(context)
     var game = new Game(context)
 
-    gameWindow = new Window3D(gameCanvas, gameUiCanvas, [0, 0, 1, 1])
+    gameWindow = new Window3D(gameCanvas, uiCanvas, [0, 0, 1, 1])
 
     var scene = new Scene()
     game.setCurrentScene(scene)
@@ -133,14 +126,14 @@
         i++
       }
     }
-    game.addStaticSceneEntity(
-      new SceneEntity(
-        gameWindow,
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-        { vertices, indices }
-      ),
-      0
-    )
+    // game.addStaticSceneEntity(
+    //   new SceneEntity(
+    //     gameWindow,
+    //     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+    //     { vertices, indices }
+    //   ),
+    //   0
+    // )
 
     playerScript = createPlayerScript(gameWindow.inputCache)
     let playerController = {
@@ -186,8 +179,8 @@
   }
 
   $: {
-    if (gameUiCanvas) {
-      gameWindow.setUiCanvas(gameUiCanvas)
+    if (uiCanvas) {
+      gameWindow.setUICanvas(uiCanvas)
     }
   }
 
@@ -247,7 +240,7 @@
         <Viewport
           targetAspectRatio={global.canvas.targetWidth /
             global.canvas.targetHeight}
-          bind:canvas={gameUiCanvas}
+          bind:canvas={uiCanvas}
           onResize={() => context.propagateResizeEvent()}
         />
       </div>

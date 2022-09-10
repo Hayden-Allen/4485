@@ -46,7 +46,8 @@ export class SceneEntity extends Component {
   setVelocity() {}
   draw(window) {
     window.draw(this.renderable)
-    window.uiCanvas.strokeRect(
+    window.strokeRect(
+      this.renderable.transform,
       this.pos.x,
       this.pos.y,
       this.dim.x,

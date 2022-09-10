@@ -19,8 +19,9 @@ export class Renderable {
       textureCache.set(url, this.texture)
     }
   }
-  setTransform(vec2) {
-    mat4.fromTranslation(this.transform, [vec2.x, vec2.y, -25])
+  setTransform(pos, scale = { x: 5, y: 5 }) {
+    mat4.fromTranslation(this.transform, [pos.x, pos.y, 0])
+    mat4.scale(this.transform, this.transform, [scale.x, scale.y, 1])
   }
   init(gl, program, vertices, indices) {
     this.vertexArray = gl.createVertexArray()

@@ -4,7 +4,7 @@ import {
   ScriptNodeTemplate,
   ConstantScriptNodeTemplate,
 } from './ScriptNodeTemplate.js'
-import { ScriptNodePort } from './Scriptnode.js'
+import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
 
 export class ScriptNodeTemplateBank {

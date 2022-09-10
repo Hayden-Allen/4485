@@ -1,5 +1,6 @@
 import { Renderer } from '%graphics/Renderer.js'
 import { Window } from './Window.js'
+import { Window2D } from './Window2D.js'
 import { Camera } from '%graphics/Camera.js'
 import { ShaderProgram } from '%graphics/ShaderProgram.js'
 
@@ -27,7 +28,7 @@ const FRAGMENT_SOURCE = `
 `
 
 export class Window3D extends Window {
-  constructor(canvas, clearColor) {
+  constructor(canvas, uiCanvas, clearColor) {
     super(canvas, clearColor)
     this.camera = new Camera([0, 0, 0], 45)
     this.shaderProgram = new ShaderProgram(
@@ -38,6 +39,8 @@ export class Window3D extends Window {
     // performance tracking
     this.fpsElement = document.getElementById('fps')
     this.fpsSamples = new Array(100).fill(0)
+    // debug draw
+    this.uiCanvas = new Window2D(uiCanvas)
   }
   setCanvas(canvas) {
     super.setCanvas(canvas)
@@ -46,6 +49,9 @@ export class Window3D extends Window {
     // flip images on load
     this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true)
     this.renderer = new Renderer(this.gl, this.clearColor)
+  }
+  setUiCanvas(uiCanvas) {
+    this.uiCanvas = new Window2D(uiCanvas)
   }
   clear() {
     this.renderer.clear()

@@ -1,7 +1,9 @@
 import { VaryingController } from '%system/VaryingController.js'
+import { PhysicsEngine } from '%physics/PhysicsEngine.js'
 
 export var global = {
   varyingController: undefined,
+  physicsEngine: undefined,
   fps: 60,
 
   canvas: {
@@ -15,6 +17,7 @@ export var global = {
   },
 
   init: (context) => {
+    global.physicsEngine = new PhysicsEngine(0)
     global.varyingController = new VaryingController()
     context.addSystem(global.varyingController)
     window.oncontextmenu = (e) => {

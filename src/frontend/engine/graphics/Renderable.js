@@ -11,6 +11,7 @@ export class Renderable {
     this.init(gl, program, vertices, indices)
     this.elementCount = indices.length
     this.transform = mat4.create()
+    this.setTransform({ x: 0, y: 0 })
 
     if (textureCache.has(url)) this.texture = textureCache.get(url)
     else {

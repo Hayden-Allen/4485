@@ -145,7 +145,7 @@ export class ScriptNodeTemplateBank {
       [],
       // don't return anything
       ([entity, v]) => {
-        entity.vel = v
+        entity.setVelocity(v)
       }
     )
   }

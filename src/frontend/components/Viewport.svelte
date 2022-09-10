@@ -2,6 +2,7 @@
   export let canvas = undefined
   export let targetAspectRatio = undefined
   export let onResize = undefined
+  export let focusable = false
 
   let containerWidth = undefined,
     containerHeight = undefined
@@ -49,8 +50,8 @@
   bind:clientHeight={containerHeight}
 >
   <canvas
-    class="focus:outline-0 border-2 border-transparent focus:border-slate-500"
+    class={`focus:outline-0 border-2 border-transparent focus:border-slate-500`}
     bind:this={canvas}
-    tabindex={0}
+    tabindex={focusable ? 0 : undefined}
   />
 </div>

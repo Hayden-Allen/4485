@@ -5,8 +5,10 @@ export class SceneLayer {
   }
   // called by the [Editor|Game]Layer that contains the game that contains the scene that contains this layer
   draw(window) {
-    this.static.forEach((entity) => window.draw(entity.renderable))
-    this.dynamic.forEach((entity) => window.draw(entity.renderable))
+    // this.static.forEach((entity) => window.draw(entity.renderable))
+    // this.dynamic.forEach((entity) => window.draw(entity.renderable))
+    this.static.forEach((entity) => entity.draw(window))
+    this.dynamic.forEach((entity) => entity.draw(window))
   }
   update(deltaTimeSeconds) {
     this.dynamic.forEach((entity) => entity.move(deltaTimeSeconds))

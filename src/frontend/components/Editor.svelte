@@ -27,6 +27,7 @@
   let context = undefined
 
   let gameCanvas = undefined,
+    gameUiCanvas = undefined,
     scriptCanvas = undefined
 
   let gameWindow = undefined,
@@ -96,7 +97,7 @@
     global.init(context)
     var game = new Game(context)
 
-    gameWindow = new Window3D(gameCanvas, [0, 0, 1, 1])
+    gameWindow = new Window3D(gameCanvas, gameUiCanvas, [0, 0, 1, 1])
 
     var scene = new Scene()
     game.setCurrentScene(scene)
@@ -104,10 +105,10 @@
     let vertices = [],
       indices = [],
       i = 0
-    for (var y = 0; y < 500; y += size) {
-      for (var x = 0; x < 500; x += size) {
-        const sx = x / 10,
-          sy = y / 10
+    for (var y = 0; y < 50; y += size) {
+      for (var x = 0; x < 50; x += size) {
+        const sx = x / 10 + 5,
+          sy = y / 10 + 5
         const s = 1
         vertices.push(
           sx,
@@ -135,8 +136,6 @@
     game.addStaticSceneEntity(
       new SceneEntity(
         gameWindow,
-        new Vec2(0, 0),
-        new Vec2(0, 0),
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
         { vertices, indices }
       ),
@@ -151,9 +150,6 @@
     }
     let player = new ControlledSceneEntity(
       gameWindow,
-      // new Vec2(1000, 100),
-      new Vec2(0, 0),
-      new Vec2(50, 50),
       'https://art.pixilart.com/840bcbc293e372f.png',
       { controllers: [playerController] }
     )
@@ -186,6 +182,12 @@
   $: {
     if (gameCanvas) {
       gameWindow.setCanvas(gameCanvas)
+    }
+  }
+
+  $: {
+    if (gameUiCanvas) {
+      gameWindow.setUiCanvas(gameUiCanvas)
     }
   }
 
@@ -229,15 +231,26 @@
     style={`flex-basis: ${midTopBasis}%;`}
   >
     <div
-      class="grow shrink p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="relative grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
       style={`flex-basis: ${topLeftBasis}%;`}
     >
-      <Viewport
-        targetAspectRatio={global.canvas.targetWidth /
-          global.canvas.targetHeight}
-        bind:canvas={gameCanvas}
-        onResize={() => context.propagateResizeEvent()}
-      />
+      <div class="absolute t-0 l-0 w-full h-full p-2">
+        <Viewport
+          focusable={true}
+          targetAspectRatio={global.canvas.targetWidth /
+            global.canvas.targetHeight}
+          bind:canvas={gameCanvas}
+          onResize={() => context.propagateResizeEvent()}
+        />
+      </div>
+      <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+        <Viewport
+          targetAspectRatio={global.canvas.targetWidth /
+            global.canvas.targetHeight}
+          bind:canvas={gameUiCanvas}
+          onResize={() => context.propagateResizeEvent()}
+        />
+      </div>
     </div>
     <Splitter
       bind:context
@@ -250,6 +263,7 @@
       style={`flex-basis: ${topRightBasis}%;`}
     >
       <Viewport
+        focusable={true}
         bind:canvas={scriptCanvas}
         onResize={() => context.propagateResizeEvent()}
       />

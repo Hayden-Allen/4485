@@ -66,8 +66,6 @@ export class ScriptGraphLayer extends Layer {
         )
         // if we already have a port selected and it can be connected to the new port, add an edge
         if (port && this.selectedPort && this.selectedPort.in ^ port.in) {
-          console.log(this.graphvis.graph.getEdges(this.selectedPort.node))
-          console.log(this.graphvis.graph.getEdges(port.node))
           if (this.selectedPort.in)
             this.selectedPort.node.attachAsInput(
               port.node,
@@ -80,8 +78,6 @@ export class ScriptGraphLayer extends Layer {
               port.node,
               port.index
             )
-          console.log(this.graphvis.graph.getEdges(this.selectedPort.node))
-          console.log(this.graphvis.graph.getEdges(port.node))
           this.graphvis.arrange()
           this.selectedPort = undefined
         } else {

@@ -11,7 +11,7 @@ export class ScriptGraphLayer extends Layer {
     this.input = input
     this.controls = controls
     this.redraw = true
-    this.capturedRightClick = false
+    this.capturedLeftClick = false
     this.graphvis = undefined
     this.playerScript = playerScript
     this.selected = undefined
@@ -88,11 +88,9 @@ export class ScriptGraphLayer extends Layer {
     }
     if (node) {
       this.input.cursor = 'default'
-      if (e.button === 2) {
-        this.input.canDrag = false
-        this.capturedRightClick = true
-      }
       if (e.button === 0) {
+        this.input.canDrag = false
+        this.capturedLeftClick = true
         // convert mouse pos to world space and check for intersection with any port in the hit node
         const port = node.checkPortIntersection(
           this.window,
@@ -126,11 +124,11 @@ export class ScriptGraphLayer extends Layer {
     this.input.canDrag = true
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
-    if (e.button === 2) this.capturedRightClick = false
+    if (e.button === 0) this.capturedLeftClick = false
     return hit
   }
   onMouseMove() {
-    this.redraw = this.input.rightMousePressed && !this.capturedRightClick
+    this.redraw = this.input.leftMousePressed && !this.capturedLeftClick
 
     // move selected node
     if (this.selected && this.input.leftMousePressed) {
@@ -160,7 +158,7 @@ export class ScriptGraphLayer extends Layer {
       this.redraw = true
     }
 
-    return this.capturedRightClick && hit
+    return this.capturedLeftClick && hit
   }
   onKeyDown(e) {
     if (!e.repeat && e.ctrlPressed && e.key === 's') {

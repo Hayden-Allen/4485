@@ -46,15 +46,10 @@ export class ScriptGraphLayer extends Layer {
         this.selected.selected = true
         this.selectedX = this.selected.x
         this.selectedY = this.selected.y
-      }
+      } else this.selectedPort = undefined
     }
     // delete an edge
     else if (e.button === 2) {
-      if (index > -1) {
-        this.graphvis.removeEdge(index)
-        this.graphvis.graph.compile()
-      }
-
       const canvas = this.window.canvas
       const bounds = canvas.getBoundingClientRect()
       const x = bounds.left + this.input.mouseX
@@ -131,7 +126,7 @@ export class ScriptGraphLayer extends Layer {
     this.redraw = this.input.leftMousePressed && !this.capturedLeftClick
 
     // move selected node
-    if (this.selected && this.input.leftMousePressed) {
+    if (!this.selectedPort && this.selected && this.input.leftMousePressed) {
       this.redraw = true
       this.controls.setTransform(this.window.ctx)
       // transform mouse screen->world
@@ -164,6 +159,8 @@ export class ScriptGraphLayer extends Layer {
     if (!e.repeat && e.ctrlPressed && e.key === 's') {
       this.graphvis.arrange()
       this.redraw = true
+    }
+    if (e.key === 'Backspace' && this.selected) {
     }
   }
   onResize() {

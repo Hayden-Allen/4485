@@ -57,8 +57,14 @@ export class ScriptNode extends Component {
       return
     }
     // remove existing edge first
-    if (this.graph.hasInputEdge(this, inputIndex))
-      this.graph.removeEdge(outputNode, outputIndex, this, inputIndex)
+    const existing = this.graph.hasInputEdge(this, inputIndex)
+    if (existing)
+      this.graph.removeEdge(
+        existing.outputNode,
+        existing.outputIndex,
+        this,
+        inputIndex
+      )
     this.graph.addEdge(outputNode, outputIndex, this, inputIndex)
   }
   // this.outputs[outputIndex] => inputNode.inputs[inputIndex]

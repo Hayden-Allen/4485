@@ -69,8 +69,6 @@ export class ScriptGraphNodeProxy extends UIElement {
             .width + PORT_NAME_PADDING_X
         )
     }
-    if (internalWidth)
-      console.log(inWidth + internalWidth + outWidth, Math.ceil(text.width))
     this.w =
       Math.max(inWidth + internalWidth + outWidth, Math.ceil(text.width)) +
       WIDTH_PADDING

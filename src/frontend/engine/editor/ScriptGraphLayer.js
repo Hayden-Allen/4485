@@ -71,7 +71,18 @@ export class ScriptGraphLayer extends Layer {
             )
           },
           onAddNode: (name) => {
-            scriptNodeTemplateBank.get(name).createNode(self.graphvis.graph)
+            const node = scriptNodeTemplateBank
+              .get(name)
+              .createNode(self.graphvis.graph)
+            self.graphvis.graph.compile()
+            self.graphvis.generateProxies()
+            const proxy = self.graphvis.proxies.get(node.id)
+            const [x, y] = self.inverseTransformCoords(
+              self.input.mouseX,
+              self.input.mouseY
+            )
+            proxy.x = x
+            proxy.y = y
           },
           onDestroy: () => {
             self._addNodeMenu.$destroy()

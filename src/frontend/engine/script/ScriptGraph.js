@@ -1,9 +1,11 @@
 import { Component } from '%component/Component.js'
 import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
+import { v4 as uuidv4 } from 'uuid'
 
 class ScriptGraphEdge {
   // data flows from outputNode.outputs[outputIndex] to inputNode.inputs[inputIndex]
   constructor(outputNode, outputIndex, inputNode, inputIndex) {
+    this.id = uuidv4()
     this.outputNode = outputNode
     this.outputIndex = outputIndex
     this.inputNode = inputNode

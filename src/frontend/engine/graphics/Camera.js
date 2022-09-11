@@ -17,6 +17,5 @@ export class Camera {
 
     this.matrix = mat4.create()
     mat4.mul(this.matrix, proj, tran)
-    console.log(this.matrix)
   }
 }

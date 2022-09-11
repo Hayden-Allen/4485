@@ -67,10 +67,18 @@ export class Window3D extends Window {
   }
   clear() {
     this.renderer.clear()
+    this.uiCanvas.clear()
   }
   propagateResizeEvent() {
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     super.propagateResizeEvent()
+    this.camera = new Camera(
+      [0, 0, 0],
+      -this.canvas.width / 2,
+      this.canvas.width / 2,
+      -this.canvas.height / 2,
+      this.canvas.height / 2
+    )
   }
   draw(renderable) {
     this.renderer.draw(renderable, this.camera, this.shaderProgram)
@@ -88,13 +96,25 @@ export class Window3D extends Window {
     })} fps`
   }
   strokeRect(transform, x, y, w, h, color) {
+    // world->NDC matrix
     let mvp = mat4.create()
     mat4.mul(mvp, this.camera.matrix, transform)
+    // position of top left corner
     let pos = vec4.fromValues(x, y, -1, 1)
     vec4.transformMat4(pos, pos, mvp)
+    // NDC->pixel
     const sx = ((pos[0] + 1) / 2) * this.canvas.width,
       sy = ((1 - pos[1]) / 2) * this.canvas.height
-    console.log(sx, sy)
-    this.uiCanvas.strokeRect(sx, sy, 5, 5, color)
+
+    // dim (0 because it's a vector)
+    let dim = vec4.fromValues(w, h, -1, 0)
+    vec4.transformMat4(dim, dim, mvp)
+    // NDC->pixel
+    const sw = (dim[0] * this.canvas.width) / 2,
+      sh = (dim[1] * this.canvas.height) / 2
+
+    // console.log(sx, sy, sw, sh)
+    this.uiCanvas.ctx.strokeStyle = color
+    this.uiCanvas.ctx.strokeRect(sx, sy, sw, sh)
   }
 }

@@ -62,8 +62,8 @@
     norm.attachAsInput(vec2, 0, 0)
 
     // boost if shift pressed
-    const ci1 = graph.createNode('ConstInt', [25])
-    const ci2 = graph.createNode('ConstInt', [50])
+    const ci1 = graph.createNode('ConstInt', [5])
+    const ci2 = graph.createNode('ConstInt', [10])
     const mux = graph.createNode('Mux2')
     mux.attachAsInput(keyShiftPressed, 2, 0)
     mux.attachAsInput(ci1, 0, 1)
@@ -100,8 +100,8 @@
       i = 0
     for (var y = 0; y < 50; y += size) {
       for (var x = 0; x < 50; x += size) {
-        const sx = x / 10 + 5,
-          sy = y / 10 + 5
+        const sx = x / 10,
+          sy = y / 10
         const s = 1
         vertices.push(
           sx,
@@ -126,14 +126,15 @@
         i++
       }
     }
-    // game.addStaticSceneEntity(
-    //   new SceneEntity(
-    //     gameWindow,
-    //     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-    //     { vertices, indices }
-    //   ),
-    //   0
-    // )
+    game.addStaticSceneEntity(
+      new SceneEntity(
+        gameWindow,
+        new Vec2(0, 0),
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        { vertices, indices }
+      ),
+      0
+    )
 
     playerScript = createPlayerScript(gameWindow.inputCache)
     let playerController = {
@@ -143,6 +144,7 @@
     }
     let player = new ControlledSceneEntity(
       gameWindow,
+      new Vec2(0, 0),
       'https://art.pixilart.com/840bcbc293e372f.png',
       { controllers: [playerController] }
     )

@@ -9,7 +9,7 @@ export class PhysicsEngine {
   }
   createRect(pos, dim, options = {}) {
     // disable rotation
-    // options.inertia = Infinity
+    options.inertia = Infinity
     let rect = Bodies.rectangle(pos.x, pos.y, dim.x, dim.y, options)
     Composite.add(this.engine.world, rect)
     return rect

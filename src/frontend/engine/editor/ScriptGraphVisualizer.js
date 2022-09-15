@@ -6,7 +6,7 @@ const PADDING_X = 100,
   PADDING_Y = 50
 export const PORT_COLOR = {
   int: {
-    name: '#f59e0b',
+    name: '#facc15',
     dot: '#d97706',
     edge: '#b45309',
   },

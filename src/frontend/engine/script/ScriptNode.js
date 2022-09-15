@@ -12,6 +12,7 @@ export class ScriptNodePort {
 
 export class ScriptNode extends Component {
   constructor(
+    type,
     debugName,
     graph,
     inputPorts,
@@ -20,6 +21,10 @@ export class ScriptNode extends Component {
     { internalPorts = [], internalValues = [] } = {}
   ) {
     super(debugName)
+    /**
+     * @HATODO this shouldn't be here, only needed in proxy
+     */
+    this.type = type
     this.graph = graph
     this.graph.addNode(this)
     this.data = new ScriptNodeData(inputPorts, internalPorts, outputPorts, fn)

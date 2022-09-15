@@ -3,10 +3,42 @@ import { UIElement } from './UIElement.js'
 import { global } from '%engine/Global.js'
 
 const LINE_WIDTH = [2, 4]
-const COLORS = [
-  { shadow: '#0007', node: '#334155', outline: '#6b7280' },
-  { shadow: '#0007', node: '#334155', outline: '#e2e8f0' },
-]
+// const COLORS = [
+//   { shadow: '#0007', node: '#262626', outline: '#737373' },
+//   { shadow: '#0007', node: '#262626', outline: '#e2e8f0' },
+// ]
+const COLORS = {
+  entity: {
+    shadow: '#0007',
+    node: '#262626',
+    title: '#262626',
+    outline: ['#737373', '#737373'],
+  },
+  event: {
+    shadow: '#0007',
+    node: '#262626',
+    title: '#262626',
+    outline: ['#737373', '#737373'],
+  },
+  input: {
+    shadow: '#0007',
+    node: '#262626',
+    title: '#262626',
+    outline: ['#737373', '#737373'],
+  },
+  logic: {
+    shadow: '#0007',
+    node: '#262626',
+    title: '#262626',
+    outline: ['#737373', '#737373'],
+  },
+  math: {
+    shadow: '#0007',
+    node: '#262626',
+    title: '#262626',
+    outline: ['#737373', '#737373'],
+  },
+}
 const FONT_FAMILY = 'sans-serif',
   NAME_FONT_SIZE = 32,
   PORT_FONT_SIZE = 32,
@@ -19,7 +51,7 @@ const FONT_FAMILY = 'sans-serif',
   SHADOW_OFFSET_Y_FACTOR = 4
 export class ScriptGraphNodeProxy extends UIElement {
   constructor(window, node) {
-    super(LINE_WIDTH, COLORS)
+    super(LINE_WIDTH, COLORS[node.type])
     this.node = node
     this.x = 0
     this.y = 0
@@ -93,24 +125,18 @@ export class ScriptGraphNodeProxy extends UIElement {
       ty = this.y
     const selected = ~~(this.selected || this.hovered)
     // node
-    window.drawRoundRectShadow(
-      tx,
-      ty,
-      this.w,
-      this.h,
-      PORT_RADIUS,
-      this.colors[selected].shadow,
-      SHADOW_BLUR_FACTOR * zoom,
-      SHADOW_OFFSET_Y_FACTOR * zoom
-    )
-    window.drawRoundRect(
-      tx,
-      ty,
-      this.w,
-      this.h,
-      PORT_RADIUS,
-      this.colors[selected].node
-    )
+    // window.drawRoundRectShadow(
+    //   tx,
+    //   ty,
+    //   this.w,
+    //   this.h,
+    //   PORT_RADIUS,
+    //   this.colors.shadow,
+    //   SHADOW_BLUR_FACTOR * zoom,
+    //   SHADOW_OFFSET_Y_FACTOR * zoom
+    // )
+    window.drawRect(tx, ty, this.w, this.h, this.colors.node)
+    window.drawRect(tx, ty, this.w, this.nameHeight, this.colors.title)
     // make sure lines are still visible when zoomed out
     const lineWidth = this.lineWidth[selected] / Math.min(zoom, 1)
     // name underline
@@ -120,18 +146,17 @@ export class ScriptGraphNodeProxy extends UIElement {
         ty + this.nameHeight,
         tx + this.w,
         ty + this.nameHeight,
-        '#6b7280',
-        this.lineWidth[0]
+        '#737373',
+        this.lineWidth[0] / 2
       )
     // node outline
-    window.strokeRoundRect(
+    window.strokeRect(
       tx,
       ty,
       this.w,
       this.h,
-      PORT_RADIUS,
-      this.colors[selected].outline,
-      lineWidth,
+      this.colors.outline[selected],
+      lineWidth / 2,
       selected ? visualizer.outlineAlpha.getValue() : 1
     )
     // name
@@ -168,14 +193,14 @@ export class ScriptGraphNodeProxy extends UIElement {
         FONT_FAMILY,
         PORT_FONT_SIZE
       ).width
-      window.strokeRect(
-        tx,
-        portY,
-        PORT_NAME_PADDING_X + width,
-        2 * PORT_RADIUS,
-        '#f00',
-        1
-      )
+      // window.strokeRect(
+      //   tx,
+      //   portY,
+      //   PORT_NAME_PADDING_X + width,
+      //   2 * PORT_RADIUS,
+      //   '#f00',
+      //   1
+      // )
     })
     this.node.data.outputPorts.forEach((port, i) => {
       const portY =
@@ -201,14 +226,14 @@ export class ScriptGraphNodeProxy extends UIElement {
         PORT_FONT_SIZE,
         PORT_COLOR[port.typename].name
       )
-      window.strokeRect(
-        tx + this.w - width - PORT_NAME_PADDING_X,
-        portY,
-        width + PORT_NAME_PADDING_X,
-        2 * PORT_RADIUS,
-        '#f00',
-        1
-      )
+      // window.strokeRect(
+      //   tx + this.w - width - PORT_NAME_PADDING_X,
+      //   portY,
+      //   width + PORT_NAME_PADDING_X,
+      //   2 * PORT_RADIUS,
+      //   '#f00',
+      //   1
+      // )
     })
     /**
      * @HATODO internals

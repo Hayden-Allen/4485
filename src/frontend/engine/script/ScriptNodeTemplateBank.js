@@ -22,10 +22,11 @@ class ScriptNodeTemplateBank {
   mapPorts(ports) {
     return ports.map(([name, type]) => new ScriptNodePort(name, type))
   }
-  create(name, inputs, outputs, fn) {
+  create(type, name, inputs, outputs, fn) {
     this.bank.set(
       name,
       new ScriptNodeTemplate(
+        type,
         name,
         this.mapPorts(inputs),
         this.mapPorts(outputs),
@@ -33,13 +34,14 @@ class ScriptNodeTemplateBank {
       )
     )
   }
-  createEvent(name) {
-    this.bank.set(name, new EventScriptNodeTemplate(name))
+  createEvent(type, name) {
+    this.bank.set(name, new EventScriptNodeTemplate(type, name))
   }
-  createInternal(name, inputs, internals, outputs, fn) {
+  createInternal(type, name, inputs, internals, outputs, fn) {
     this.bank.set(
       name,
       new InternalScriptNodeTemplate(
+        type,
         name,
         this.mapPorts(inputs),
         this.mapPorts(internals),
@@ -48,24 +50,25 @@ class ScriptNodeTemplateBank {
       )
     )
   }
-  createConstant(name, ports) {
+  createConstant(type, name, ports) {
     this.bank.set(
       name,
-      new ConstantScriptNodeTemplate(name, this.mapPorts(ports))
+      new ConstantScriptNodeTemplate(type, name, this.mapPorts(ports))
     )
   }
   init() {
+    this.createEntity()
     this.createEvents()
     this.createInput()
-    this.createMath()
     this.createLogic()
-    this.createEntity()
+    this.createMath()
   }
   createEvents() {
-    this.createEvent('OnTick')
+    this.createEvent('event', 'OnTick')
   }
   createInput() {
     this.createInternal(
+      'input',
       'KeyPressed',
       [],
       [['key', 'string']],
@@ -86,9 +89,10 @@ class ScriptNodeTemplateBank {
   }
   createMath() {
     // const
-    this.createConstant('ConstInt', [['int', 'int']])
+    this.createConstant('math', 'ConstInt', [['int', 'int']])
     // function
     this.create(
+      'math',
       'Subtract',
       [
         ['a', 'number'],
@@ -99,6 +103,7 @@ class ScriptNodeTemplateBank {
     )
     // vector
     this.create(
+      'math',
       'Vec2',
       [
         ['x', 'number'],
@@ -108,6 +113,7 @@ class ScriptNodeTemplateBank {
       ([x, y]) => [{ value: new Vec2(x, y) }]
     )
     this.create(
+      'math',
       'ScaleVec2',
       [
         ['v', 'object'],
@@ -116,12 +122,17 @@ class ScriptNodeTemplateBank {
       [['v', 'object']],
       ([v, s]) => [{ value: v.scale(s) }]
     )
-    this.create('Normalize', [['v', 'object']], [['n', 'object']], ([v]) => [
-      { value: v.norm() },
-    ])
+    this.create(
+      'math',
+      'Normalize',
+      [['v', 'object']],
+      [['n', 'object']],
+      ([v]) => [{ value: v.norm() }]
+    )
   }
   createLogic() {
     this.create(
+      'logic',
       'Mux2',
       [
         ['index', 'int'],
@@ -134,12 +145,14 @@ class ScriptNodeTemplateBank {
   }
   createEntity() {
     this.create(
+      'entity',
       'GetControlledEntity',
       [],
       [['entity', 'object']],
       (_, { entity }) => [{ value: entity }]
     )
     this.create(
+      'entity',
       'SetEntityVelocity',
       [
         ['entity', 'object'],

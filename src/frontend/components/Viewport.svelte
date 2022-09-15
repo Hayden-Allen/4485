@@ -49,7 +49,7 @@
   bind:clientHeight={containerHeight}
 >
   <canvas
-    class="focus:outline-0 border-2 border-transparent focus:border-slate-500"
+    class="focus:outline-0 border border-transparent focus:border-neutral-300"
     bind:this={canvas}
     tabindex={0}
   />

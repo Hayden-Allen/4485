@@ -30,12 +30,14 @@ export class ScriptGraphInputLayer extends Layer {
   }
   onMouseUp(e) {
     if (e.button === 0 || e.button === 2) {
-      if (e.button === 0) this.leftMousePressed = false
-      if (e.button === 2) {
+      if (e.button === 0) {
+        this.leftMousePressed = false
         this.offsetX += this.dragOffsetX
         this.offsetY += this.dragOffsetY
-        this.rightMousePressed = false
         this.cursor = 'grab'
+      }
+      if (e.button === 2) {
+        this.rightMousePressed = false
       }
       this.dragOffsetX = 0
       this.dragOffsetY = 0
@@ -44,11 +46,11 @@ export class ScriptGraphInputLayer extends Layer {
   onMouseMove(e) {
     this.mouseX = e.x
     this.mouseY = e.y
-    if (this.canDrag && this.rightMousePressed) {
+    if (this.canDrag && this.leftMousePressed) {
       this.dragOffsetX = (this.mouseX - this.dragStartX) * this.dragSpeed
       this.dragOffsetY = (this.mouseY - this.dragStartY) * this.dragSpeed
     }
-    this.cursor = this.rightMousePressed ? 'grabbing' : 'grab'
+    this.cursor = this.leftMousePressed ? 'grabbing' : 'grab'
   }
   onRender(e) {
     e.window.canvas.style.cursor = this.cursor

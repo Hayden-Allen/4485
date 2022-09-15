@@ -223,13 +223,13 @@
   }
 </script>
 
-<div class="w-full h-full p-1 flex flex-col bg-gray-900 overflow-hidden">
+<div class="w-full h-full flex flex-col bg-neutral-800 overflow-hidden">
   <div
     class="grow shrink basis-0 overflow-hidden flex flex-row"
     style={`flex-basis: ${midTopBasis}%;`}
   >
     <div
-      class="grow shrink p-2 overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink p-2 overflow-hidden bg-neutral-900"
       style={`flex-basis: ${topLeftBasis}%;`}
     >
       <Viewport
@@ -246,7 +246,7 @@
       maxSplit={0.9}
     />
     <div
-      class="relative grow shrink overflow-hidden bg-gray-800 border-solid border border-gray-700"
+      class="relative grow shrink overflow-hidden bg-neutral-900"
       style={`flex-basis: ${topRightBasis}%;`}
     >
       <Viewport
@@ -268,10 +268,10 @@
     style={`flex-basis: ${midBottomBasis}%;`}
   >
     <div
-      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomLeftBasis}%;`}
     >
-      <p id="fps" class="text-gray-100" />
+      <p id="fps" class="text-neutral-100" />
     </div>
     <Splitter
       bind:context
@@ -280,7 +280,7 @@
       maxSplit={rightSplit - 0.1}
     />
     <div
-      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomMidBasis}%;`}
     />
     <Splitter
@@ -290,7 +290,7 @@
       maxSplit={0.9}
     />
     <div
-      class="grow shrink overflow-auto bg-gray-800 border-solid border border-gray-700"
+      class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomRightBasis}%;`}
     />
   </div>

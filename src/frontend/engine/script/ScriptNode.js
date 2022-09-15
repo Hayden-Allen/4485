@@ -12,6 +12,7 @@ export class ScriptNodePort {
 
 export class ScriptNode extends Component {
   constructor(
+    type,
     debugName,
     graph,
     inputPorts,
@@ -20,6 +21,10 @@ export class ScriptNode extends Component {
     { internalPorts = [], internalValues = [] } = {}
   ) {
     super(debugName)
+    /**
+     * @HATODO this shouldn't be here, only needed in proxy
+     */
+    this.type = type
     this.graph = graph
     this.graph.addNode(this)
     this.data = new ScriptNodeData(inputPorts, internalPorts, outputPorts, fn)
@@ -57,8 +62,14 @@ export class ScriptNode extends Component {
       return
     }
     // remove existing edge first
-    if (this.graph.hasInputEdge(this, inputIndex))
-      this.graph.removeEdge(outputNode, outputIndex, this, inputIndex)
+    const existing = this.graph.hasInputEdge(this, inputIndex)
+    if (existing)
+      this.graph.removeEdge(
+        existing.outputNode,
+        existing.outputIndex,
+        this,
+        inputIndex
+      )
     this.graph.addEdge(outputNode, outputIndex, this, inputIndex)
   }
   // this.outputs[outputIndex] => inputNode.inputs[inputIndex]

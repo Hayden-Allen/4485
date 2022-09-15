@@ -2,6 +2,8 @@ import { Layer } from '%window/Layer.js'
 import { ScriptGraphVisualizer } from './ScriptGraphVisualizer.js'
 import { global } from '%engine/Global.js'
 import { Vec2 } from '%util/Vec2.js'
+import ScriptGraphAddNodeMenu from 'components/ScriptGraphAddNodeMenu.svelte'
+import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
 
 export class ScriptGraphLayer extends Layer {
   constructor(input, controls, playerScript) {
@@ -9,13 +11,14 @@ export class ScriptGraphLayer extends Layer {
     this.input = input
     this.controls = controls
     this.redraw = true
-    this.capturedRightClick = false
+    this.capturedLeftClick = false
     this.graphvis = undefined
     this.playerScript = playerScript
     this.selected = undefined
     this.selectedX = 0
     this.selectedY = 0
     this.hovered = undefined
+    this._addNodeMenu = null
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -43,22 +46,57 @@ export class ScriptGraphLayer extends Layer {
         this.selected.selected = true
         this.selectedX = this.selected.x
         this.selectedY = this.selected.y
-      }
+      } else this.selectedPort = undefined
     }
     // delete an edge
     else if (e.button === 2) {
-      if (index > -1) {
-        this.graphvis.removeEdge(index)
-        this.graphvis.graph.compile()
-      }
+      const canvas = this.window.canvas
+      const bounds = canvas.getBoundingClientRect()
+      const x = bounds.left + this.input.mouseX
+      const y = bounds.top + this.input.mouseY
+      const self = this
+      this._addNodeMenu = new ScriptGraphAddNodeMenu({
+        target: document.body,
+        props: {
+          x,
+          y,
+          nodeTypeNames: scriptNodeTemplateBank.getNodeTypeNames(),
+          checkCanReposition: (x, y) => {
+            const bounds = canvas.getBoundingClientRect()
+            return (
+              x > bounds.left &&
+              x < bounds.right &&
+              y > bounds.top &&
+              y < bounds.bottom
+            )
+          },
+          onAddNode: (name) => {
+            const node = scriptNodeTemplateBank
+              .get(name)
+              .createNode(self.graphvis.graph)
+            self.graphvis.graph.compile()
+            self.graphvis.generateProxies()
+            const proxy = self.graphvis.proxies.get(node.id)
+            const [x, y] = self.inverseTransformCoords(
+              self.input.mouseX,
+              self.input.mouseY
+            )
+            proxy.x = x
+            proxy.y = y
+          },
+          onDestroy: () => {
+            self._addNodeMenu.$destroy()
+            self._addNodeMenu = null
+            canvas.focus()
+          },
+        },
+      })
     }
     if (node) {
       this.input.cursor = 'default'
-      if (e.button === 2) {
-        this.input.canDrag = false
-        this.capturedRightClick = true
-      }
       if (e.button === 0) {
+        this.input.canDrag = false
+        this.capturedLeftClick = true
         // convert mouse pos to world space and check for intersection with any port in the hit node
         const port = node.checkPortIntersection(
           this.window,
@@ -78,7 +116,8 @@ export class ScriptGraphLayer extends Layer {
               port.node,
               port.index
             )
-          this.graphvis.arrange()
+          this.graphvis.graph.compile()
+          this.graphvis.generateProxies()
           this.selectedPort = undefined
         } else {
           this.selectedPort = port
@@ -91,14 +130,14 @@ export class ScriptGraphLayer extends Layer {
     this.input.canDrag = true
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
-    if (e.button === 2) this.capturedRightClick = false
+    if (e.button === 0) this.capturedLeftClick = false
     return hit
   }
   onMouseMove() {
-    this.redraw = this.input.rightMousePressed && !this.capturedRightClick
+    this.redraw = this.input.leftMousePressed && !this.capturedLeftClick
 
     // move selected node
-    if (this.selected && this.input.leftMousePressed) {
+    if (!this.selectedPort && this.selected && this.input.leftMousePressed) {
       this.redraw = true
       this.controls.setTransform(this.window.ctx)
       // transform mouse screen->world
@@ -125,12 +164,14 @@ export class ScriptGraphLayer extends Layer {
       this.redraw = true
     }
 
-    return this.capturedRightClick && hit
+    return this.capturedLeftClick && hit
   }
   onKeyDown(e) {
     if (!e.repeat && e.ctrlPressed && e.key === 's') {
       this.graphvis.arrange()
       this.redraw = true
+    }
+    if (e.key === 'Backspace' && this.selected) {
     }
   }
   onResize() {

@@ -6,7 +6,7 @@ const PADDING_X = 100,
   PADDING_Y = 50
 export const PORT_COLOR = {
   int: {
-    name: '#f59e0b',
+    name: '#facc15',
     dot: '#d97706',
     edge: '#b45309',
   },
@@ -54,7 +54,7 @@ export class ScriptGraphVisualizer {
     this.columns = []
     // map ScriptNode.id to its ScriptGraphProxy
     this.proxies = new Map()
-    this.edgeProxies = []
+    this.edgeProxies = new Map()
     // mantains draw order as nodes are selected
     this.drawStack = []
     this.window = window
@@ -66,32 +66,47 @@ export class ScriptGraphVisualizer {
     this.drawStack = []
     // create all node proxies
     this.graph.nodes.forEach((node) => {
-      const proxy = new ScriptGraphNodeProxy(this.window, node)
-      this.proxies.set(node.id, proxy)
+      let proxy = undefined
+      if (this.proxies.has(node.id)) {
+        proxy = this.proxies.get(node.id)
+      } else {
+        proxy = new ScriptGraphNodeProxy(this.window, node)
+        this.proxies.set(node.id, proxy)
+      }
       this.drawStack.push(proxy)
     })
-    this.edgeProxies = []
     // create all edge proxies using node proxies
     this.graph.nodes.forEach((node) => {
       this.graph.edges.get(node.id).out.forEach((edge) => {
-        const proxy = new ScriptGraphEdgeProxy(
-          this.proxies.get(edge.outputNode.id),
-          edge.outputIndex,
-          this.proxies.get(edge.inputNode.id),
-          edge.inputIndex
-        )
-        this.edgeProxies.push(proxy)
+        let proxy = undefined
+        if (this.edgeProxies.has(edge.id)) {
+          proxy = this.edgeProxies.get(edge.id)
+        } else {
+          proxy = new ScriptGraphEdgeProxy(
+            this.proxies.get(edge.outputNode.id),
+            edge.outputIndex,
+            this.proxies.get(edge.inputNode.id),
+            edge.inputIndex
+          )
+          this.edgeProxies.set(edge.id, proxy)
+        }
       })
     })
-  }
-  removeEdge(index) {
-    const [edge] = this.edgeProxies.splice(index, 1)
-    this.graph.removeEdge(
-      edge.startProxy.node,
-      edge.startPort,
-      edge.endProxy.node,
-      edge.endPort
-    )
+    // remove deleted proxies
+    const activeEdgeIds = new Set()
+    this.proxies.forEach((node, id) => {
+      if (!this.graph.nodes.has(id)) this.proxies.delete(id)
+      else {
+        const edges = this.graph.edges.get(id)
+        edges.in.forEach((edge) => activeEdgeIds.add(edge.id))
+        edges.out.forEach((edge) => activeEdgeIds.add(edge.id))
+      }
+    })
+    this.edgeProxies.forEach((edge, id) => {
+      if (!activeEdgeIds.has(id)) {
+        this.edgeProxies.delete(id)
+      }
+    })
   }
   draw(window, zoom) {
     this.edgeProxies.forEach((proxy) => proxy.draw(this, window))
@@ -138,7 +153,10 @@ export class ScriptGraphVisualizer {
         columnIndex.set(node.id, column)
       })
 
-      // push no-input nodes as far right as they can go (see above comment)
+      /**
+       * @HATODO all nodes
+       */
+      // push source nodes as far right as they can go (see above comment)
       order.forEach((node) => {
         const currentColumn = columnIndex.get(node.id)
         // this node has inputs, so is already in the correct column

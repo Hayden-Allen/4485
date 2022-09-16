@@ -5,6 +5,8 @@ export class ScriptGraphInputLayer extends Layer {
     super('ScriptGraphInputLayer')
     this.mouseX = 0
     this.mouseY = 0
+    this.lastMouseX = 0
+    this.lastMouseY = 0
     this.dragStartX = 0
     this.dragStartY = 0
     this.dragOffsetX = 0
@@ -44,6 +46,8 @@ export class ScriptGraphInputLayer extends Layer {
     }
   }
   onMouseMove(e) {
+    this.lastMouseX = this.mouseX
+    this.lastMouseY = this.mouseY
     this.mouseX = e.x
     this.mouseY = e.y
     if (this.canDrag && this.leftMousePressed) {

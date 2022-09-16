@@ -141,13 +141,19 @@ export class ScriptGraphLayer extends Layer {
       this.redraw = true
       this.controls.setTransform(this.window.ctx)
       // transform mouse screen->world
-      const [wx, wy] = this.inverseTransformCoords(
+      const [mx, my] = this.inverseTransformCoords(
         this.input.mouseX,
         this.input.mouseY
       )
+      const [lmx, lmy] = this.inverseTransformCoords(
+        this.input.lastMouseX,
+        this.input.lastMouseY
+      )
       // move node by its center
-      this.selected.x = wx - this.selected.w / 2
-      this.selected.y = wy - this.selected.h / 2
+      // this.selected.x = wx - this.selected.w / 2
+      // this.selected.y = wy - this.selected.h / 2
+      this.selected.x += mx - lmx
+      this.selected.y += my - lmy
     }
 
     const { index, edge } = this.checkEdgeIntersection()

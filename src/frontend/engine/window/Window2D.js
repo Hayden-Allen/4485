@@ -141,6 +141,24 @@ export class Window2D extends Window {
     this.ctx.rotate(theta)
     this.ctx.translate(-cx, -cy)
   }
+  drawVerticalCenteredText(
+    message,
+    x,
+    y,
+    fontFamily,
+    fontSize,
+    color,
+    options = {}
+  ) {
+    this.ctx.font = `${this.scaleFontSize(fontSize)}px ${fontFamily}`
+    this.ctx.fillStyle = color
+    this.ctx.textBaseline = 'middle'
+
+    const [cx, cy] = this.scaleCoords(x, y)
+    if (options.theta) this.rotate(cx, cy, options.theta)
+    this.ctx.fillText(message, cx, cy)
+    if (options.theta) this.rotate(cx, cy, -options.theta)
+  }
   drawCenteredText(message, x, y, fontFamily, fontSize, color, options = {}) {
     this.ctx.font = `${this.scaleFontSize(fontSize)}px ${fontFamily}`
     this.ctx.fillStyle = color

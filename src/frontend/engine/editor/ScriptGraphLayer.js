@@ -142,9 +142,8 @@ export class ScriptGraphLayer extends Layer {
       this.redraw = true
     }
     if (e.key === 'Backspace' && this.selected) {
-      /*
-       * @HATODO
-       * Delete node
+      /**
+       * @HATODO delete node
        */
     }
   }

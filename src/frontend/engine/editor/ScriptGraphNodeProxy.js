@@ -237,9 +237,6 @@ export class ScriptGraphNodeProxy extends UIElement {
       //   1
       // )
     })
-    /**
-     * @HATODO internals
-     */
     this.node.data.internalPorts.forEach((port, i) => {
       const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
       window.drawVerticalCenteredText(
@@ -295,22 +292,65 @@ export class ScriptGraphNodeProxy extends UIElement {
     }
     return { x: this.x + this.w, y }
   }
-  /**
-   * @HATODO cleanup
-   */
   checkPortIntersection(window, x, y) {
-    const portBaseY = this.y + this.nameHeight + this.portHeight / 2
-
     const data = this.node.data
-    for (let i = 0; i < data.inputPorts.length; i++) {
-      const port = data.inputPorts[i]
-      const portX = this.x
+    // inputs
+    let ret = this.checkPortIntersectionOn(
+      window,
+      x,
+      y,
+      data.inputPorts,
+      () => this.x,
+      (port) => port.name,
+      true,
+      false
+    )
+    if (ret) return ret
+    // outputs
+    ret = this.checkPortIntersectionOn(
+      window,
+      x,
+      y,
+      data.outputPorts,
+      (width) => this.x + this.w - width - PORT_NAME_PADDING_X,
+      (port) => port.name,
+      false,
+      false
+    )
+    if (ret) return ret
+    // internals
+    ret = this.checkPortIntersectionOn(
+      window,
+      x,
+      y,
+      data.internalPorts,
+      () => this.x + PORT_NAME_PADDING_X,
+      (port, i) => `${port.name}: ${this.node.internalValues[i]}`,
+      false,
+      true
+    )
+    return ret
+  }
+  checkPortIntersectionOn(
+    window,
+    x,
+    y,
+    list,
+    computeX,
+    textFormat,
+    isInput,
+    isInternal
+  ) {
+    const portBaseY = this.y + this.nameHeight + this.portHeight / 2
+    for (let i = 0; i < list.length; i++) {
+      const port = list[i]
       const portY = portBaseY + i * this.portHeight
       const width = window.textMetrics(
-        port.name,
+        textFormat(port, i),
         FONT_FAMILY,
         PORT_FONT_SIZE
       ).width
+      const portX = computeX(width)
 
       if (
         global.rectIntersect(
@@ -324,70 +364,8 @@ export class ScriptGraphNodeProxy extends UIElement {
       ) {
         return {
           port,
-          in: true,
-          index: i,
-          proxy: this,
-          node: this.node,
-          color: PORT_COLOR[port.typename].edge,
-        }
-      }
-    }
-
-    for (let i = 0; i < data.outputPorts.length; i++) {
-      const port = data.outputPorts[i]
-      const portY = portBaseY + i * this.portHeight
-      const width = window.textMetrics(
-        port.name,
-        FONT_FAMILY,
-        PORT_FONT_SIZE
-      ).width
-      const portX = this.x + this.w - width - PORT_NAME_PADDING_X
-
-      if (
-        global.rectIntersect(
-          x,
-          y,
-          portX,
-          portY,
-          width + PORT_NAME_PADDING_X,
-          2 * PORT_RADIUS
-        )
-      ) {
-        return {
-          port,
-          in: false,
-          index: i,
-          proxy: this,
-          node: this.node,
-          color: PORT_COLOR[port.typename].edge,
-        }
-      }
-    }
-
-    for (let i = 0; i < data.internalPorts.length; i++) {
-      const port = data.internalPorts[i]
-      const portY = portBaseY + i * this.portHeight
-      const width = window.textMetrics(
-        `${port.name}: ${this.node.internalValues[i]}`,
-        FONT_FAMILY,
-        PORT_FONT_SIZE
-      ).width
-      const portX = this.x + PORT_NAME_PADDING_X
-
-      if (
-        global.rectIntersect(
-          x,
-          y,
-          portX,
-          portY,
-          width + PORT_NAME_PADDING_X,
-          2 * PORT_RADIUS
-        )
-      ) {
-        return {
-          port,
-          in: false,
-          internal: true,
+          in: isInput,
+          internal: isInternal,
           index: i,
           proxy: this,
           node: this.node,

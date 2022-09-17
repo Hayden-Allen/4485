@@ -64,6 +64,10 @@ export class ScriptGraphVisualizer {
 
     this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.5 })
     this.outlineColor = '#fff'
+    this.edgeBlob = new Varying(0, 1, -1, {
+      step: 0.5,
+      reset: true,
+    })
   }
   generateProxies() {
     this.drawStack = []
@@ -157,9 +161,10 @@ export class ScriptGraphVisualizer {
       })
 
       /**
-       * @HATODO all nodes
+       * @HATODO
+       * all nodes
        */
-      // push source nodes as far right as they can go (see above comment)
+      // // push source nodes as far right as they can go (see above comment)
       order.forEach((node) => {
         const currentColumn = columnIndex.get(node.id)
         // this node has inputs, so is already in the correct column
@@ -179,10 +184,25 @@ export class ScriptGraphVisualizer {
           columnIndex.set(node.id, newColumn)
         }
       })
+      // for (let i = order.length - 1; i >= 0; i--) {
+      //   const node = order[i]
+      //   const currentColumn = columnIndex.get(node.id)
+      //   const outboundEdges = this.graph.getEdges(node).out
+      //   let minColumn = columns.length
+      //   outboundEdges.forEach((edge) => {
+      //     minColumn = Math.min(minColumn, columnIndex.get(edge.inputNode.id))
+      //   })
+      //   const newColumn = minColumn - 1
+      //   if (newColumn != currentColumn) {
+      //     columns[currentColumn].delete(node.id)
+      //     columns[newColumn].set(node.id, node)
+      //     columnIndex.set(node.id, newColumn)
+      //   }
+      // }
 
       // compute x-axis starting point for each column (first column starts at 0)
       let baseX = [0]
-      for (var i = 0; i < columns.length; i++) {
+      for (let i = 0; i < columns.length; i++) {
         // compute the maximum width of all nodes in current column
         let maxWidth = 0
         columns[i].forEach((node) => {

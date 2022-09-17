@@ -13,10 +13,14 @@ export class VaryingController extends System {
       this.clamp(component, component.start)
   }
   clamp(component, value) {
-    component.value = value
-    component.step *= -1
+    if (component.reset) {
+      component.value = component.start
+    } else {
+      component.value = value
+      component.step *= -1
 
-    if (!component.repeatCount) this.removeComponent(component)
-    if (component.repeatCount != -1) component.repeatCount--
+      if (!component.repeatCount) this.removeComponent(component)
+      if (component.repeatCount != -1) component.repeatCount--
+    }
   }
 }

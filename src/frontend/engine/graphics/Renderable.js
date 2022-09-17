@@ -25,9 +25,6 @@ export class Renderable {
     this.vertexArray = gl.createVertexArray()
     gl.bindVertexArray(this.vertexArray)
 
-    /**
-     * @HATODO this is hardcoded to match shaders
-     */
     this.vertexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
@@ -42,9 +39,6 @@ export class Renderable {
 
     this.indexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
-    /**
-     * @HATODO make this either non-constant or 32-bit?
-     */
     gl.bufferData(
       gl.ELEMENT_ARRAY_BUFFER,
       new Uint16Array(indices),

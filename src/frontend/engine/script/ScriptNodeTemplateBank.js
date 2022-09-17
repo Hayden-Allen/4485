@@ -20,7 +20,9 @@ class ScriptNodeTemplateBank {
     return this.bank.get(name)
   }
   mapPorts(ports) {
-    return ports.map(([name, type]) => new ScriptNodePort(name, type))
+    return ports.map(
+      ([name, type, editorType]) => new ScriptNodePort(name, type, editorType)
+    )
   }
   create(type, name, inputs, outputs, fn) {
     this.bank.set(
@@ -71,7 +73,7 @@ class ScriptNodeTemplateBank {
       'input',
       'KeyPressed',
       [],
-      [['key', 'string']],
+      [['key', 'string', 'key']],
       [
         ['T', 'bool'],
         ['F', 'bool'],

@@ -105,7 +105,6 @@ export class ScriptGraphNodeProxy extends UIElement {
           ).width + PORT_NAME_PADDING_X
         )
     }
-    console.log(inWidth, internalWidth, outWidth)
     this.w =
       Math.max(inWidth + internalWidth + outWidth, Math.ceil(text.width)) +
       WIDTH_PADDING
@@ -256,6 +255,22 @@ export class ScriptGraphNodeProxy extends UIElement {
   getPortBaseY() {
     return this.y + this.nameHeight + this.portHeight / 2
   }
+  getInternalPortCoords(i, window) {
+    const x =
+      this.x +
+      PORT_NAME_PADDING_X +
+      window.textMetrics(
+        `${this.node.data.internalPorts[i].name}: `,
+        FONT_FAMILY,
+        PORT_FONT_SIZE
+      ).width
+    const y =
+      this.getPortBaseY() +
+      this.portHeight * i +
+      PORT_DOT_OFFSET -
+      this.portHeight / 2
+    return { x, y }
+  }
   getInPortCoords(i) {
     let y = 0
     // activation edges map to middle of title bar
@@ -280,6 +295,9 @@ export class ScriptGraphNodeProxy extends UIElement {
     }
     return { x: this.x + this.w, y }
   }
+  /**
+   * @HATODO cleanup
+   */
   checkPortIntersection(window, x, y) {
     const portBaseY = this.y + this.nameHeight + this.portHeight / 2
 
@@ -338,6 +356,38 @@ export class ScriptGraphNodeProxy extends UIElement {
         return {
           port,
           in: false,
+          index: i,
+          proxy: this,
+          node: this.node,
+          color: PORT_COLOR[port.typename].edge,
+        }
+      }
+    }
+
+    for (let i = 0; i < data.internalPorts.length; i++) {
+      const port = data.internalPorts[i]
+      const portY = portBaseY + i * this.portHeight
+      const width = window.textMetrics(
+        `${port.name}: ${this.node.internalValues[i]}`,
+        FONT_FAMILY,
+        PORT_FONT_SIZE
+      ).width
+      const portX = this.x + PORT_NAME_PADDING_X
+
+      if (
+        global.rectIntersect(
+          x,
+          y,
+          portX,
+          portY,
+          width + PORT_NAME_PADDING_X,
+          2 * PORT_RADIUS
+        )
+      ) {
+        return {
+          port,
+          in: false,
+          internal: true,
           index: i,
           proxy: this,
           node: this.node,

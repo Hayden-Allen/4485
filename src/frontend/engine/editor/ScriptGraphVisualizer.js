@@ -35,6 +35,9 @@ export const PORT_COLOR = {
     name: '#f43f5e',
     dot: '#e11d48',
     edge: '#be123c',
+    editorBg: '#7f1d1d',
+    editorFg: '#fef2f2',
+    editorPlaceholder: '#fecaca',
   },
 
   array: {

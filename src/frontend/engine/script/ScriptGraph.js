@@ -87,9 +87,6 @@ export class ScriptGraph extends Component {
     this.edges.get(outputNode.id).out.push(edge)
     this.edges.get(inputNode.id).in.push(edge)
   }
-  /**
-   * @HATODO cleanup
-   */
   removeEdge(outputNode, outputIndex, inputNode, inputIndex) {
     let outputEdges = this.getEdges(outputNode).out
     let inputEdges = this.getEdges(inputNode).in
@@ -129,9 +126,6 @@ export class ScriptGraph extends Component {
   compile() {
     this.clearErrors()
     this.canErr = true
-    /**
-     * @HATODO this is where all event nodes will be detected
-     */
     // nodes that execution will start from (event nodes)
     this.startNodes = []
     // nodes that order-building will start from (any node with no input edges)
@@ -173,10 +167,9 @@ export class ScriptGraph extends Component {
 
     // reset activation for all nodes
     this.nodes.forEach((node) => (node.active = false))
-    /**
-     * @HATODO maybe this shouldn't be the case?
-     */
     // always run nodes with no inputs
+    // it must be guaranteed by the corresponding template that such nodes do not explicitly activate their children
+    // note that this is always the case for ConstantScriptNodeTemplates; see ScriptNodeTemplate.js
     this.nodes.forEach((node) => {
       if (!this.getEdges(node).in.length) node.active = true
     })

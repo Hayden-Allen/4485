@@ -14,19 +14,13 @@
   import { ScriptGraphInputLayer } from '%editor/ScriptGraphInputLayer.js'
   import { ScriptGraphLayer } from '%editor/ScriptGraphLayer.js'
   import { ScriptGraphControlsLayer } from '%editor/ScriptGraphControlsLayer.js'
-  import {
-    ScriptNodeTemplate,
-    EventScriptNodeTemplate,
-    InternalScriptNodeTemplate,
-    ConstantScriptNodeTemplate,
-  } from '%script/ScriptNodeTemplate.js'
-  import { ScriptNodePort } from '%script/ScriptNode.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
   import { Context } from '%engine/Context.js'
 
   let context = undefined
 
   let gameCanvas = undefined,
+    uiCanvas = undefined,
     scriptCanvas = undefined
 
   let gameWindow = undefined,
@@ -68,8 +62,8 @@
     norm.attachAsInput(vec2, 0, 0)
 
     // boost if shift pressed
-    const ci1 = graph.createNode('ConstInt', [25])
-    const ci2 = graph.createNode('ConstInt', [50])
+    const ci1 = graph.createNode('ConstInt', [5])
+    const ci2 = graph.createNode('ConstInt', [10])
     const mux = graph.createNode('Mux2')
     mux.attachAsInput(keyShiftPressed, 2, 0)
     mux.attachAsInput(ci1, 0, 1)
@@ -96,7 +90,7 @@
     global.init(context)
     var game = new Game(context)
 
-    gameWindow = new Window3D(gameCanvas, [0, 0, 1, 1])
+    gameWindow = new Window3D(gameCanvas, uiCanvas, [0, 0, 1, 1])
 
     var scene = new Scene()
     game.setCurrentScene(scene)
@@ -104,8 +98,8 @@
     let vertices = [],
       indices = [],
       i = 0
-    for (var y = 0; y < 500; y += size) {
-      for (var x = 0; x < 500; x += size) {
+    for (var y = 0; y < 50; y += size) {
+      for (var x = 0; x < 50; x += size) {
         const sx = x / 10,
           sy = y / 10
         const s = 1
@@ -136,9 +130,8 @@
       new SceneEntity(
         gameWindow,
         new Vec2(0, 0),
-        new Vec2(0, 0),
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-        { vertices, indices }
+        { vertices, indices, scale: 25 }
       ),
       0
     )
@@ -151,11 +144,9 @@
     }
     let player = new ControlledSceneEntity(
       gameWindow,
-      // new Vec2(1000, 100),
       new Vec2(0, 0),
-      new Vec2(50, 50),
       'https://art.pixilart.com/840bcbc293e372f.png',
-      { controllers: [playerController] }
+      { controllers: [playerController], scale: 25 }
     )
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
@@ -186,6 +177,12 @@
   $: {
     if (gameCanvas) {
       gameWindow.setCanvas(gameCanvas)
+    }
+  }
+
+  $: {
+    if (uiCanvas) {
+      gameWindow.setUICanvas(uiCanvas)
     }
   }
 
@@ -229,15 +226,26 @@
     style={`flex-basis: ${midTopBasis}%;`}
   >
     <div
-      class="grow shrink p-2 overflow-hidden bg-neutral-900"
+      class="relative grow shrink overflow-hidden bg-neutral-900"
       style={`flex-basis: ${topLeftBasis}%;`}
     >
-      <Viewport
-        targetAspectRatio={global.canvas.targetWidth /
-          global.canvas.targetHeight}
-        bind:canvas={gameCanvas}
-        onResize={() => context.propagateResizeEvent()}
-      />
+      <div class="absolute t-0 l-0 w-full h-full p-2">
+        <Viewport
+          focusable={true}
+          targetAspectRatio={global.canvas.targetWidth /
+            global.canvas.targetHeight}
+          bind:canvas={gameCanvas}
+          onResize={() => context.propagateResizeEvent()}
+        />
+      </div>
+      <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+        <Viewport
+          targetAspectRatio={global.canvas.targetWidth /
+            global.canvas.targetHeight}
+          bind:canvas={uiCanvas}
+          onResize={() => context.propagateResizeEvent()}
+        />
+      </div>
     </div>
     <Splitter
       bind:context

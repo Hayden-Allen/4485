@@ -141,6 +141,24 @@ export class Window2D extends Window {
     this.ctx.rotate(theta)
     this.ctx.translate(-cx, -cy)
   }
+  drawVerticalCenteredText(
+    message,
+    x,
+    y,
+    fontFamily,
+    fontSize,
+    color,
+    options = {}
+  ) {
+    this.ctx.font = `${this.scaleFontSize(fontSize)}px ${fontFamily}`
+    this.ctx.fillStyle = color
+    this.ctx.textBaseline = 'middle'
+
+    const [cx, cy] = this.scaleCoords(x, y)
+    if (options.theta) this.rotate(cx, cy, options.theta)
+    this.ctx.fillText(message, cx, cy)
+    if (options.theta) this.rotate(cx, cy, -options.theta)
+  }
   drawCenteredText(message, x, y, fontFamily, fontSize, color, options = {}) {
     this.ctx.font = `${this.scaleFontSize(fontSize)}px ${fontFamily}`
     this.ctx.fillStyle = color
@@ -164,11 +182,11 @@ export class Window2D extends Window {
   // this.ctx.transform is applied automatically during rendering, which converts window->screen
   scaleCoords(x, y) {
     const s = this.getScalingFactor()
-    return [Math.floor(x * s), Math.floor(y * s)]
+    return [x * s, y * s]
   }
   scaleDims(w, h) {
     const s = this.getScalingFactor()
-    return [Math.ceil(w * s), Math.ceil(h * s)]
+    return [w * s, h * s]
   }
   scaleFontSize(size) {
     const s = this.getScalingFactor()

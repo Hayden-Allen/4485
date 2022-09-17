@@ -1,37 +1,25 @@
 <script>
-  import { onMount } from 'svelte'
+  import ContextMenuLayout from 'components/popup/layouts/ContextMenuLayout.svelte'
   import MagnifyingGlass from 'icons/20/mini/magnifying-glass.svelte'
 
   export let x = null,
     y = null
-  export let nodeTypeNames = null
   export let checkCanReposition = null
+  export let onDestroyPopup = null
+
+  export let nodeTypeNames = null
   export let onAddNode = null
-  export let onDestroy = null
 </script>
 
-<svelte:window on:resize={onDestroy} />
-
-<div
-  class="fixed left-0 top-0 w-full h-full overflow-hidden"
-  on:pointerdown={(e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (e.button === 2 && checkCanReposition(e.clientX, e.clientY)) {
-      x = e.clientX
-      y = e.clientY
-    } else {
-      onDestroy()
-    }
-  }}
+<ContextMenuLayout
+  {x}
+  {y}
+  {checkCanReposition}
+  {onDestroyPopup}
+  width="200px"
+  height="200px"
 >
-  <div
-    class="flex flex-col w-[200px] h-[200px] bg-neutral-800 text-neutral-100 drop-shadow-xl absolute"
-    style={`left: ${x}px; top: ${y}px;`}
-    on:pointerdown={(e) => {
-      e.stopPropagation()
-    }}
-  >
+  <div class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto">
     <div
       class="grow-0 shrink-0 flex flex-row border-b border-solid border-neutral-700 h-10"
     >
@@ -52,7 +40,7 @@
         <button
           on:click={() => {
             onAddNode(name)
-            onDestroy()
+            onDestroyPopup()
           }}
           class="p-2 cursor-pointer hover:bg-neutral-700 outline-0 text-left"
         >
@@ -61,4 +49,4 @@
       {/each}
     </div>
   </div>
-</div>
+</ContextMenuLayout>

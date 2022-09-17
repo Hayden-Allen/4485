@@ -1,5 +1,6 @@
 import { PORT_COLOR } from './ScriptGraphVisualizer.js'
 import { UIElement } from './UIElement.js'
+import { global } from '%engine/Global.js'
 
 const COLORS = { activationEdge: '#facc15', hovered: '#e2e8f0' }
 const LINE_WIDTH = [2, 5]
@@ -28,8 +29,26 @@ export class ScriptGraphEdgeProxy extends UIElement {
       const startType =
         this.startProxy.node.data.outputPorts[this.startPort].typename
       const endType = this.endProxy.node.data.inputPorts[this.endPort].typename
-      color.addColorStop(0, PORT_COLOR[startType].edge)
-      color.addColorStop(1, PORT_COLOR[endType].edge)
+      const startColor = PORT_COLOR[startType].edge
+      const endColor = PORT_COLOR[endType].edge
+      const blobSize = 0.05 * (100 / global.lineLength(sx, sy, ex, ey))
+      const blobStart = visualizer.edgeBlob.getValue(),
+        blobEnd = Math.min(blobStart + blobSize, 1)
+      const mix1Start = Math.max(0, blobStart - blobSize)
+      const mix2Start = Math.min(1, blobEnd + blobSize)
+      const mix1 = global.colorMix(endColor, startColor, blobStart)
+      const mix2 = global.colorMix(endColor, startColor, blobEnd)
+      const blobColor = global.colorMix(
+        PORT_COLOR[endType].name,
+        PORT_COLOR[startType].name,
+        blobStart
+      )
+
+      color.addColorStop(0, startColor)
+      color.addColorStop(mix1Start, mix1)
+      color.addColorStop((blobStart + blobEnd) / 2, blobColor)
+      color.addColorStop(mix2Start, mix2)
+      color.addColorStop(1, endColor)
     }
 
     const selected = this.hovered || this.selected

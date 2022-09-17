@@ -83,6 +83,7 @@ export class DynamicSceneEntity extends SceneEntity {
     this.renderable.setTransform(this.pos)
   }
   setVelocity(v) {
+    // console.log(v)
     Body.setVelocity(this.physicsProxy, { x: v.x, y: -v.y })
   }
 }

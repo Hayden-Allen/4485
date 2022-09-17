@@ -226,16 +226,18 @@
     style={`flex-basis: ${midTopBasis}%;`}
   >
     <div
-      class="grow shrink p-2 overflow-hidden bg-neutral-900"
+      class="relative grow shrink overflow-hidden bg-neutral-900"
       style={`flex-basis: ${topLeftBasis}%;`}
     >
-      <Viewport
-        targetAspectRatio={global.canvas.targetWidth /
-          global.canvas.targetHeight}
-        bind:canvas={gameCanvas}
-        onResize={() => context.propagateResizeEvent()}
-      />
-    </div>
+      <div class="absolute t-0 l-0 w-full h-full p-2">
+        <Viewport
+          focusable={true}
+          targetAspectRatio={global.canvas.targetWidth /
+            global.canvas.targetHeight}
+          bind:canvas={gameCanvas}
+          onResize={() => context.propagateResizeEvent()}
+        />
+      </div>
       <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
         <Viewport
           targetAspectRatio={global.canvas.targetWidth /
@@ -256,7 +258,6 @@
       style={`flex-basis: ${topRightBasis}%;`}
     >
       <Viewport
-        focusable={true}
         bind:canvas={scriptCanvas}
         onResize={() => context.propagateResizeEvent()}
       />

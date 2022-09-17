@@ -4,9 +4,10 @@ import { Component } from '%component/Component.js'
 import { ScriptDataTypeList } from './ScriptDataType.js'
 
 export class ScriptNodePort {
-  constructor(name, typename) {
+  constructor(name, typename, editorTypename) {
     this.name = name
     this.typename = typename
+    this.editorTypename = editorTypename || typename
   }
 }
 

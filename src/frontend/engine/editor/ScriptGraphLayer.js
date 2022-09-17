@@ -2,7 +2,9 @@ import { Layer } from '%window/Layer.js'
 import { ScriptGraphVisualizer } from './ScriptGraphVisualizer.js'
 import { global } from '%engine/Global.js'
 import { Vec2 } from '%util/Vec2.js'
-import ScriptGraphAddNodeMenu from 'components/ScriptGraphAddNodeMenu.svelte'
+import AddNodeMenu from 'components/popup/contextMenus/AddNodeMenu.svelte'
+import KeyPortEditor from 'components/popup/editors/KeyEditor.svelte'
+import { PORT_COLOR } from './ScriptGraphVisualizer.js'
 import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
 
 export class ScriptGraphLayer extends Layer {
@@ -18,7 +20,7 @@ export class ScriptGraphLayer extends Layer {
     this.selectedX = 0
     this.selectedY = 0
     this.hovered = undefined
-    this._addNodeMenu = null
+    this.popupActive = false
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -50,47 +52,7 @@ export class ScriptGraphLayer extends Layer {
     }
     // delete an edge
     else if (e.button === 2) {
-      const canvas = this.window.canvas
-      const bounds = canvas.getBoundingClientRect()
-      const x = bounds.left + this.input.mouseX
-      const y = bounds.top + this.input.mouseY
-      const self = this
-      this._addNodeMenu = new ScriptGraphAddNodeMenu({
-        target: document.body,
-        props: {
-          x,
-          y,
-          nodeTypeNames: scriptNodeTemplateBank.getNodeTypeNames(),
-          checkCanReposition: (x, y) => {
-            const bounds = canvas.getBoundingClientRect()
-            return (
-              x > bounds.left &&
-              x < bounds.right &&
-              y > bounds.top &&
-              y < bounds.bottom
-            )
-          },
-          onAddNode: (name) => {
-            const node = scriptNodeTemplateBank
-              .get(name)
-              .createNode(self.graphvis.graph)
-            self.graphvis.graph.compile()
-            self.graphvis.generateProxies()
-            const proxy = self.graphvis.proxies.get(node.id)
-            const [x, y] = self.inverseTransformCoords(
-              self.input.mouseX,
-              self.input.mouseY
-            )
-            proxy.x = x
-            proxy.y = y
-          },
-          onDestroy: () => {
-            self._addNodeMenu.$destroy()
-            self._addNodeMenu = null
-            canvas.focus()
-          },
-        },
-      })
+      this.createAddNodeMenuPopup()
     }
     if (node) {
       this.input.cursor = 'default'
@@ -103,24 +65,28 @@ export class ScriptGraphLayer extends Layer {
           ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
         )
         // if we already have a port selected and it can be connected to the new port, add an edge
-        if (port && this.selectedPort && this.selectedPort.in ^ port.in) {
-          if (this.selectedPort.in)
-            this.selectedPort.node.attachAsInput(
-              port.node,
-              port.index,
-              this.selectedPort.index
-            )
-          else
-            this.selectedPort.node.attachAsOutput(
-              this.selectedPort.index,
-              port.node,
-              port.index
-            )
-          this.graphvis.graph.compile()
-          this.graphvis.generateProxies()
-          this.selectedPort = undefined
-        } else {
-          this.selectedPort = port
+        if (port && !port.internal) {
+          if (this.selectedPort && this.selectedPort.in ^ port.in) {
+            if (this.selectedPort.in)
+              this.selectedPort.node.attachAsInput(
+                port.node,
+                port.index,
+                this.selectedPort.index
+              )
+            else
+              this.selectedPort.node.attachAsOutput(
+                this.selectedPort.index,
+                port.node,
+                port.index
+              )
+            this.graphvis.graph.compile()
+            this.graphvis.generateProxies()
+            this.selectedPort = undefined
+          } else {
+            this.selectedPort = port
+          }
+        } else if (port) {
+          this.createEditorPopup(node, port)
         }
       }
     }
@@ -141,13 +107,17 @@ export class ScriptGraphLayer extends Layer {
       this.redraw = true
       this.controls.setTransform(this.window.ctx)
       // transform mouse screen->world
-      const [wx, wy] = this.inverseTransformCoords(
+      const [mx, my] = this.inverseTransformCoords(
         this.input.mouseX,
         this.input.mouseY
       )
+      const [lmx, lmy] = this.inverseTransformCoords(
+        this.input.lastMouseX,
+        this.input.lastMouseY
+      )
       // move node by its center
-      this.selected.x = wx - this.selected.w / 2
-      this.selected.y = wy - this.selected.h / 2
+      this.selected.x += mx - lmx
+      this.selected.y += my - lmy
     }
 
     const { index, edge } = this.checkEdgeIntersection()
@@ -172,6 +142,9 @@ export class ScriptGraphLayer extends Layer {
       this.redraw = true
     }
     if (e.key === 'Backspace' && this.selected) {
+      /**
+       * @HATODO delete node
+       */
     }
   }
   onResize() {
@@ -291,5 +264,119 @@ export class ScriptGraphLayer extends Layer {
     tw *= t.a
     th *= t.d
     return [tw, th]
+  }
+  createPopup(PopupType, createPopupProps) {
+    if (this.popupActive) {
+      return null
+    }
+    const self = this
+    const canvas = this.window.canvas
+    const { beforeDestroyPopup, ...createdProps } = createPopupProps({
+      mouseX: self.input.mouseX,
+      mouseY: self.input.mouseY,
+      canvas,
+    })
+    let alreadyDestroying = false
+    const popup = new PopupType({
+      target: document.body,
+      props: {
+        ...createdProps,
+        onDestroyPopup: () => {
+          if (alreadyDestroying) {
+            return
+          }
+          alreadyDestroying = true
+          if (beforeDestroyPopup) {
+            beforeDestroyPopup(popup)
+          }
+          popup.$destroy()
+          self.popupActive = false
+          canvas.focus()
+        },
+      },
+    })
+    return popup
+  }
+  createAddNodeMenuPopup() {
+    const self = this
+    return this.createPopup(AddNodeMenu, ({ mouseX, mouseY, canvas }) => {
+      const canvasBounds = canvas.getBoundingClientRect()
+      return {
+        x: canvasBounds.left + mouseX,
+        y: canvasBounds.top + mouseY,
+        nodeTypeNames: scriptNodeTemplateBank.getNodeTypeNames(),
+        checkCanReposition: (x, y) => {
+          return (
+            x > canvasBounds.left &&
+            x < canvasBounds.right &&
+            y > canvasBounds.top &&
+            y < canvasBounds.bottom
+          )
+        },
+        onAddNode: (name) => {
+          const node = scriptNodeTemplateBank
+            .get(name)
+            .createNode(self.graphvis.graph)
+          self.graphvis.graph.compile()
+          self.graphvis.generateProxies()
+          const proxy = self.graphvis.proxies.get(node.id)
+          const [x, y] = self.inverseTransformCoords(
+            self.input.mouseX,
+            self.input.mouseY
+          )
+          proxy.x = x
+          proxy.y = y
+        },
+      }
+    })
+  }
+  createEditorPopup(proxy, port) {
+    const [editor, getProps] = this.getCreateEditorPopupInfo(proxy, port)
+    return this.createPopup(editor, getProps)
+  }
+  getCreateEditorPopupInfo(proxy, port) {
+    const nodeProps = { proxy, port }
+    if (port.port.editorTypename === 'key') {
+      return [
+        KeyPortEditor,
+        (options) =>
+          this.getPortEditorProps(
+            { ...options, ...nodeProps },
+            this.getKeyPortEditorProps
+          ),
+      ]
+    } else {
+      return null
+    }
+  }
+  getPortEditorProps(options, getAdditionalProps) {
+    const { x: wx, y: wy } = options.proxy.getInternalPortCoords(
+      options.port.index,
+      this.window
+    )
+    const [sx, sy] = this.transformCoords(wx, wy)
+    const canvasBounds = options.canvas.getBoundingClientRect()
+    return {
+      x: canvasBounds.left + sx,
+      y: canvasBounds.top + sy,
+      bgColor: PORT_COLOR[options.port.port.typename].editorBg,
+      fgColor: PORT_COLOR[options.port.port.typename].editorFg,
+      placeholderColor:
+        PORT_COLOR[options.port.port.typename].editorPlaceholder,
+      currentValue: options.proxy.node.internalValues[options.port.index],
+      beforeDestroyPopup: (popup) => {
+        /**
+         * @GGTODO
+         * Validate inputs before setting
+         * (Maybe display a red error box in the bottom-right of script editor if invalid?)
+         */
+        options.proxy.node.internalValues[options.port.index] =
+          popup.currentValue
+      },
+      ...getAdditionalProps(options),
+    }
+  }
+  getKeyPortEditorProps() {
+    return {}
   }
 }

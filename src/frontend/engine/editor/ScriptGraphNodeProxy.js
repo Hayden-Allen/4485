@@ -39,13 +39,14 @@ const COLORS = {
     outline: ['#737373', '#737373'],
   },
 }
-const FONT_FAMILY = 'sans-serif',
+const FONT_FAMILY =
+    '-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif',
   NAME_FONT_SIZE = 32,
   PORT_FONT_SIZE = 32,
   PORT_RADIUS = 12,
   PORT_NAME_PADDING_X = PORT_RADIUS * 2,
   PORT_DOT_OFFSET = 10,
-  WIDTH_PADDING = 32,
+  WIDTH_PADDING = 48,
   HEIGHT_PADDING = 16,
   SHADOW_BLUR_FACTOR = 6,
   SHADOW_OFFSET_Y_FACTOR = 4
@@ -97,8 +98,11 @@ export class ScriptGraphNodeProxy extends UIElement {
       if (i < internalPorts.length)
         internalWidth = Math.max(
           internalWidth,
-          window.textMetrics(internalPorts[i].name, FONT_FAMILY, PORT_FONT_SIZE)
-            .width + PORT_NAME_PADDING_X
+          window.textMetrics(
+            `${internalPorts[i].name}: ${this.node.internalValues[i]}`,
+            FONT_FAMILY,
+            PORT_FONT_SIZE
+          ).width + PORT_NAME_PADDING_X
         )
     }
     this.w =
@@ -170,17 +174,16 @@ export class ScriptGraphNodeProxy extends UIElement {
     )
     // ports
     this.node.data.inputPorts.forEach((port, i) => {
-      const portY =
-        this.getPortBaseY() + i * this.portHeight - PORT_DOT_OFFSET / 2
+      const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
       window.drawArc(
         tx - 2,
-        portY + PORT_DOT_OFFSET,
+        portY,
         PORT_RADIUS,
         -Math.PI / 2,
         Math.PI / 2,
         PORT_COLOR[port.typename].dot
       )
-      window.drawText(
+      window.drawVerticalCenteredText(
         port.name,
         tx + PORT_NAME_PADDING_X,
         portY,
@@ -203,11 +206,10 @@ export class ScriptGraphNodeProxy extends UIElement {
       // )
     })
     this.node.data.outputPorts.forEach((port, i) => {
-      const portY =
-        this.getPortBaseY() + i * this.portHeight - PORT_DOT_OFFSET / 2
+      const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
       window.drawArc(
         tx + this.w + 2,
-        portY + PORT_DOT_OFFSET,
+        portY,
         PORT_RADIUS,
         Math.PI / 2,
         -Math.PI / 2,
@@ -218,7 +220,7 @@ export class ScriptGraphNodeProxy extends UIElement {
         FONT_FAMILY,
         PORT_FONT_SIZE
       ).width
-      window.drawText(
+      window.drawVerticalCenteredText(
         port.name,
         tx + this.w - width - PORT_NAME_PADDING_X,
         portY,
@@ -235,12 +237,9 @@ export class ScriptGraphNodeProxy extends UIElement {
       //   1
       // )
     })
-    /**
-     * @HATODO internals
-     */
     this.node.data.internalPorts.forEach((port, i) => {
-      const portY = this.getPortBaseY() + i * this.portHeight
-      window.drawText(
+      const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
+      window.drawVerticalCenteredText(
         `${port.name}: ${this.node.internalValues[i]}`,
         tx + PORT_NAME_PADDING_X,
         portY,
@@ -252,6 +251,22 @@ export class ScriptGraphNodeProxy extends UIElement {
   }
   getPortBaseY() {
     return this.y + this.nameHeight + this.portHeight / 2
+  }
+  getInternalPortCoords(i, window) {
+    const x =
+      this.x +
+      PORT_NAME_PADDING_X +
+      window.textMetrics(
+        `${this.node.data.internalPorts[i].name}: `,
+        FONT_FAMILY,
+        PORT_FONT_SIZE
+      ).width
+    const y =
+      this.getPortBaseY() +
+      this.portHeight * i +
+      PORT_DOT_OFFSET -
+      this.portHeight / 2
+    return { x, y }
   }
   getInPortCoords(i) {
     let y = 0
@@ -278,18 +293,64 @@ export class ScriptGraphNodeProxy extends UIElement {
     return { x: this.x + this.w, y }
   }
   checkPortIntersection(window, x, y) {
-    const portBaseY = this.y + this.nameHeight + this.portHeight / 2
-
     const data = this.node.data
-    for (let i = 0; i < data.inputPorts.length; i++) {
-      const port = data.inputPorts[i]
-      const portX = this.x
+    // inputs
+    let ret = this.checkPortIntersectionOn(
+      window,
+      x,
+      y,
+      data.inputPorts,
+      () => this.x,
+      (port) => port.name,
+      true,
+      false
+    )
+    if (ret) return ret
+    // outputs
+    ret = this.checkPortIntersectionOn(
+      window,
+      x,
+      y,
+      data.outputPorts,
+      (width) => this.x + this.w - width - PORT_NAME_PADDING_X,
+      (port) => port.name,
+      false,
+      false
+    )
+    if (ret) return ret
+    // internals
+    ret = this.checkPortIntersectionOn(
+      window,
+      x,
+      y,
+      data.internalPorts,
+      () => this.x + PORT_NAME_PADDING_X,
+      (port, i) => `${port.name}: ${this.node.internalValues[i]}`,
+      false,
+      true
+    )
+    return ret
+  }
+  checkPortIntersectionOn(
+    window,
+    x,
+    y,
+    list,
+    computeX,
+    textFormat,
+    isInput,
+    isInternal
+  ) {
+    const portBaseY = this.y + this.nameHeight + this.portHeight / 2
+    for (let i = 0; i < list.length; i++) {
+      const port = list[i]
       const portY = portBaseY + i * this.portHeight
       const width = window.textMetrics(
-        port.name,
+        textFormat(port, i),
         FONT_FAMILY,
         PORT_FONT_SIZE
       ).width
+      const portX = computeX(width)
 
       if (
         global.rectIntersect(
@@ -303,38 +364,8 @@ export class ScriptGraphNodeProxy extends UIElement {
       ) {
         return {
           port,
-          in: true,
-          index: i,
-          proxy: this,
-          node: this.node,
-          color: PORT_COLOR[port.typename].edge,
-        }
-      }
-    }
-
-    for (let i = 0; i < data.outputPorts.length; i++) {
-      const port = data.outputPorts[i]
-      const portY = portBaseY + i * this.portHeight
-      const width = window.textMetrics(
-        port.name,
-        FONT_FAMILY,
-        PORT_FONT_SIZE
-      ).width
-      const portX = this.x + this.w - width - PORT_NAME_PADDING_X
-
-      if (
-        global.rectIntersect(
-          x,
-          y,
-          portX,
-          portY,
-          width + PORT_NAME_PADDING_X,
-          2 * PORT_RADIUS
-        )
-      ) {
-        return {
-          port,
-          in: false,
+          in: isInput,
+          internal: isInternal,
           index: i,
           proxy: this,
           node: this.node,

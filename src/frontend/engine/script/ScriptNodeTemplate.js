@@ -4,9 +4,6 @@ import { ScriptNode } from './ScriptNode.js'
 
 export class ScriptNodeTemplate extends ScriptNodeData {
   constructor(type, name, inputPorts, outputPorts, fn) {
-    /**
-     * @HATODO cleanup
-     */
     super(inputPorts, [], outputPorts, fn)
     this.type = type
     this.name = name

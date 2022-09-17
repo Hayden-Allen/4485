@@ -2,6 +2,7 @@
   export let canvas = undefined
   export let targetAspectRatio = undefined
   export let onResize = undefined
+  export let focusable = false
 
   let containerWidth = undefined,
     containerHeight = undefined
@@ -51,6 +52,6 @@
   <canvas
     class="focus:outline-0 border border-transparent focus:border-neutral-300"
     bind:this={canvas}
-    tabindex={0}
+    tabindex={focusable ? 0 : undefined}
   />
 </div>

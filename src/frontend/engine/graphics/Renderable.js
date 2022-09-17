@@ -4,13 +4,15 @@ import { Texture } from './Texture.js'
 let textureCache = new Map()
 
 export class Renderable {
-  constructor(gl, program, vertices, indices, url) {
+  constructor(gl, pos, program, vertices, indices, url, { scale = 1 } = {}) {
     this.vertexArray = undefined
     this.vertexBuffer = undefined
     this.indexBuffer = undefined
     this.init(gl, program, vertices, indices)
     this.elementCount = indices.length
     this.transform = mat4.create()
+    this.scale = scale
+    this.setTransform(pos)
 
     if (textureCache.has(url)) this.texture = textureCache.get(url)
     else {
@@ -18,8 +20,9 @@ export class Renderable {
       textureCache.set(url, this.texture)
     }
   }
-  setTransform(vec2) {
-    mat4.fromTranslation(this.transform, [vec2.x, vec2.y, -25])
+  setTransform(pos) {
+    mat4.fromTranslation(this.transform, [pos.x, pos.y, 0])
+    mat4.scale(this.transform, this.transform, [this.scale, this.scale, 1])
   }
   init(gl, program, vertices, indices) {
     this.vertexArray = gl.createVertexArray()

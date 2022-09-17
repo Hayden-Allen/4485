@@ -4,7 +4,7 @@ import { Texture } from './Texture.js'
 let textureCache = new Map()
 
 export class Renderable {
-  constructor(gl, pos, program, vertices, indices, url, { scale = 25 } = {}) {
+  constructor(gl, pos, program, vertices, indices, url, { scale = 1 } = {}) {
     this.vertexArray = undefined
     this.vertexBuffer = undefined
     this.indexBuffer = undefined

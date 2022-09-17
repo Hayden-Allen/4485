@@ -131,7 +131,7 @@
         gameWindow,
         new Vec2(0, 0),
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-        { vertices, indices }
+        { vertices, indices, scale: 25 }
       ),
       0
     )
@@ -146,7 +146,7 @@
       gameWindow,
       new Vec2(0, 0),
       'https://art.pixilart.com/840bcbc293e372f.png',
-      { controllers: [playerController] }
+      { controllers: [playerController], scale: 25 }
     )
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)

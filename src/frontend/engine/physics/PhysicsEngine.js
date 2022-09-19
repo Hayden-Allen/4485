@@ -1,4 +1,5 @@
-import { Engine, Runner, Bodies, Composite } from 'matter-js'
+import matter from 'matter-js'
+const { Engine, Runner, Bodies, Composite } = matter
 
 export class PhysicsEngine {
   constructor(gravityScale) {

@@ -40,6 +40,12 @@ export class Window2D extends Window {
       this.ctx.clearRect(0, 0, w, h)
     }
   }
+  setCompositeOperation(s) {
+    this.ctx.globalCompositeOperation = s
+  }
+  resetCompositeOperation() {
+    this.ctx.globalCompositeOperation = 'source-over'
+  }
   drawLine(x0, y0, x1, y1, color, width) {
     const [cx0, cy0] = this.scaleCoords(x0, y0)
     const [cx1, cy1] = this.scaleCoords(x1, y1)
@@ -127,6 +133,18 @@ export class Window2D extends Window {
     this.ctx.arc(cx, cy, cr, startAngle, endAngle)
     this.ctx.fill()
     this.ctx.closePath()
+  }
+  drawTransparentArc(x, y, r, startAngle, endAngle, color, alpha) {
+    const prevAlpha = this.ctx.globalAlpha
+    this.ctx.globalAlpha = alpha
+    const [cx, cy] = this.scaleCoords(x, y)
+    const [cr] = this.scaleDims(r)
+    this.ctx.fillStyle = color
+    this.ctx.beginPath()
+    this.ctx.arc(cx, cy, cr, startAngle, endAngle)
+    this.ctx.fill()
+    this.ctx.closePath()
+    this.ctx.globalAlpha = prevAlpha
   }
   drawText(message, x, y, fontFamily, fontSize, color) {
     this.ctx.font = `${this.scaleFontSize(fontSize)}px ${fontFamily}`

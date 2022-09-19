@@ -2,7 +2,8 @@ import { Component } from './Component.js'
 import { Vec2 } from '%util/Vec2.js'
 import { Renderable } from '%graphics/Renderable.js'
 import { global } from '%engine/Global.js'
-import { Body } from 'matter-js'
+import matter from 'matter-js'
+const { Body } = matter
 
 const VERTEX_DATA = [-1, -1, 0, 0, 1, -1, 1, 0, 1, 1, 1, 1, -1, 1, 0, 1]
 const INDEX_DATA = [0, 1, 2, 0, 2, 3]

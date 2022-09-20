@@ -62,6 +62,27 @@ export class ScriptGraph extends Component {
     this.nodes.set(node.id, node)
     this.edges.set(node.id, new ScriptNodeEdgeList())
   }
+  removeNode(node) {
+    this.cachedCompile = undefined
+    this.getEdges(node).in.forEach((edge) => {
+      this.removeEdge(
+        edge.outputNode,
+        edge.outputIndex,
+        edge.inputNode,
+        edge.inputIndex
+      )
+    })
+    this.getEdges(node).out.forEach((edge) => {
+      this.removeEdge(
+        edge.outputNode,
+        edge.outputIndex,
+        edge.inputNode,
+        edge.inputIndex
+      )
+    })
+    this.nodes.delete(node.id)
+    this.edges.delete(node.id)
+  }
   addEdge(outputNode, outputIndex, inputNode, inputIndex) {
     if (
       !outputNode.checkOutputIndex(outputIndex) ||

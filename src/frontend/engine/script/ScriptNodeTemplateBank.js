@@ -39,7 +39,7 @@ class ScriptNodeTemplateBank {
   createEvent(type, name) {
     this.bank.set(name, new EventScriptNodeTemplate(type, name))
   }
-  createInternal(type, name, inputs, internals, outputs, fn) {
+  createInternal(type, name, inputs, internals, defaultValues, outputs, fn) {
     this.bank.set(
       name,
       new InternalScriptNodeTemplate(
@@ -47,15 +47,21 @@ class ScriptNodeTemplateBank {
         name,
         this.mapPorts(inputs),
         this.mapPorts(internals),
+        defaultValues,
         this.mapPorts(outputs),
         fn
       )
     )
   }
-  createConstant(type, name, ports) {
+  createConstant(type, name, ports, defaultValues) {
     this.bank.set(
       name,
-      new ConstantScriptNodeTemplate(type, name, this.mapPorts(ports))
+      new ConstantScriptNodeTemplate(
+        type,
+        name,
+        this.mapPorts(ports),
+        defaultValues
+      )
     )
   }
   init() {
@@ -74,6 +80,7 @@ class ScriptNodeTemplateBank {
       'KeyPressed',
       [],
       [['key', 'string', 'key']],
+      ['A'],
       [
         ['T', 'bool'],
         ['F', 'bool'],
@@ -91,7 +98,7 @@ class ScriptNodeTemplateBank {
   }
   createMath() {
     // const
-    this.createConstant('math', 'ConstInt', [['int', 'int']])
+    this.createConstant('math', 'ConstInt', [['int', 'int']], [0])
     // function
     this.create(
       'math',

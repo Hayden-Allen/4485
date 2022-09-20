@@ -83,6 +83,16 @@ export class Window2D extends Window {
     this.drawRect(x, y, w, h, color)
     this.ctx.globalAlpha = prevAlpha
   }
+  strokeTransparentRect(x, y, w, h, color, width, alpha) {
+    const prevAlpha = this.ctx.globalAlpha
+    this.ctx.globalAlpha = alpha
+    const [cx, cy] = this.scaleCoords(x, y)
+    const [cw, ch] = this.scaleDims(w, h)
+    this.ctx.strokeStyle = color
+    this.ctx.lineWidth = width
+    this.ctx.strokeRect(cx, cy, cw, ch)
+    this.ctx.globalAlpha = prevAlpha
+  }
   drawImage(img, x, y, w, h) {
     this.ctx.drawImage(img, x, y, w, h)
   }

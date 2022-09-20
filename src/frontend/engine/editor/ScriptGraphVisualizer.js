@@ -9,6 +9,9 @@ export const PORT_COLOR = {
     name: '#facc15',
     dot: '#d97706',
     edge: '#b45309',
+    editorBg: '#713f12',
+    editorFg: '#fefce8',
+    editorPlaceholder: '#fef08a',
   },
   float: {
     name: '#f59e0b',
@@ -68,6 +71,10 @@ export class ScriptGraphVisualizer {
       step: 0.5,
       reset: true,
     })
+  }
+  recompile() {
+    this.graph.compile()
+    this.generateProxies()
   }
   generateProxies() {
     this.drawStack = []

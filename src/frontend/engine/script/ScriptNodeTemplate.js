@@ -30,14 +30,24 @@ export class EventScriptNodeTemplate extends ScriptNodeTemplate {
 
 // for nodes that contain constant values, but also have regular inputs/outputs (ie, KeyPressed)
 export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
-  constructor(type, name, inputPorts, internalPorts, outputPorts, fn) {
+  constructor(
+    type,
+    name,
+    inputPorts,
+    internalPorts,
+    defaultValues,
+    outputPorts,
+    fn
+  ) {
     super(type, name, inputPorts, outputPorts, fn)
     this.internalPorts = internalPorts
+    this.defaultValues = defaultValues
     this.internalTypes = internalPorts.map(
       (port) => scriptDataType[port.typename]
     )
   }
   createNode(graph, internalValues) {
+    internalValues = internalValues || this.defaultValues
     if (!validateScriptDataTypes(internalValues, this.internalTypes)) {
       console.error('Invalid inputs')
       return
@@ -57,8 +67,8 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
 }
 
 export class ConstantScriptNodeTemplate extends InternalScriptNodeTemplate {
-  constructor(type, name, ports) {
-    super(type, name, [], ports, ports, (_, { internal }) =>
+  constructor(type, name, ports, defaultValues) {
+    super(type, name, [], ports, defaultValues, ports, (_, { internal }) =>
       internal.map((value) => ({ value, activate: false }))
     )
   }

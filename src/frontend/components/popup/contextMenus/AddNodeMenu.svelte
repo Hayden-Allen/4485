@@ -9,6 +9,8 @@
 
   export let nodeTypeNames = null
   export let onAddNode = null
+
+  let searchQuery = ''
 </script>
 
 <ContextMenuLayout
@@ -24,6 +26,7 @@
       class="grow-0 shrink-0 flex flex-row border-b border-solid border-neutral-700 h-10"
     >
       <input
+        bind:value={searchQuery}
         placeholder="Search..."
         class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-0 bg-neutral-800 text-neutral-100"
       />
@@ -37,15 +40,19 @@
       class="grow-1 shrink-1 flex flex-col overflow-x-hidden overflow-y-auto"
     >
       {#each nodeTypeNames as name}
-        <button
-          on:click={() => {
-            onAddNode(name)
-            onDestroyPopup()
-          }}
-          class="p-2 cursor-pointer hover:bg-neutral-700 outline-0 text-left"
-        >
-          {name}
-        </button>
+        {#if name
+          .toLowerCase()
+          .indexOf(searchQuery.replace(/\s/g, '').toLowerCase()) !== -1}
+          <button
+            on:click={() => {
+              onAddNode(name)
+              onDestroyPopup()
+            }}
+            class="p-2 cursor-pointer hover:bg-neutral-700 focus:bg-neutral-700 outline-0 text-left"
+          >
+            {name}
+          </button>
+        {/if}
       {/each}
     </div>
   </div>

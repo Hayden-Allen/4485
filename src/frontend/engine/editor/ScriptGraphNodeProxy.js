@@ -12,31 +12,31 @@ const COLORS = {
     shadow: '#0007',
     node: '#262626',
     title: '#262626',
-    outline: ['#737373', '#737373'],
+    outline: ['#737373', '#d4d4d4'],
   },
   event: {
     shadow: '#0007',
     node: '#262626',
     title: '#262626',
-    outline: ['#737373', '#737373'],
+    outline: ['#737373', '#d4d4d4'],
   },
   input: {
     shadow: '#0007',
     node: '#262626',
     title: '#262626',
-    outline: ['#737373', '#737373'],
+    outline: ['#737373', '#d4d4d4'],
   },
   logic: {
     shadow: '#0007',
     node: '#262626',
     title: '#262626',
-    outline: ['#737373', '#737373'],
+    outline: ['#737373', '#d4d4d4'],
   },
   math: {
     shadow: '#0007',
     node: '#262626',
     title: '#262626',
-    outline: ['#737373', '#737373'],
+    outline: ['#737373', '#d4d4d4'],
   },
 }
 const FONT_FAMILY =
@@ -154,7 +154,7 @@ export class ScriptGraphNodeProxy extends UIElement {
         this.lineWidth[0] / 2
       )
     // node outline
-    window.strokeRect(
+    window.strokeTransparentRect(
       tx,
       ty,
       this.w,

@@ -2,7 +2,7 @@ import { PORT_COLOR } from './ScriptGraphVisualizer.js'
 import { UIElement } from './UIElement.js'
 import { global } from '%engine/Global.js'
 
-const COLORS = { activationEdge: '#facc15', hovered: '#e2e8f0' }
+const COLORS = { activationEdge: '#facc15', hovered: '#d4d4d4' }
 const LINE_WIDTH = [2, 5]
 const BLOB_WIDTH = [5, 10]
 export class ScriptGraphEdgeProxy extends UIElement {

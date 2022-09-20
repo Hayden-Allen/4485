@@ -258,6 +258,7 @@
       style={`flex-basis: ${topRightBasis}%;`}
     >
       <Viewport
+        focusable={true}
         bind:canvas={scriptCanvas}
         onResize={() => context.propagateResizeEvent()}
       />

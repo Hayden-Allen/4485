@@ -13,14 +13,16 @@
   export let currentValue = null
 
   export function validate() {
-    return currentValue.length > 0
+    return !isNaN(parseInt(currentValue))
   }
 
-  function handleKeyDown(event) {
-    event.preventDefault()
-    event.stopPropagation()
-    currentValue = event.key
-    onDestroyPopup()
+  $: {
+    if (currentValue !== '') {
+      const x = Math.round(currentValue)
+      if (!isNaN(x)) {
+        currentValue = x
+      }
+    }
   }
 </script>
 
@@ -34,8 +36,14 @@
   height="auto"
 >
   <input
-    on:keydown={handleKeyDown}
-    value=""
+    type="number"
+    step="1"
+    on:keydown={(event) => {
+      if (event.key === 'Enter') {
+        onDestroyPopup()
+      }
+    }}
+    bind:value={currentValue}
     placeholder={currentValue}
     class="grow-1 shrink-1 p-2 w-full min-w-0 border-0 outline-0 bg-inherit text-inherit"
     style={`--placeholder-color: ${placeholderColor};`}
@@ -45,5 +53,17 @@
 <style>
   ::placeholder {
     color: var(--placeholder-color);
+  }
+
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    margin: 0;
+  }
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 </style>

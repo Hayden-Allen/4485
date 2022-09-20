@@ -4,8 +4,10 @@ import { global } from '%engine/Global.js'
 import { Vec2 } from '%util/Vec2.js'
 import AddNodeMenu from 'components/popup/contextMenus/AddNodeMenu.svelte'
 import KeyPortEditor from 'components/popup/editors/KeyEditor.svelte'
+import IntPortEditor from 'components/popup/editors/IntEditor.svelte'
 import { PORT_COLOR } from './ScriptGraphVisualizer.js'
 import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
+import { ScriptGraphEdgeProxy } from './ScriptGraphEdgeProxy'
 
 export class ScriptGraphLayer extends Layer {
   constructor(input, controls, playerScript) {
@@ -20,7 +22,6 @@ export class ScriptGraphLayer extends Layer {
     this.selectedX = 0
     this.selectedY = 0
     this.hovered = undefined
-    this.popupActive = false
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -64,6 +65,32 @@ export class ScriptGraphLayer extends Layer {
           this.window,
           ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
         )
+        if (port) {
+          if (port.internal) {
+            this.createEditorPopup(node, port)
+            this.selected = undefined
+            this.selectedPort = undefined
+          } else {
+            this.selectedPort = port
+          }
+        }
+      }
+    }
+    return node
+  }
+  onMouseUp(e) {
+    this.input.canDrag = true
+    const hit = this.checkIntersection()
+    if (hit) this.input.cursor = 'default'
+    if (e.button === 0) {
+      this.capturedLeftClick = false
+      const node = this.checkIntersection()
+      if (node) {
+        // convert mouse pos to world space and check for intersection with any port in the hit node
+        const port = node.checkPortIntersection(
+          this.window,
+          ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
+        )
         // if we already have a port selected and it can be connected to the new port, add an edge
         if (port && !port.internal) {
           if (this.selectedPort && this.selectedPort.in ^ port.in) {
@@ -79,24 +106,15 @@ export class ScriptGraphLayer extends Layer {
                 port.node,
                 port.index
               )
-            this.graphvis.graph.compile()
-            this.graphvis.generateProxies()
+            this.graphvis.recompile()
             this.selectedPort = undefined
           } else {
             this.selectedPort = port
           }
-        } else if (port) {
-          this.createEditorPopup(node, port)
+          this.selectedPort = undefined
         }
       }
     }
-    return node
-  }
-  onMouseUp(e) {
-    this.input.canDrag = true
-    const hit = this.checkIntersection()
-    if (hit) this.input.cursor = 'default'
-    if (e.button === 0) this.capturedLeftClick = false
     return hit
   }
   onMouseMove() {
@@ -141,10 +159,29 @@ export class ScriptGraphLayer extends Layer {
       this.graphvis.arrange()
       this.redraw = true
     }
-    if (e.key === 'Backspace' && this.selected) {
-      /**
-       * @HATODO delete node
-       */
+    if (this.selected && (e.key === 'Backspace' || e.key === 'Delete')) {
+      if (this.selected instanceof ScriptGraphEdgeProxy) {
+        const inputNode = this.selected.endProxy.node
+        const inputIndex = this.selected.endPort
+        const outputNode = this.selected.startProxy.node
+        const outputIndex = this.selected.startPort
+        this.graphvis.graph.removeEdge(
+          outputNode,
+          outputIndex,
+          inputNode,
+          inputIndex
+        )
+        this.graphvis.graph.removeEdge(
+          inputNode,
+          inputIndex,
+          outputNode,
+          outputIndex
+        )
+        this.graphvis.recompile()
+      } else {
+        this.graphvis.graph.removeNode(this.selected.node)
+        this.graphvis.recompile()
+      }
     }
   }
   onResize() {
@@ -266,9 +303,6 @@ export class ScriptGraphLayer extends Layer {
     return [tw, th]
   }
   createPopup(PopupType, createPopupProps) {
-    if (this.popupActive) {
-      return null
-    }
     const self = this
     const canvas = this.window.canvas
     const { beforeDestroyPopup, ...createdProps } = createPopupProps({
@@ -290,7 +324,6 @@ export class ScriptGraphLayer extends Layer {
             beforeDestroyPopup(popup)
           }
           popup.$destroy()
-          self.popupActive = false
           canvas.focus()
         },
       },
@@ -317,8 +350,7 @@ export class ScriptGraphLayer extends Layer {
           const node = scriptNodeTemplateBank
             .get(name)
             .createNode(self.graphvis.graph)
-          self.graphvis.graph.compile()
-          self.graphvis.generateProxies()
+          self.graphvis.recompile()
           const proxy = self.graphvis.proxies.get(node.id)
           const [x, y] = self.inverseTransformCoords(
             self.input.mouseX,
@@ -345,6 +377,15 @@ export class ScriptGraphLayer extends Layer {
             this.getKeyPortEditorProps
           ),
       ]
+    } else if (port.port.editorTypename === 'int') {
+      return [
+        IntPortEditor,
+        (options) =>
+          this.getPortEditorProps(
+            { ...options, ...nodeProps },
+            this.getIntPortEditorProps
+          ),
+      ]
     } else {
       return null
     }
@@ -365,18 +406,18 @@ export class ScriptGraphLayer extends Layer {
         PORT_COLOR[options.port.port.typename].editorPlaceholder,
       currentValue: options.proxy.node.internalValues[options.port.index],
       beforeDestroyPopup: (popup) => {
-        /**
-         * @GGTODO
-         * Validate inputs before setting
-         * (Maybe display a red error box in the bottom-right of script editor if invalid?)
-         */
-        options.proxy.node.internalValues[options.port.index] =
-          popup.currentValue
+        if (popup.validate()) {
+          options.proxy.node.internalValues[options.port.index] =
+            popup.currentValue
+        }
       },
       ...getAdditionalProps(options),
     }
   }
   getKeyPortEditorProps() {
+    return {}
+  }
+  getIntPortEditorProps() {
     return {}
   }
 }

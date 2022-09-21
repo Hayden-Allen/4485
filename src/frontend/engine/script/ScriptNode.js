@@ -26,6 +26,7 @@ export class ScriptNode extends Component {
      * @HATODO this shouldn't be here, only needed in proxy
      */
     this.type = type
+
     this.graph = graph
     this.graph.addNode(this)
     this.data = new ScriptNodeData(inputPorts, internalPorts, outputPorts, fn)
@@ -41,6 +42,13 @@ export class ScriptNode extends Component {
     this.active = false
     // internal constants
     this.internalValues = internalValues
+  }
+  serialize() {
+    const obj = {
+      type: this.debugName,
+      internalValues: this.internalValues,
+    }
+    return obj
   }
   checkIndex(types, index) {
     // -1 signals that an edge carries activation, but not value

@@ -36,7 +36,7 @@ export class ScriptGraphLayer extends Layer {
   }
   onMouseDown(e) {
     const node = this.checkIntersection()
-    const { edge, index } = this.checkEdgeIntersection()
+    const { edge } = this.checkEdgeIntersection()
     // moving a node
     if (e.button === 0) {
       this.redraw = true

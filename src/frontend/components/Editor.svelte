@@ -141,6 +141,7 @@
     )
 
     playerScript = createPlayerScript(gameWindow.inputCache)
+    console.log(playerScript.serialize())
     let player = new ControlledSceneEntity(
       gameWindow,
       new Vec2(0, 0),

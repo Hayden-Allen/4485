@@ -11,11 +11,25 @@ class ScriptGraphEdge {
     this.inputNode = inputNode
     this.inputIndex = inputIndex
   }
+  serialize(nodeIndex) {
+    const obj = {
+      outputIndex: this.outputIndex,
+      inputIndex: this.inputIndex,
+      outputNode: nodeIndex.get(this.outputNode.id),
+      inputNode: nodeIndex.get(this.inputNode.id),
+    }
+    return obj
+  }
 }
 class ScriptNodeEdgeList {
   constructor() {
     this.in = []
     this.out = []
+  }
+  serialize(nodeIndex) {
+    let inbound = this.in.map((edge) => edge.serialize(nodeIndex))
+    let outbound = this.out.map((edge) => edge.serialize(nodeIndex))
+    return { in: inbound, out: outbound }
   }
 }
 const EVENT_NODE_NAMES = ['OnTick', 'OnCollide']
@@ -35,6 +49,24 @@ export class ScriptGraph extends Component {
     this._pushError = pushError
     this.clearErrors = clearErrors
     this.canErr = true
+  }
+  serialize() {
+    let nodes = []
+    let nodeIndex = new Map()
+    this.nodes.forEach((node) => {
+      nodeIndex.set(node.id, nodes.length)
+      nodes.push(node.serialize())
+    })
+
+    let edges = []
+    this.edges.forEach((edgeList) => edges.push(edgeList.serialize(nodeIndex)))
+
+    const obj = {
+      name: this.debugName,
+      nodes,
+      edges,
+    }
+    return JSON.stringify(obj)
   }
   createNode(name, values) {
     return scriptNodeTemplateBank.get(name).createNode(this, values)

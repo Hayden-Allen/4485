@@ -63,15 +63,13 @@ export class ScriptGraphNodeProxy extends UIElement {
     this.maxPortCount = 0
     this.init(window)
   }
-  init(window) {
-    // compute name height
+  computeNodeWidth(window) {
+    // compute name width
     let text = window.textMetrics(
       this.node.debugName,
       FONT_FAMILY,
       NAME_FONT_SIZE
     )
-    this.nameHeight =
-      (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent) * 2
 
     // compute node width
     const { inputPorts, outputPorts, internalPorts } = this.node.data
@@ -108,6 +106,19 @@ export class ScriptGraphNodeProxy extends UIElement {
     this.w =
       Math.max(inWidth + internalWidth + outWidth, Math.ceil(text.width)) +
       WIDTH_PADDING
+  }
+  init(window) {
+    // compute name height
+    let text = window.textMetrics(
+      this.node.debugName,
+      FONT_FAMILY,
+      NAME_FONT_SIZE
+    )
+    this.nameHeight =
+      (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent) * 2
+
+    // compute node width
+    this.computeNodeWidth(window)
 
     // compute port height
     text = window.textMetrics(this.node.debugName, FONT_FAMILY, PORT_FONT_SIZE)

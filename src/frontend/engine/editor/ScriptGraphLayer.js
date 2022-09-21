@@ -397,6 +397,7 @@ export class ScriptGraphLayer extends Layer {
     )
     const [sx, sy] = this.transformCoords(wx, wy)
     const canvasBounds = options.canvas.getBoundingClientRect()
+    const self = this
     return {
       x: canvasBounds.left + sx,
       y: canvasBounds.top + sy,
@@ -409,6 +410,7 @@ export class ScriptGraphLayer extends Layer {
         if (popup.validate()) {
           options.proxy.node.internalValues[options.port.index] =
             popup.currentValue
+          options.proxy.computeNodeWidth(self.window)
         }
       },
       ...getAdditionalProps(options),

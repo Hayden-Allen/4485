@@ -50,11 +50,10 @@ export class ScriptGraphLayer extends Layer {
         this.selectedX = this.selected.x
         this.selectedY = this.selected.y
       } else this.selectedPort = undefined
-    }
-    // delete an edge
-    else if (e.button === 2) {
+    } else if (e.button === 2) {
       this.createAddNodeMenuPopup()
     }
+
     if (node) {
       this.input.cursor = 'default'
       if (e.button === 0) {
@@ -67,6 +66,9 @@ export class ScriptGraphLayer extends Layer {
         )
         if (port) {
           if (port.internal) {
+            e.domEvent.preventDefault()
+            e.domEvent.stopPropagation()
+            node.hoveredPort = -1
             this.createEditorPopup(node, port)
             this.selected = undefined
             this.selectedPort = undefined
@@ -146,6 +148,16 @@ export class ScriptGraphLayer extends Layer {
     } else if (hit) {
       this.input.cursor = 'default'
       this.hovered = hit
+      const port = hit.checkPortIntersection(
+        this.window,
+        ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
+      )
+      if (port && port.internal) {
+        hit.hoveredPort = port.index
+        this.input.cursor = 'pointer'
+      } else {
+        hit.hoveredPort = -1
+      }
     } else {
       this.hovered = undefined
       // need to redraw once to get rid of the outline

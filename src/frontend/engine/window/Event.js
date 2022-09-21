@@ -3,6 +3,7 @@ import { Component } from '%component/Component.js'
 
 class InputEvent {
   constructor(e) {
+    this.domEvent = e
     this.altPressed = e.altKey
     this.ctrlPressed = e.ctrlKey
     this.metaPressed = e.metaKey

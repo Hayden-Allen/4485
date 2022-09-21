@@ -61,6 +61,7 @@ export class ScriptGraphNodeProxy extends UIElement {
     this.h = 0
     this.portHeight = 0
     this.maxPortCount = 0
+    this.hoveredPort = -1
     this.init(window)
   }
   computeNodeWidth(window) {
@@ -250,14 +251,36 @@ export class ScriptGraphNodeProxy extends UIElement {
     })
     this.node.data.internalPorts.forEach((port, i) => {
       const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
+      const x = tx + PORT_NAME_PADDING_X
       window.drawVerticalCenteredText(
         `${port.name}: ${this.node.internalValues[i]}`,
-        tx + PORT_NAME_PADDING_X,
+        x,
         portY,
         FONT_FAMILY,
         PORT_FONT_SIZE,
         PORT_COLOR[port.typename].name
       )
+      if (i === this.hoveredPort) {
+        // just underline value, not name
+        const valueX =
+          x +
+          window.textMetrics(`${port.name}: `, FONT_FAMILY, PORT_FONT_SIZE)
+            .width
+        const valueWidth = window.textMetrics(
+          `${this.node.internalValues[i]}`,
+          FONT_FAMILY,
+          PORT_FONT_SIZE
+        ).width
+        const lineY = portY + this.portHeight / 4
+        window.drawLine(
+          valueX,
+          lineY,
+          valueX + valueWidth,
+          lineY,
+          PORT_COLOR[port.typename].name,
+          1
+        )
+      }
     })
   }
   getPortBaseY() {

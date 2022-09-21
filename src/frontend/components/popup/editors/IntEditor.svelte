@@ -1,6 +1,7 @@
 <svelte:options accessors />
 
 <script>
+  import { onMount } from 'svelte'
   import EditorLayout from 'components/popup/layouts/EditorLayout.svelte'
 
   export let x = null,
@@ -24,6 +25,10 @@
       }
     }
   }
+
+  onMount(() => {
+    inputEl.focus()
+  })
 </script>
 
 <EditorLayout

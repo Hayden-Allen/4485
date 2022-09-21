@@ -59,8 +59,14 @@ export class SceneEntity extends Component {
       this.dim,
       {
         isStatic: ops.isStatic,
+        frictionAir: 0,
+        frictionStatic: 0,
       }
     )
+    this.physicsProxy._owner = this
+    /**
+     * @HATODO for platformers?
+     */
     // Body.setCentre(
     //   this.physicsProxy,
     //   { x: -this.dim.x / 2, y: this.dim.y / 2 },
@@ -84,19 +90,21 @@ export class DynamicSceneEntity extends SceneEntity {
     this.renderable.setTransform(this.pos)
   }
   setVelocity(v) {
-    // console.log(v)
     Body.setVelocity(this.physicsProxy, { x: v.x, y: -v.y })
   }
 }
 
 export class ControlledSceneEntity extends DynamicSceneEntity {
-  constructor(gameWindow, pos, url, options = {}) {
+  constructor(gameWindow, pos, url, script, options = {}) {
     super(gameWindow, pos, url, options)
-    this.controllers = options.controllers || []
+    this.script = script
   }
-  runControllers(deltaTimeSeconds) {
-    this.controllers.forEach((controller) =>
-      controller.run(this, deltaTimeSeconds)
-    )
+  // runControllers(deltaTimeSeconds) {
+  //   this.controllers.forEach((controller) =>
+  //     controller.run(this, deltaTimeSeconds)
+  //   )
+  // }
+  runScript(event, ...data) {
+    this.script.run(this, event, ...data)
   }
 }

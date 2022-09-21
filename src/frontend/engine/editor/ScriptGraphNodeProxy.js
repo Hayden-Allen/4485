@@ -47,9 +47,7 @@ const FONT_FAMILY =
   PORT_NAME_PADDING_X = PORT_RADIUS * 2,
   PORT_DOT_OFFSET = 10,
   WIDTH_PADDING = 48,
-  HEIGHT_PADDING = 16,
-  SHADOW_BLUR_FACTOR = 6,
-  SHADOW_OFFSET_Y_FACTOR = 4
+  HEIGHT_PADDING = 16
 export class ScriptGraphNodeProxy extends UIElement {
   constructor(window, node) {
     super(LINE_WIDTH, COLORS[node.type])
@@ -129,7 +127,8 @@ export class ScriptGraphNodeProxy extends UIElement {
     // compute node height
     this.maxPortCount = Math.max(
       this.node.outputTypes.length,
-      this.node.inputTypes.length
+      this.node.inputTypes.length,
+      this.node.internalValues.length
     )
     if (this.maxPortCount)
       this.h =
@@ -203,11 +202,11 @@ export class ScriptGraphNodeProxy extends UIElement {
         PORT_FONT_SIZE,
         PORT_COLOR[port.typename].name
       )
-      const width = window.textMetrics(
-        port.name,
-        FONT_FAMILY,
-        PORT_FONT_SIZE
-      ).width
+      // const width = window.textMetrics(
+      //   port.name,
+      //   FONT_FAMILY,
+      //   PORT_FONT_SIZE
+      // ).width
       // window.strokeRect(
       //   tx,
       //   portY,

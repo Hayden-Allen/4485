@@ -91,8 +91,6 @@ export class ScriptNode extends Component {
     this.graph.addEdge(this, outputIndex, inputNode, inputIndex)
   }
   run(inputs, entity, inputCache) {
-    if (!this.active) return
-
     // console.log(inputs)
     // console.log(this.data.inputTypes.types)
     if (!validateScriptDataTypes(inputs, this.inputTypes.types)) {
@@ -105,6 +103,7 @@ export class ScriptNode extends Component {
         entity,
         internal: this.internalValues,
         input: inputCache,
+        node: this,
       }) || []
     this.outputs = results.map((result) => result.value)
     // propagate activation

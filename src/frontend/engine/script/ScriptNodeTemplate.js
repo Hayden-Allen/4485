@@ -23,8 +23,17 @@ export class ScriptNodeTemplate extends ScriptNodeData {
 // event script nodes only carry activation
 // they are starting points for the graph
 export class EventScriptNodeTemplate extends ScriptNodeTemplate {
-  constructor(type, name) {
-    super(type, name, [], [], () => [])
+  constructor(type, name, outputPorts) {
+    // super(type, name, [], outputPorts, () =>
+    //   outputPorts.map((port, i) => {
+    //     return { value: this.outputValues[i], activate: true }
+    //   })
+    // )
+    super(type, name, [], outputPorts, (_, { node }) =>
+      node.outputs.map((value) => {
+        return { value, activate: true }
+      })
+    )
   }
 }
 

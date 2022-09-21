@@ -18,6 +18,7 @@ class ScriptNodeEdgeList {
     this.out = []
   }
 }
+const EVENT_NODE_NAMES = ['OnTick', 'OnCollide']
 export class ScriptGraph extends Component {
   constructor(debugName, inputCache, pushError, clearErrors) {
     super(debugName)
@@ -26,8 +27,10 @@ export class ScriptGraph extends Component {
     this.nodes = new Map()
     // map ScriptNode.id to ScriptNodeEdgeList
     this.edges = new Map()
+    // nodes that execution will start from
+    this.eventNodes = new Map()
     // nodes with no inputs
-    this.startNodes = []
+    this.sourceNodes = []
     this.cachedCompile = undefined
     this._pushError = pushError
     this.clearErrors = clearErrors
@@ -148,22 +151,25 @@ export class ScriptGraph extends Component {
     this.clearErrors()
     this.canErr = true
     // nodes that execution will start from (event nodes)
-    this.startNodes = []
+    this.eventNodes = new Map()
+    // NON-EVENT nodes that will be executed regardless (have no input edges)
+    this.sourceNodes = []
     // nodes that order-building will start from (any node with no input edges)
-    let sourceNodes = []
+    let buildNodes = []
     this.nodes.forEach((node) => {
-      if (node.debugName === 'OnTick') {
-        this.startNodes.push(node)
-        sourceNodes.push(node)
+      if (EVENT_NODE_NAMES.includes(node.debugName)) {
+        this.eventNodes.set(node.debugName, node)
+        buildNodes.push(node)
       } else if (!this.getEdges(node).in.length) {
-        sourceNodes.push(node)
+        this.sourceNodes.push(node)
+        buildNodes.push(node)
       }
     })
 
     let visited = new Map()
     // a valid order to traverse this DAG, as identified by a topological sort
     let order = []
-    sourceNodes.forEach((node) => this.dfs(node, visited, order))
+    buildNodes.forEach((node) => this.dfs(node, visited, order))
 
     return order
   }
@@ -182,18 +188,23 @@ export class ScriptGraph extends Component {
     // add to topological sort results
     order.unshift(node)
   }
-  run(entity) {
+  run(entity, event, ...data) {
     // graph has changed, need to recompile
     if (!this.cachedCompile) this.cachedCompile = this.compile()
+    let start = this.eventNodes.get(event)
+    if (!start) return
 
     // reset activation for all nodes
     this.nodes.forEach((node) => (node.active = false))
     // always run nodes with no inputs
     // it must be guaranteed by the corresponding template that such nodes do not explicitly activate their children
     // note that this is always the case for ConstantScriptNodeTemplates; see ScriptNodeTemplate.js
-    this.nodes.forEach((node) => {
-      if (!this.getEdges(node).in.length) node.active = true
-    })
+    // this.nodes.forEach((node) => {
+    //   if (!this.getEdges(node).in.length) node.active = true
+    // })
+    start.active = true
+    start.outputs = data
+    this.sourceNodes.forEach((node) => (node.active = true))
 
     let outputs = new Map()
 

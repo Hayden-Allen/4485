@@ -5,7 +5,11 @@
   import Logger from './Logger.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
-  import { SceneEntity, ControlledSceneEntity } from '%component/SceneEntity.js'
+  import {
+    SceneEntity,
+    ControlledSceneEntity,
+    DynamicSceneEntity,
+  } from '%component/SceneEntity.js'
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
   import { Window2D } from '%window/Window2D.js'
@@ -137,19 +141,25 @@
     )
 
     playerScript = createPlayerScript(gameWindow.inputCache)
-    let playerController = {
-      run: (player /* deltaTimeSeconds */) => {
-        playerScript.run(player)
-      },
-    }
     let player = new ControlledSceneEntity(
       gameWindow,
       new Vec2(0, 0),
       'https://art.pixilart.com/840bcbc293e372f.png',
-      { controllers: [playerController], scale: 25 }
+      playerScript,
+      { scale: 25 }
     )
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
+
+    game.addDynamicSceneEntity(
+      new DynamicSceneEntity(
+        gameWindow,
+        new Vec2(-100, 0),
+        'https://art.pixilart.com/840bcbc293e372f.png',
+        { scale: 25 }
+      ),
+      1
+    )
 
     gameWindow.pushLayer(new EditorLayer(game))
 

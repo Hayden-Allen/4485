@@ -36,8 +36,11 @@ class ScriptNodeTemplateBank {
       )
     )
   }
-  createEvent(type, name) {
-    this.bank.set(name, new EventScriptNodeTemplate(type, name))
+  createEvent(type, name, outputs) {
+    this.bank.set(
+      name,
+      new EventScriptNodeTemplate(type, name, this.mapPorts(outputs))
+    )
   }
   createInternal(type, name, inputs, internals, defaultValues, outputs, fn) {
     this.bank.set(
@@ -72,7 +75,11 @@ class ScriptNodeTemplateBank {
     this.createMath()
   }
   createEvents() {
-    this.createEvent('event', 'OnTick')
+    this.createEvent('event', 'OnTick', [])
+    this.createEvent('event', 'OnCollide', [
+      ['normal', 'object'],
+      ['entity', 'object'],
+    ])
   }
   createInput() {
     this.createInternal(
@@ -111,6 +118,18 @@ class ScriptNodeTemplateBank {
       ([a, b]) => [{ value: a - b }]
     )
     // vector
+    /**
+     * @HATODO debug only
+     */
+    this.create(
+      'math',
+      'PrintVec2',
+      [['v', 'object']],
+      [['none', 'any']],
+      ([v]) => {
+        console.log(v)
+      }
+    )
     this.create(
       'math',
       'Vec2',
@@ -170,7 +189,21 @@ class ScriptNodeTemplateBank {
       [],
       // don't return anything
       ([entity, v]) => {
-        entity.setVelocity(v)
+        if (entity.setVelocity) {
+          entity.setVelocity(v)
+        }
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScale',
+      [
+        ['entity', 'object'],
+        ['scale', 'number'],
+      ],
+      [],
+      ([entity, s]) => {
+        entity.renderable.setScale(s)
       }
     )
   }

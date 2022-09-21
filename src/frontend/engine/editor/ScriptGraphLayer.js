@@ -50,7 +50,7 @@ export class ScriptGraphLayer extends Layer {
         this.selectedX = this.selected.x
         this.selectedY = this.selected.y
       } else this.selectedPort = undefined
-    } else if (e.button === 2) {
+    } else if (e.button === 2 && !node) {
       e.domEvent.preventDefault()
       e.domEvent.stopPropagation()
       this.createAddNodeMenuPopup()

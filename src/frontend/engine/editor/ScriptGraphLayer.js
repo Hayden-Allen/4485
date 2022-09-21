@@ -51,6 +51,8 @@ export class ScriptGraphLayer extends Layer {
         this.selectedY = this.selected.y
       } else this.selectedPort = undefined
     } else if (e.button === 2) {
+      e.domEvent.preventDefault()
+      e.domEvent.stopPropagation()
       this.createAddNodeMenuPopup()
     }
 
@@ -349,6 +351,7 @@ export class ScriptGraphLayer extends Layer {
       return {
         x: canvasBounds.left + mouseX,
         y: canvasBounds.top + mouseY,
+        borderAlphaVarying: self.graphvis.outlineAlpha,
         nodeTypeNames: scriptNodeTemplateBank.getNodeTypeNames(),
         checkCanReposition: (x, y) => {
           return (

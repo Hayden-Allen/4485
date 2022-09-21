@@ -13,6 +13,8 @@
 
   export let currentValue = null
 
+  let inputEl = null
+
   export function validate() {
     return !isNaN(parseInt(currentValue))
   }
@@ -41,6 +43,7 @@
   height="auto"
 >
   <input
+    bind:this={inputEl}
     type="number"
     step="1"
     on:keydown={(event) => {

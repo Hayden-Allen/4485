@@ -427,6 +427,7 @@ export class ScriptGraphLayer extends Layer {
             popup.currentValue
           options.proxy.computeNodeWidth(self.window)
         }
+        options.proxy.selected = false
       },
       ...getAdditionalProps(options),
     }

@@ -6,10 +6,11 @@ class Event {
     this.domEvent = e
   }
 }
-
 export class FocusEvent extends Event {
-  constructor(e) {
+  constructor(e, x, y) {
     super(e)
+    this.x = x
+    this.y = y
   }
 }
 
@@ -22,7 +23,6 @@ class InputEvent extends Event {
     this.shiftPressed = e.shiftKey
   }
 }
-
 class MouseVectorEvent extends InputEvent {
   constructor(e, x, y) {
     super(e)

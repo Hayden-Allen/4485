@@ -28,7 +28,7 @@
   {onDestroyPopup}
   {borderAlphaVarying}
   width="200px"
-  height="200px"
+  height="480px"
 >
   <div class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto">
     <div

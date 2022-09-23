@@ -11,6 +11,7 @@ import {
   FocusEvent,
 } from './Event.js'
 import { InputCache } from './InputCache.js'
+import { global } from '%engine/Global.js'
 
 export class Window {
   constructor(canvas, clearColor) {
@@ -30,7 +31,10 @@ export class Window {
     this.inputCache = new InputCache(this.canvas)
 
     this.canvas.addEventListener('focus', (e) => {
-      this.propagateEvent('onFocus', new FocusEvent(e))
+      const rect = this.canvas.getBoundingClientRect()
+      const mx = global.mouseX - rect.x,
+        my = global.mouseY - rect.y
+      this.propagateEvent('onFocus', new FocusEvent(e, mx, my))
     })
     this.canvas.addEventListener('keydown', (e) => {
       this.propagateEvent('onKeyDown', new KeyDownEvent(e))

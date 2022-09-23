@@ -93,7 +93,6 @@ export class ScriptLayer extends Layer {
       // select new
       this.selected = node || edge
       if (this.selected) {
-        console.log('A')
         this.selected.selected = true
         this.selectedX = this.selected.x
         this.selectedY = this.selected.y
@@ -124,9 +123,18 @@ export class ScriptLayer extends Layer {
         }
       }
     }
+    // right clicking (not on a node)
+    else if (e.button === 2 && !node) {
+      e.domEvent.preventDefault()
+      e.domEvent.stopPropagation()
+      this.createAddNodeMenuPopup()
+    }
+
     return node || edge
   }
   onFocus(e) {
+    this.input.mouseX = e.x
+    this.input.mouseY = e.y
     return this.asdf(e)
   }
   onMouseDown(e) {

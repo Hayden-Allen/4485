@@ -1,6 +1,7 @@
 <svelte:options accessors />
 
 <script>
+  import { onMount } from 'svelte'
   import EditorLayout from 'components/popup/layouts/EditorLayout.svelte'
 
   export let x = null,
@@ -11,6 +12,8 @@
   export let onDestroyPopup = null
 
   export let currentValue = null
+
+  let inputEl = null
 
   export function validate() {
     return !isNaN(parseInt(currentValue))
@@ -24,6 +27,10 @@
       }
     }
   }
+
+  onMount(() => {
+    inputEl.focus()
+  })
 </script>
 
 <EditorLayout
@@ -36,6 +43,7 @@
   height="auto"
 >
   <input
+    bind:this={inputEl}
     type="number"
     step="1"
     on:keydown={(event) => {

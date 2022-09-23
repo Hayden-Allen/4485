@@ -8,8 +8,10 @@ import {
   AppTickEvent,
   RenderEvent,
   ResizeEvent,
+  FocusEvent,
 } from './Event.js'
 import { InputCache } from './InputCache.js'
+import { global } from '%engine/Global.js'
 
 export class Window {
   constructor(canvas, clearColor) {
@@ -28,11 +30,11 @@ export class Window {
     this.canvas = canvas
     this.inputCache = new InputCache(this.canvas)
 
-    // necessary for key events to get sent to the canvas
-    this.canvas.addEventListener('click', () => {
-      this.canvas.focus({
-        focusVisible: true,
-      })
+    this.canvas.addEventListener('focus', (e) => {
+      const rect = this.canvas.getBoundingClientRect()
+      const mx = global.mouseX - rect.x,
+        my = global.mouseY - rect.y
+      this.propagateEvent('onFocus', new FocusEvent(e, mx, my))
     })
     this.canvas.addEventListener('keydown', (e) => {
       this.propagateEvent('onKeyDown', new KeyDownEvent(e))
@@ -49,6 +51,10 @@ export class Window {
       this.propagateEvent('onMouseMove', new MouseMoveEvent(e, x, y))
     })
     this.canvas.addEventListener('pointerdown', (e) => {
+      this.canvas.focus({
+        focusVisible: true,
+      })
+
       this.canvas.setPointerCapture(e.pointerId)
       this.propagateEvent('onMouseDown', new MouseDownEvent(e))
     })

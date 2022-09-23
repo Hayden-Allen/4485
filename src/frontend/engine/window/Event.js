@@ -1,15 +1,28 @@
 import { Vec2 } from '%util/Vec2.js'
 import { Component } from '%component/Component.js'
 
-class InputEvent {
+class Event {
   constructor(e) {
+    this.domEvent = e
+  }
+}
+export class FocusEvent extends Event {
+  constructor(e, x, y) {
+    super(e)
+    this.x = x
+    this.y = y
+  }
+}
+
+class InputEvent extends Event {
+  constructor(e) {
+    super(e)
     this.altPressed = e.altKey
     this.ctrlPressed = e.ctrlKey
     this.metaPressed = e.metaKey
     this.shiftPressed = e.shiftKey
   }
 }
-
 class MouseVectorEvent extends InputEvent {
   constructor(e, x, y) {
     super(e)
@@ -133,4 +146,5 @@ export class EventHandler extends Component {
   onResize(e) {
     return false
   }
+  onFocus() {}
 }

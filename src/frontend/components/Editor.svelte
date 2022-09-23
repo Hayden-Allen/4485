@@ -5,15 +5,19 @@
   import Logger from './Logger.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
-  import { SceneEntity, ControlledSceneEntity } from '%component/SceneEntity.js'
+  import {
+    SceneEntity,
+    ControlledSceneEntity,
+    DynamicSceneEntity,
+  } from '%component/SceneEntity.js'
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
   import { Window2D } from '%window/Window2D.js'
   import { Window3D } from '%window/Window3D.js'
   import { EditorLayer } from '%editor/EditorLayer.js'
-  import { ScriptGraphInputLayer } from '%editor/ScriptGraphInputLayer.js'
-  import { ScriptGraphLayer } from '%editor/ScriptGraphLayer.js'
-  import { ScriptGraphControlsLayer } from '%editor/ScriptGraphControlsLayer.js'
+  import { ScriptInputLayer } from '%editor/ScriptInputLayer.js'
+  import { ScriptLayer } from '%editor/ScriptLayer.js'
+  import { ScriptControlsLayer } from '%editor/ScriptControlsLayer.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
   import { Context } from '%engine/Context.js'
 
@@ -136,38 +140,214 @@
       0
     )
 
-    playerScript = createPlayerScript(gameWindow.inputCache)
-    let playerController = {
-      run: (player /* deltaTimeSeconds */) => {
-        playerScript.run(player)
-      },
-    }
+    // playerScript = createPlayerScript(gameWindow.inputCache)
+    // console.log(playerScript.serialize())
+    let playerScript = new ScriptGraph(
+      'blah',
+      gameWindow.inputCache,
+      (s) => (playerScriptErrors = [...playerScriptErrors, s]),
+      () => (playerScriptErrors = [])
+    )
+    playerScript.deserialize({
+      name: 'PlayerController',
+      nodes: [
+        { type: 'OnTick', internalValues: [] },
+        { type: 'KeyPressed', internalValues: ['shift'] },
+        { type: 'KeyPressed', internalValues: ['w'] },
+        { type: 'KeyPressed', internalValues: ['a'] },
+        { type: 'KeyPressed', internalValues: ['s'] },
+        { type: 'KeyPressed', internalValues: ['d'] },
+        { type: 'Subtract', internalValues: [] },
+        { type: 'Subtract', internalValues: [] },
+        { type: 'Vec2', internalValues: [] },
+        { type: 'Normalize', internalValues: [] },
+        { type: 'ConstInt', internalValues: [5] },
+        { type: 'ConstInt', internalValues: [10] },
+        { type: 'Mux2', internalValues: [] },
+        { type: 'ScaleVec2', internalValues: [] },
+        { type: 'GetControlledEntity', internalValues: [] },
+        { type: 'SetEntityVelocity', internalValues: [] },
+      ],
+      edges: [
+        {
+          in: [],
+          out: [
+            {
+              outputIndex: -1,
+              inputIndex: -1,
+              outputNode: 0,
+              inputNode: 1,
+            },
+            {
+              outputIndex: -1,
+              inputIndex: -1,
+              outputNode: 0,
+              inputNode: 2,
+            },
+            {
+              outputIndex: -1,
+              inputIndex: -1,
+              outputNode: 0,
+              inputNode: 3,
+            },
+            {
+              outputIndex: -1,
+              inputIndex: -1,
+              outputNode: 0,
+              inputNode: 4,
+            },
+            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 5 },
+          ],
+        },
+        {
+          in: [
+            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 1 },
+          ],
+          out: [
+            { outputIndex: 2, inputIndex: 0, outputNode: 1, inputNode: 12 },
+          ],
+        },
+        {
+          in: [
+            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 2 },
+          ],
+          out: [{ outputIndex: 2, inputIndex: 1, outputNode: 2, inputNode: 7 }],
+        },
+        {
+          in: [
+            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 3 },
+          ],
+          out: [{ outputIndex: 2, inputIndex: 1, outputNode: 3, inputNode: 6 }],
+        },
+        {
+          in: [
+            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 4 },
+          ],
+          out: [{ outputIndex: 2, inputIndex: 0, outputNode: 4, inputNode: 7 }],
+        },
+        {
+          in: [
+            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 5 },
+          ],
+          out: [{ outputIndex: 2, inputIndex: 0, outputNode: 5, inputNode: 6 }],
+        },
+        {
+          in: [
+            { outputIndex: 2, inputIndex: 0, outputNode: 5, inputNode: 6 },
+            { outputIndex: 2, inputIndex: 1, outputNode: 3, inputNode: 6 },
+          ],
+          out: [{ outputIndex: 0, inputIndex: 0, outputNode: 6, inputNode: 8 }],
+        },
+        {
+          in: [
+            { outputIndex: 2, inputIndex: 0, outputNode: 4, inputNode: 7 },
+            { outputIndex: 2, inputIndex: 1, outputNode: 2, inputNode: 7 },
+          ],
+          out: [{ outputIndex: 0, inputIndex: 1, outputNode: 7, inputNode: 8 }],
+        },
+        {
+          in: [
+            { outputIndex: 0, inputIndex: 0, outputNode: 6, inputNode: 8 },
+            { outputIndex: 0, inputIndex: 1, outputNode: 7, inputNode: 8 },
+          ],
+          out: [{ outputIndex: 0, inputIndex: 0, outputNode: 8, inputNode: 9 }],
+        },
+        {
+          in: [{ outputIndex: 0, inputIndex: 0, outputNode: 8, inputNode: 9 }],
+          out: [
+            { outputIndex: 0, inputIndex: 0, outputNode: 9, inputNode: 13 },
+          ],
+        },
+        {
+          in: [],
+          out: [
+            { outputIndex: 0, inputIndex: 1, outputNode: 10, inputNode: 12 },
+          ],
+        },
+        {
+          in: [],
+          out: [
+            { outputIndex: 0, inputIndex: 2, outputNode: 11, inputNode: 12 },
+          ],
+        },
+        {
+          in: [
+            { outputIndex: 2, inputIndex: 0, outputNode: 1, inputNode: 12 },
+            {
+              outputIndex: 0,
+              inputIndex: 1,
+              outputNode: 10,
+              inputNode: 12,
+            },
+            { outputIndex: 0, inputIndex: 2, outputNode: 11, inputNode: 12 },
+          ],
+          out: [
+            { outputIndex: 0, inputIndex: 1, outputNode: 12, inputNode: 13 },
+          ],
+        },
+        {
+          in: [
+            { outputIndex: 0, inputIndex: 0, outputNode: 9, inputNode: 13 },
+            { outputIndex: 0, inputIndex: 1, outputNode: 12, inputNode: 13 },
+          ],
+          out: [
+            { outputIndex: 0, inputIndex: 1, outputNode: 13, inputNode: 15 },
+          ],
+        },
+        {
+          in: [],
+          out: [
+            { outputIndex: 0, inputIndex: 0, outputNode: 14, inputNode: 15 },
+          ],
+        },
+        {
+          in: [
+            {
+              outputIndex: 0,
+              inputIndex: 0,
+              outputNode: 14,
+              inputNode: 15,
+            },
+            { outputIndex: 0, inputIndex: 1, outputNode: 13, inputNode: 15 },
+          ],
+          out: [],
+        },
+      ],
+    })
+
     let player = new ControlledSceneEntity(
       gameWindow,
       new Vec2(0, 0),
       'https://art.pixilart.com/840bcbc293e372f.png',
-      { controllers: [playerController], scale: 25 }
+      playerScript,
+      { scale: 25 }
     )
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
+    game.addDynamicSceneEntity(
+      new DynamicSceneEntity(
+        gameWindow,
+        new Vec2(-100, 0),
+        'https://art.pixilart.com/840bcbc293e372f.png',
+        { scale: 25 }
+      ),
+      1
+    )
+
     gameWindow.pushLayer(new EditorLayer(game))
 
     scriptWindow = new Window2D(scriptCanvas)
-    let scriptGraphInputLayer = new ScriptGraphInputLayer()
-    let scriptGraphControlsLayer = new ScriptGraphControlsLayer(
-      scriptGraphInputLayer,
+    let scriptInputLayer = new ScriptInputLayer()
+    let scriptControlsLayer = new ScriptControlsLayer(
+      scriptInputLayer,
       scriptWindow
     )
-    scriptWindow.pushLayer(scriptGraphControlsLayer)
+    scriptWindow.pushLayer(scriptControlsLayer)
     scriptWindow.pushLayer(
-      new ScriptGraphLayer(
-        scriptGraphInputLayer,
-        scriptGraphControlsLayer,
-        playerScript
-      )
+      new ScriptLayer(scriptInputLayer, scriptControlsLayer, playerScript)
     )
-    scriptWindow.pushLayer(scriptGraphInputLayer)
+    scriptWindow.pushLayer(scriptInputLayer)
 
     context.windows.push(gameWindow)
     context.windows.push(scriptWindow)

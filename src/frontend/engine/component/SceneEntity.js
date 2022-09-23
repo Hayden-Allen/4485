@@ -59,8 +59,7 @@ export class SceneEntity extends Component {
       this.dim,
       {
         isStatic: ops.isStatic,
-        frictionAir: 0,
-        frictionStatic: 0,
+        friction: 0,
       }
     )
     this.physicsProxy._owner = this

@@ -5,6 +5,10 @@ export class UIElement {
     this.hovered = false
     this.selected = false
   }
+  deselect() {
+    this.hovered = false
+    this.selected = false
+  }
   // eslint-disable-next-line
   draw(window) {}
 }

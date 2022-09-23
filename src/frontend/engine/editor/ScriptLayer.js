@@ -1,20 +1,19 @@
 import { Layer } from '%window/Layer.js'
-import { ScriptGraphVisualizer } from './ScriptGraphVisualizer.js'
+import { ScriptVisualizer } from './ScriptVisualizer.js'
 import { global } from '%engine/Global.js'
 import { Vec2 } from '%util/Vec2.js'
 import AddNodeMenu from 'components/popup/contextMenus/AddNodeMenu.svelte'
 import KeyPortEditor from 'components/popup/editors/KeyEditor.svelte'
 import IntPortEditor from 'components/popup/editors/IntEditor.svelte'
-import { PORT_COLOR } from './ScriptGraphVisualizer.js'
+import { PORT_COLOR } from './ScriptVisualizer.js'
 import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
-import { ScriptGraphEdgeProxy } from './ScriptGraphEdgeProxy'
+import { ScriptEdgeProxy } from './ScriptEdgeProxy'
 
-export class ScriptGraphLayer extends Layer {
+export class ScriptLayer extends Layer {
   constructor(input, controls, playerScript) {
-    super('ScriptGraphLayer')
+    super('ScriptLayer')
     this.input = input
     this.controls = controls
-    this.redraw = true
     this.capturedLeftClick = false
     this.graphvis = undefined
     this.playerScript = playerScript
@@ -25,108 +24,159 @@ export class ScriptGraphLayer extends Layer {
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
-    this.graphvis = new ScriptGraphVisualizer(this.window, this.playerScript)
+    this.graphvis = new ScriptVisualizer(this.window, this.playerScript)
     this.graphvis.arrange()
   }
   onMouseScroll() {
-    this.redraw = true
-
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
   }
-  onMouseDown(e) {
+  // onMouseDown(e) {
+  //   const node = this.checkIntersection()
+  //   const { edge } = this.checkEdgeIntersection()
+  //   // left clicking
+  //   if (e.button === 0) {
+  //     // deselect previous
+  //     if (this.selected) this.selected.selected = false
+  //     // select new
+  //     this.selected = node || edge
+  //     if (this.selected) {
+  //       this.selected.selected = true
+  //       this.selectedX = this.selected.x
+  //       this.selectedY = this.selected.y
+  //     } else {
+  //       this.selectedPort = undefined
+  //     }
+  //   }
+  //   // right clicking (not on a node)
+  //   else if (e.button === 2 && !node) {
+  //     e.domEvent.preventDefault()
+  //     e.domEvent.stopPropagation()
+  //     this.createAddNodeMenuPopup()
+  //   }
+
+  //   if (node) {
+  //     this.input.cursor = 'default'
+  //     if (e.button === 0) {
+  //       this.input.canDrag = false
+  //       this.capturedLeftClick = true
+  //       // convert mouse pos to world space and check for intersection with any port in the hit node
+  //       const port = node.checkPortIntersection(
+  //         this.window,
+  //         ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
+  //       )
+  //       if (port) {
+  //         if (port.internal) {
+  //           e.domEvent.preventDefault()
+  //           e.domEvent.stopPropagation()
+  //           node.hoveredPort = -1
+  //           this.createEditorPopup(node, port)
+  //           this.selected = undefined
+  //           this.selectedPort = undefined
+  //         } else {
+  //           this.selectedPort = port
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return node
+  // }
+  asdf(e) {
     const node = this.checkIntersection()
     const { edge } = this.checkEdgeIntersection()
-    // moving a node
-    if (e.button === 0) {
-      this.redraw = true
 
+    if (node) this.input.cursor = 'default'
+
+    if (this.input.leftMousePressed) {
       // deselect previous
       if (this.selected) this.selected.selected = false
       // select new
       this.selected = node || edge
       if (this.selected) {
+        console.log('A')
         this.selected.selected = true
         this.selectedX = this.selected.x
         this.selectedY = this.selected.y
-      } else this.selectedPort = undefined
-    } else if (e.button === 2 && !node) {
-      e.domEvent.preventDefault()
-      e.domEvent.stopPropagation()
-      this.createAddNodeMenuPopup()
-    }
+      } else {
+        this.selectedPort = undefined
+      }
 
-    if (node) {
-      this.input.cursor = 'default'
-      if (e.button === 0) {
+      if (node) {
         this.input.canDrag = false
         this.capturedLeftClick = true
-        // convert mouse pos to world space and check for intersection with any port in the hit node
+
         const port = node.checkPortIntersection(
           this.window,
           ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
         )
         if (port) {
           if (port.internal) {
+            // create popup
             e.domEvent.preventDefault()
             e.domEvent.stopPropagation()
-            node.hoveredPort = -1
             this.createEditorPopup(node, port)
-            this.selected = undefined
+            // remove underline
             this.selectedPort = undefined
+            node.hoveredPort = -1
           } else {
             this.selectedPort = port
           }
         }
       }
     }
-    return node
+    return node || edge
+  }
+  onFocus(e) {
+    return this.asdf(e)
+  }
+  onMouseDown(e) {
+    return this.asdf(e)
   }
   onMouseUp(e) {
     this.input.canDrag = true
-    const hit = this.checkIntersection()
-    if (hit) this.input.cursor = 'default'
+
     if (e.button === 0) {
-      this.capturedLeftClick = false
-      const node = this.checkIntersection()
-      if (node) {
-        // convert mouse pos to world space and check for intersection with any port in the hit node
-        const port = node.checkPortIntersection(
-          this.window,
-          ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
-        )
-        // if we already have a port selected and it can be connected to the new port, add an edge
-        if (port && !port.internal) {
-          if (this.selectedPort && this.selectedPort.in ^ port.in) {
-            if (this.selectedPort.in)
-              this.selectedPort.node.attachAsInput(
-                port.node,
-                port.index,
-                this.selectedPort.index
-              )
-            else
-              this.selectedPort.node.attachAsOutput(
-                this.selectedPort.index,
-                port.node,
-                port.index
-              )
-            this.graphvis.recompile()
+      if (this.capturedLeftClick) {
+        const node = this.checkIntersection()
+        if (node) {
+          this.input.cursor = 'default'
+          // convert mouse pos to world space and check for intersection with any port in the hit node
+          const port = node.checkPortIntersection(
+            this.window,
+            ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
+          )
+          // if we already have a port selected and it can be connected to the new port, add an edge
+          if (port && !port.internal) {
+            if (this.selectedPort && this.selectedPort.in ^ port.in) {
+              if (this.selectedPort.in)
+                this.selectedPort.node.attachAsInput(
+                  port.node,
+                  port.index,
+                  this.selectedPort.index
+                )
+              else
+                this.selectedPort.node.attachAsOutput(
+                  this.selectedPort.index,
+                  port.node,
+                  port.index
+                )
+              this.graphvis.recompile()
+              this.selectedPort = undefined
+            } else {
+              this.selectedPort = port
+            }
             this.selectedPort = undefined
-          } else {
-            this.selectedPort = port
           }
-          this.selectedPort = undefined
         }
       }
+
+      this.capturedLeftClick = false
     }
-    return hit
+    // return hit
   }
   onMouseMove() {
-    this.redraw = this.input.leftMousePressed && !this.capturedLeftClick
-
     // move selected node
     if (!this.selectedPort && this.selected && this.input.leftMousePressed) {
-      this.redraw = true
       this.controls.setTransform(this.window.ctx)
       // transform mouse screen->world
       const [mx, my] = this.inverseTransformCoords(
@@ -162,8 +212,6 @@ export class ScriptGraphLayer extends Layer {
       }
     } else {
       this.hovered = undefined
-      // need to redraw once to get rid of the outline
-      this.redraw = true
     }
 
     return this.capturedLeftClick && hit
@@ -171,10 +219,9 @@ export class ScriptGraphLayer extends Layer {
   onKeyDown(e) {
     if (!e.repeat && e.ctrlPressed && e.key === 's') {
       this.graphvis.arrange()
-      this.redraw = true
     }
     if (this.selected && (e.key === 'Backspace' || e.key === 'Delete')) {
-      if (this.selected instanceof ScriptGraphEdgeProxy) {
+      if (this.selected instanceof ScriptEdgeProxy) {
         const inputNode = this.selected.endProxy.node
         const inputIndex = this.selected.endPort
         const outputNode = this.selected.startProxy.node
@@ -198,18 +245,7 @@ export class ScriptGraphLayer extends Layer {
       }
     }
   }
-  onResize() {
-    this.redraw = true
-  }
   onRender(e) {
-    // outline opacity changes over time
-    if (this.selected || this.hovered) {
-      this.redraw = true
-    }
-
-    // if (!this.redraw) return
-    // this.redraw = false
-
     e.window.ctx.resetTransform()
     e.window.clear()
     this.controls.setTransform(e.window.ctx)
@@ -362,9 +398,7 @@ export class ScriptGraphLayer extends Layer {
           )
         },
         onAddNode: (name) => {
-          const node = scriptNodeTemplateBank
-            .get(name)
-            .createNode(self.graphvis.graph)
+          const node = self.graphvis.graph.createNode(name)
           self.graphvis.recompile()
           const proxy = self.graphvis.proxies.get(node.id)
           const [x, y] = self.inverseTransformCoords(
@@ -416,10 +450,10 @@ export class ScriptGraphLayer extends Layer {
     return {
       x: canvasBounds.left + sx,
       y: canvasBounds.top + sy,
-      bgColor: PORT_COLOR[options.port.port.typename].editorBg,
-      fgColor: PORT_COLOR[options.port.port.typename].editorFg,
+      bgColor: PORT_COLOR[options.port.port.typename].editor.background,
+      fgColor: PORT_COLOR[options.port.port.typename].editor.foreground,
       placeholderColor:
-        PORT_COLOR[options.port.port.typename].editorPlaceholder,
+        PORT_COLOR[options.port.port.typename].editor.placeholder,
       currentValue: options.proxy.node.internalValues[options.port.index],
       beforeDestroyPopup: (popup) => {
         if (popup.validate()) {
@@ -427,7 +461,7 @@ export class ScriptGraphLayer extends Layer {
             popup.currentValue
           options.proxy.computeNodeWidth(self.window)
         }
-        options.proxy.selected = false
+        options.proxy.deselect()
       },
       ...getAdditionalProps(options),
     }

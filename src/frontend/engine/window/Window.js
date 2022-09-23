@@ -8,6 +8,7 @@ import {
   AppTickEvent,
   RenderEvent,
   ResizeEvent,
+  FocusEvent,
 } from './Event.js'
 import { InputCache } from './InputCache.js'
 
@@ -28,6 +29,9 @@ export class Window {
     this.canvas = canvas
     this.inputCache = new InputCache(this.canvas)
 
+    this.canvas.addEventListener('focus', (e) => {
+      this.propagateEvent('onFocus', new FocusEvent(e))
+    })
     this.canvas.addEventListener('keydown', (e) => {
       this.propagateEvent('onKeyDown', new KeyDownEvent(e))
     })

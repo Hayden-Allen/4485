@@ -1,6 +1,5 @@
-import { ScriptNodeData } from './ScriptNodeData.js'
 import { scriptDataType, validateScriptDataTypes } from './ScriptDataType.js'
-import { ScriptNode } from './ScriptNode.js'
+import { ScriptNode, ScriptNodeData } from './ScriptNode.js'
 
 export class ScriptNodeTemplate extends ScriptNodeData {
   constructor(type, name, inputPorts, outputPorts, fn) {
@@ -24,11 +23,6 @@ export class ScriptNodeTemplate extends ScriptNodeData {
 // they are starting points for the graph
 export class EventScriptNodeTemplate extends ScriptNodeTemplate {
   constructor(type, name, outputPorts) {
-    // super(type, name, [], outputPorts, () =>
-    //   outputPorts.map((port, i) => {
-    //     return { value: this.outputValues[i], activate: true }
-    //   })
-    // )
     super(type, name, [], outputPorts, (_, { node }) =>
       node.outputs.map((value) => {
         return { value, activate: true }

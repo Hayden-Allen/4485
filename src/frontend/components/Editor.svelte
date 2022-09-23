@@ -15,9 +15,9 @@
   import { Window2D } from '%window/Window2D.js'
   import { Window3D } from '%window/Window3D.js'
   import { EditorLayer } from '%editor/EditorLayer.js'
-  import { ScriptGraphInputLayer } from '%editor/ScriptGraphInputLayer.js'
-  import { ScriptGraphLayer } from '%editor/ScriptGraphLayer.js'
-  import { ScriptGraphControlsLayer } from '%editor/ScriptGraphControlsLayer.js'
+  import { ScriptInputLayer } from '%editor/ScriptInputLayer.js'
+  import { ScriptLayer } from '%editor/ScriptLayer.js'
+  import { ScriptControlsLayer } from '%editor/ScriptControlsLayer.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
   import { Context } from '%engine/Context.js'
 
@@ -141,7 +141,7 @@
     )
 
     playerScript = createPlayerScript(gameWindow.inputCache)
-    console.log(playerScript.serialize())
+    // console.log(playerScript.serialize())
     let player = new ControlledSceneEntity(
       gameWindow,
       new Vec2(0, 0),
@@ -165,20 +165,16 @@
     gameWindow.pushLayer(new EditorLayer(game))
 
     scriptWindow = new Window2D(scriptCanvas)
-    let scriptGraphInputLayer = new ScriptGraphInputLayer()
-    let scriptGraphControlsLayer = new ScriptGraphControlsLayer(
-      scriptGraphInputLayer,
+    let scriptInputLayer = new ScriptInputLayer()
+    let scriptControlsLayer = new ScriptControlsLayer(
+      scriptInputLayer,
       scriptWindow
     )
-    scriptWindow.pushLayer(scriptGraphControlsLayer)
+    scriptWindow.pushLayer(scriptControlsLayer)
     scriptWindow.pushLayer(
-      new ScriptGraphLayer(
-        scriptGraphInputLayer,
-        scriptGraphControlsLayer,
-        playerScript
-      )
+      new ScriptLayer(scriptInputLayer, scriptControlsLayer, playerScript)
     )
-    scriptWindow.pushLayer(scriptGraphInputLayer)
+    scriptWindow.pushLayer(scriptInputLayer)
 
     context.windows.push(gameWindow)
     context.windows.push(scriptWindow)

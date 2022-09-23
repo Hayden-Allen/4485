@@ -1,4 +1,4 @@
-import { PORT_COLOR } from './ScriptGraphVisualizer.js'
+import { PORT_COLOR } from './ScriptVisualizer.js'
 import { UIElement } from './UIElement.js'
 import { global } from '%engine/Global.js'
 
@@ -48,9 +48,9 @@ const FONT_FAMILY =
   PORT_DOT_OFFSET = 10,
   WIDTH_PADDING = 48,
   HEIGHT_PADDING = 16
-export class ScriptGraphNodeProxy extends UIElement {
+export class ScriptNodeProxy extends UIElement {
   constructor(window, node) {
-    super(LINE_WIDTH, COLORS[node.type])
+    super(LINE_WIDTH, COLORS[node.category])
     this.node = node
     this.x = 0
     this.y = 0
@@ -126,7 +126,7 @@ export class ScriptGraphNodeProxy extends UIElement {
 
     // compute node height
     this.maxPortCount = Math.max(
-      this.node.outputTypes.length,
+      this.node.data.outputPorts.length,
       this.node.inputTypes.length,
       this.node.internalValues.length
     )

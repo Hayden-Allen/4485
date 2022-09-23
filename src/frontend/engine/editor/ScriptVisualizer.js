@@ -1,5 +1,5 @@
-import { ScriptGraphNodeProxy } from './ScriptGraphNodeProxy.js'
-import { ScriptGraphEdgeProxy } from './ScriptGraphEdgeProxy.js'
+import { ScriptNodeProxy } from './ScriptNodeProxy.js'
+import { ScriptEdgeProxy } from './ScriptEdgeProxy.js'
 import { Varying } from '%component/Varying.js'
 
 const PADDING_X = 100,
@@ -9,9 +9,11 @@ export const PORT_COLOR = {
     name: '#facc15',
     dot: '#d97706',
     edge: '#b45309',
-    editorBg: '#713f12',
-    editorFg: '#fefce8',
-    editorPlaceholder: '#fef08a',
+    editor: {
+      background: '#713f12',
+      foreground: '#fefce8',
+      placeholder: '#fef08a',
+    },
   },
   float: {
     name: '#f59e0b',
@@ -38,9 +40,11 @@ export const PORT_COLOR = {
     name: '#f43f5e',
     dot: '#e11d48',
     edge: '#be123c',
-    editorBg: '#7f1d1d',
-    editorFg: '#fef2f2',
-    editorPlaceholder: '#fecaca',
+    editor: {
+      background: '#7f1d1d',
+      foreground: '#fef2f2',
+      placeholder: '#fecaca',
+    },
   },
 
   array: {
@@ -54,7 +58,7 @@ export const PORT_COLOR = {
     edge: '#9ca3af',
   },
 }
-export class ScriptGraphVisualizer {
+export class ScriptVisualizer {
   constructor(window, graph) {
     this.graph = graph
     this.columns = []
@@ -84,7 +88,7 @@ export class ScriptGraphVisualizer {
       if (this.proxies.has(node.id)) {
         proxy = this.proxies.get(node.id)
       } else {
-        proxy = new ScriptGraphNodeProxy(this.window, node)
+        proxy = new ScriptNodeProxy(this.window, node)
         this.proxies.set(node.id, proxy)
       }
       this.drawStack.push(proxy)
@@ -96,7 +100,7 @@ export class ScriptGraphVisualizer {
         if (this.edgeProxies.has(edge.id)) {
           proxy = this.edgeProxies.get(edge.id)
         } else {
-          proxy = new ScriptGraphEdgeProxy(
+          proxy = new ScriptEdgeProxy(
             this.proxies.get(edge.outputNode.id),
             edge.outputIndex,
             this.proxies.get(edge.inputNode.id),

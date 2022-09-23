@@ -29,10 +29,6 @@ export class Scene extends Component {
     this.addBase('dynamic', component, z)
   }
   addControlledEntity(component, z) {
-    if (!component.controllers || !component.controllers.length)
-      this.logWarning(
-        `Controlled component ${component.getLogName()} does not have any controllers`
-      )
     this.addDynamicEntity(component, z)
     this.controlledComponents.set(component.id, component)
   }

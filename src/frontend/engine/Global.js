@@ -5,6 +5,8 @@ export var global = {
   varyingController: undefined,
   physicsEngine: undefined,
   fps: 60,
+  mouseX: 0,
+  mouseY: 0,
 
   canvas: {
     targetWidth: 1920,
@@ -23,6 +25,10 @@ export var global = {
     window.oncontextmenu = (e) => {
       e.preventDefault()
       e.stopPropagation()
+    }
+    window.onmousemove = (e) => {
+      global.mouseX = e.clientX
+      global.mouseY = e.clientY
     }
   },
   padZeroes: (s, n) => {

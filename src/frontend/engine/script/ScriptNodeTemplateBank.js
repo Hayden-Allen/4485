@@ -7,6 +7,33 @@ import {
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
 
+export const NODE_CATEGORY_COLORS = {
+  all: {
+    bgColor: '#d4d4d4',
+    borderColor: '#737373',
+  },
+  logic: {
+    bgColor: '#0ea5e9',
+    borderColor: '#0369a1',
+  },
+  event: {
+    bgColor: '#eab308',
+    borderColor: '#a16207',
+  },
+  input: {
+    bgColor: '#eab308',
+    borderColor: '#a16207',
+  },
+  math: {
+    bgColor: '#f59e0b',
+    borderColor: '#b45309',
+  },
+  entity: {
+    bgColor: '#22c55e',
+    borderColor: '#15803d',
+  },
+}
+
 class ScriptNodeTemplateBank {
   constructor() {
     // map name to template
@@ -36,8 +63,11 @@ class ScriptNodeTemplateBank {
       )
     )
   }
-  createEvent(type, name) {
-    this.bank.set(name, new EventScriptNodeTemplate(type, name))
+  createEvent(type, name, outputs) {
+    this.bank.set(
+      name,
+      new EventScriptNodeTemplate(type, name, this.mapPorts(outputs))
+    )
   }
   createInternal(type, name, inputs, internals, defaultValues, outputs, fn) {
     this.bank.set(
@@ -72,7 +102,11 @@ class ScriptNodeTemplateBank {
     this.createMath()
   }
   createEvents() {
-    this.createEvent('event', 'OnTick')
+    this.createEvent('event', 'OnTick', [])
+    this.createEvent('event', 'OnCollide', [
+      ['normal', 'object'],
+      ['entity', 'object'],
+    ])
   }
   createInput() {
     this.createInternal(
@@ -111,6 +145,18 @@ class ScriptNodeTemplateBank {
       ([a, b]) => [{ value: a - b }]
     )
     // vector
+    /**
+     * @HATODO debug only
+     */
+    this.create(
+      'math',
+      'PrintVec2',
+      [['v', 'object']],
+      [['none', 'any']],
+      ([v]) => {
+        console.log(v)
+      }
+    )
     this.create(
       'math',
       'Vec2',
@@ -170,7 +216,21 @@ class ScriptNodeTemplateBank {
       [],
       // don't return anything
       ([entity, v]) => {
-        entity.setVelocity(v)
+        if (entity.setVelocity) {
+          entity.setVelocity(v)
+        }
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScale',
+      [
+        ['entity', 'object'],
+        ['scale', 'number'],
+      ],
+      [],
+      ([entity, s]) => {
+        entity.renderable.setScale(s)
       }
     )
   }

@@ -1,4 +1,4 @@
-import { PORT_COLOR } from './ScriptGraphVisualizer.js'
+import { PORT_COLOR } from './ScriptVisualizer.js'
 import { UIElement } from './UIElement.js'
 import { global } from '%engine/Global.js'
 
@@ -47,12 +47,10 @@ const FONT_FAMILY =
   PORT_NAME_PADDING_X = PORT_RADIUS * 2,
   PORT_DOT_OFFSET = 10,
   WIDTH_PADDING = 48,
-  HEIGHT_PADDING = 16,
-  SHADOW_BLUR_FACTOR = 6,
-  SHADOW_OFFSET_Y_FACTOR = 4
-export class ScriptGraphNodeProxy extends UIElement {
+  HEIGHT_PADDING = 16
+export class ScriptNodeProxy extends UIElement {
   constructor(window, node) {
-    super(LINE_WIDTH, COLORS[node.type])
+    super(LINE_WIDTH, COLORS[node.category])
     this.node = node
     this.x = 0
     this.y = 0
@@ -61,6 +59,7 @@ export class ScriptGraphNodeProxy extends UIElement {
     this.h = 0
     this.portHeight = 0
     this.maxPortCount = 0
+    this.hoveredPort = -1
     this.init(window)
   }
   computeNodeWidth(window) {
@@ -127,8 +126,9 @@ export class ScriptGraphNodeProxy extends UIElement {
 
     // compute node height
     this.maxPortCount = Math.max(
-      this.node.outputTypes.length,
-      this.node.inputTypes.length
+      this.node.data.outputPorts.length,
+      this.node.inputTypes.length,
+      this.node.internalValues.length
     )
     if (this.maxPortCount)
       this.h =
@@ -202,11 +202,11 @@ export class ScriptGraphNodeProxy extends UIElement {
         PORT_FONT_SIZE,
         PORT_COLOR[port.typename].name
       )
-      const width = window.textMetrics(
-        port.name,
-        FONT_FAMILY,
-        PORT_FONT_SIZE
-      ).width
+      // const width = window.textMetrics(
+      //   port.name,
+      //   FONT_FAMILY,
+      //   PORT_FONT_SIZE
+      // ).width
       // window.strokeRect(
       //   tx,
       //   portY,
@@ -250,14 +250,36 @@ export class ScriptGraphNodeProxy extends UIElement {
     })
     this.node.data.internalPorts.forEach((port, i) => {
       const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
+      const x = tx + PORT_NAME_PADDING_X
       window.drawVerticalCenteredText(
         `${port.name}: ${this.node.internalValues[i]}`,
-        tx + PORT_NAME_PADDING_X,
+        x,
         portY,
         FONT_FAMILY,
         PORT_FONT_SIZE,
         PORT_COLOR[port.typename].name
       )
+      if (i === this.hoveredPort) {
+        // just underline value, not name
+        const valueX =
+          x +
+          window.textMetrics(`${port.name}: `, FONT_FAMILY, PORT_FONT_SIZE)
+            .width
+        const valueWidth = window.textMetrics(
+          `${this.node.internalValues[i]}`,
+          FONT_FAMILY,
+          PORT_FONT_SIZE
+        ).width
+        const lineY = portY + this.portHeight / 4
+        window.drawLine(
+          valueX,
+          lineY,
+          valueX + valueWidth,
+          lineY,
+          PORT_COLOR[port.typename].name,
+          1
+        )
+      }
     })
   }
   getPortBaseY() {

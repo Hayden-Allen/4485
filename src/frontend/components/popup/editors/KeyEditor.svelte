@@ -1,6 +1,7 @@
 <svelte:options accessors />
 
 <script>
+  import { onMount } from 'svelte'
   import EditorLayout from 'components/popup/layouts/EditorLayout.svelte'
 
   export let x = null,
@@ -12,6 +13,8 @@
 
   export let currentValue = null
 
+  let inputEl = null
+
   export function validate() {
     return currentValue.length > 0
   }
@@ -22,6 +25,10 @@
     currentValue = event.key
     onDestroyPopup()
   }
+
+  onMount(() => {
+    inputEl.focus()
+  })
 </script>
 
 <EditorLayout
@@ -34,6 +41,7 @@
   height="auto"
 >
   <input
+    bind:this={inputEl}
     on:keydown={handleKeyDown}
     value=""
     placeholder={currentValue}

@@ -1,8 +1,8 @@
 import { Layer } from '%window/Layer.js'
 
-export class ScriptGraphInputLayer extends Layer {
+export class ScriptInputLayer extends Layer {
   constructor() {
-    super('ScriptGraphInputLayer')
+    super('ScriptInputLayer')
     this.mouseX = 0
     this.mouseY = 0
     this.lastMouseX = 0

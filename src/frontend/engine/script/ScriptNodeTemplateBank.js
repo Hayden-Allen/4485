@@ -230,7 +230,7 @@ class ScriptNodeTemplateBank {
       ],
       [],
       ([entity, s]) => {
-        entity.renderable.setScale(s)
+        entity.setScale(s)
       }
     )
   }

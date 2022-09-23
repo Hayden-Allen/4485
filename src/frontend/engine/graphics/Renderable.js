@@ -22,7 +22,11 @@ export class Renderable {
   }
   setTransform(pos) {
     mat4.fromTranslation(this.transform, [pos.x, pos.y, 0])
-    mat4.scale(this.transform, this.transform, [this.scale, this.scale, 1])
+    this.setScale(this.scale)
+  }
+  setScale(scale) {
+    this.scale = scale
+    this.transform[0] = this.transform[5] = this.scale
   }
   init(gl, program, vertices, indices) {
     this.vertexArray = gl.createVertexArray()

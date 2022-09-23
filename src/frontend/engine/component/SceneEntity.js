@@ -25,9 +25,9 @@ class SceneEntityOptions {
 export class SceneEntity extends Component {
   constructor(gameWindow, pos, url, options = {}) {
     super('SceneEntity')
-    const ops = new SceneEntityOptions(options)
-    const vertexData = ops.vertices,
-      indexData = ops.indices
+    this.ops = new SceneEntityOptions(options)
+    const vertexData = this.ops.vertices,
+      indexData = this.ops.indices
     this.renderable = new Renderable(
       gameWindow.gl,
       pos,
@@ -35,7 +35,7 @@ export class SceneEntity extends Component {
       vertexData,
       indexData,
       url,
-      { scale: ops.scale }
+      { scale: this.ops.scale }
     )
 
     this.minX = Infinity
@@ -51,14 +51,16 @@ export class SceneEntity extends Component {
 
     this.pos = pos
     this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
-      ops.scale
+      this.ops.scale
     )
-    // physics
+    this.createPhysicsProxy()
+  }
+  createPhysicsProxy() {
     this.physicsProxy = global.physicsEngine.createRect(
       this.pos.plus(this.dim.scale(0.5)),
       this.dim,
       {
-        isStatic: ops.isStatic,
+        isStatic: this.ops.isStatic,
         friction: 0,
       }
     )
@@ -71,6 +73,18 @@ export class SceneEntity extends Component {
     //   { x: -this.dim.x / 2, y: this.dim.y / 2 },
     //   true
     // )
+  }
+  setScale(scale) {
+    if (scale === this.ops.scale) return
+
+    this.ops.scale = scale
+    this.renderable.setScale(scale)
+    this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
+      this.ops.scale
+    )
+    global.physicsEngine.deleteRect(this.physicsProxy)
+    this.createPhysicsProxy()
+    console.log(this.physicsProxy)
   }
 }
 

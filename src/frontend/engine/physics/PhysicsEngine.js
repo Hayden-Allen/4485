@@ -29,4 +29,7 @@ export class PhysicsEngine {
     Composite.add(this.engine.world, rect)
     return rect
   }
+  deleteRect(rect) {
+    Composite.remove(this.engine.world, rect)
+  }
 }

@@ -396,7 +396,6 @@ export class ScriptLayer extends Layer {
         x: canvasBounds.left + mouseX,
         y: canvasBounds.top + mouseY,
         borderAlphaVarying: self.graphvis.outlineAlpha,
-        nodeTypeNames: scriptNodeTemplateBank.getNodeTypeNames(),
         checkCanReposition: (x, y) => {
           return (
             x > canvasBounds.left &&

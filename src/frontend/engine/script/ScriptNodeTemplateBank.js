@@ -7,6 +7,33 @@ import {
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
 
+export const NODE_CATEGORY_COLORS = {
+  all: {
+    bgColor: '#d4d4d4',
+    borderColor: '#737373',
+  },
+  logic: {
+    bgColor: '#0ea5e9',
+    borderColor: '#0369a1',
+  },
+  event: {
+    bgColor: '#eab308',
+    borderColor: '#a16207',
+  },
+  input: {
+    bgColor: '#eab308',
+    borderColor: '#a16207',
+  },
+  math: {
+    bgColor: '#f59e0b',
+    borderColor: '#b45309',
+  },
+  entity: {
+    bgColor: '#22c55e',
+    borderColor: '#15803d',
+  },
+}
+
 class ScriptNodeTemplateBank {
   constructor() {
     // map name to template

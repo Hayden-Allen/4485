@@ -6,7 +6,6 @@ import AddNodeMenu from 'components/popup/contextMenus/AddNodeMenu.svelte'
 import KeyPortEditor from 'components/popup/editors/KeyEditor.svelte'
 import IntPortEditor from 'components/popup/editors/IntEditor.svelte'
 import { PORT_COLOR } from './ScriptVisualizer.js'
-import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
 import { ScriptEdgeProxy } from './ScriptEdgeProxy'
 
 export class ScriptLayer extends Layer {
@@ -21,6 +20,7 @@ export class ScriptLayer extends Layer {
     this.selectedX = 0
     this.selectedY = 0
     this.hovered = undefined
+    this.nodeMenuSearchQuery = ''
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -31,57 +31,7 @@ export class ScriptLayer extends Layer {
     const hit = this.checkIntersection()
     if (hit) this.input.cursor = 'default'
   }
-  // onMouseDown(e) {
-  //   const node = this.checkIntersection()
-  //   const { edge } = this.checkEdgeIntersection()
-  //   // left clicking
-  //   if (e.button === 0) {
-  //     // deselect previous
-  //     if (this.selected) this.selected.selected = false
-  //     // select new
-  //     this.selected = node || edge
-  //     if (this.selected) {
-  //       this.selected.selected = true
-  //       this.selectedX = this.selected.x
-  //       this.selectedY = this.selected.y
-  //     } else {
-  //       this.selectedPort = undefined
-  //     }
-  //   }
-  //   // right clicking (not on a node)
-  //   else if (e.button === 2 && !node) {
-  //     e.domEvent.preventDefault()
-  //     e.domEvent.stopPropagation()
-  //     this.createAddNodeMenuPopup()
-  //   }
-
-  //   if (node) {
-  //     this.input.cursor = 'default'
-  //     if (e.button === 0) {
-  //       this.input.canDrag = false
-  //       this.capturedLeftClick = true
-  //       // convert mouse pos to world space and check for intersection with any port in the hit node
-  //       const port = node.checkPortIntersection(
-  //         this.window,
-  //         ...this.inverseTransformCoords(this.input.mouseX, this.input.mouseY)
-  //       )
-  //       if (port) {
-  //         if (port.internal) {
-  //           e.domEvent.preventDefault()
-  //           e.domEvent.stopPropagation()
-  //           node.hoveredPort = -1
-  //           this.createEditorPopup(node, port)
-  //           this.selected = undefined
-  //           this.selectedPort = undefined
-  //         } else {
-  //           this.selectedPort = port
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return node
-  // }
-  asdf(e) {
+  handleMouseDown(e) {
     const node = this.checkIntersection()
     const { edge } = this.checkEdgeIntersection()
 
@@ -135,10 +85,10 @@ export class ScriptLayer extends Layer {
   onFocus(e) {
     this.input.mouseX = e.x
     this.input.mouseY = e.y
-    return this.asdf(e)
+    return this.handleMouseDown(e)
   }
   onMouseDown(e) {
-    return this.asdf(e)
+    return this.handleMouseDown(e)
   }
   onMouseUp(e) {
     this.input.canDrag = true
@@ -179,6 +129,7 @@ export class ScriptLayer extends Layer {
       }
 
       this.capturedLeftClick = false
+      this.selectedPort = undefined
     }
     // return hit
   }
@@ -395,6 +346,7 @@ export class ScriptLayer extends Layer {
       return {
         x: canvasBounds.left + mouseX,
         y: canvasBounds.top + mouseY,
+        searchQuery: this.nodeMenuSearchQuery,
         borderAlphaVarying: self.graphvis.outlineAlpha,
         checkCanReposition: (x, y) => {
           return (
@@ -414,6 +366,10 @@ export class ScriptLayer extends Layer {
           )
           proxy.x = x
           proxy.y = y
+        },
+        beforeDestroyPopup: (popup) => {
+          console.log(popup)
+          this.nodeMenuSearchQuery = popup.searchQuery
         },
       }
     })

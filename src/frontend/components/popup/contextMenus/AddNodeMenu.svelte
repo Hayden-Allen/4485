@@ -1,3 +1,5 @@
+<svelte:options accessors />
+
 <script>
   import { onMount } from 'svelte'
   import {
@@ -15,8 +17,9 @@
   export let onAddNode = null
   export let borderAlphaVarying = null
 
+  export let searchQuery = ''
+
   let inputEl = null
-  let searchQuery = ''
   let selectedCategory = 'all'
   let categories = []
 
@@ -75,6 +78,11 @@
 
   onMount(() => {
     inputEl.focus()
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift') searchQuery = ''
+      if (e.key === 'Escape') onDestroyPopup()
+    })
   })
 </script>
 

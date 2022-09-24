@@ -50,12 +50,12 @@ export class SceneEntity extends Component {
     }
 
     this.pos = pos
-    this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
-      this.ops.scale
-    )
     this.createPhysicsProxy()
   }
   createPhysicsProxy() {
+    this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
+      this.ops.scale
+    )
     this.physicsProxy = global.physicsEngine.createRect(
       this.pos.plus(this.dim.scale(0.5)),
       this.dim,
@@ -79,12 +79,8 @@ export class SceneEntity extends Component {
 
     this.ops.scale = scale
     this.renderable.setScale(scale)
-    this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
-      this.ops.scale
-    )
     global.physicsEngine.deleteRect(this.physicsProxy)
     this.createPhysicsProxy()
-    console.log(this.physicsProxy)
   }
 }
 

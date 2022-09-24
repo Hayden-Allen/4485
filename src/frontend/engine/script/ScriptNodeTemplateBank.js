@@ -6,6 +6,7 @@ import {
 } from './ScriptNodeTemplate.js'
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
+import { global } from '%engine/Global.js'
 
 export const NODE_CATEGORY_COLORS = {
   all: {
@@ -100,6 +101,7 @@ class ScriptNodeTemplateBank {
     this.createInput()
     this.createLogic()
     this.createMath()
+    this.createExport()
   }
   createEvents() {
     this.createEvent('event', 'OnTick', [])
@@ -148,15 +150,9 @@ class ScriptNodeTemplateBank {
     /**
      * @HATODO debug only
      */
-    this.create(
-      'math',
-      'PrintVec2',
-      [['v', 'object']],
-      [['none', 'any']],
-      ([v]) => {
-        console.log(v)
-      }
-    )
+    this.create('math', 'PrintVec2', [['v', 'object']], [], ([v]) => {
+      console.log(v)
+    })
     this.create(
       'math',
       'Vec2',
@@ -214,7 +210,6 @@ class ScriptNodeTemplateBank {
         ['v', 'object'],
       ],
       [],
-      // don't return anything
       ([entity, v]) => {
         if (entity.setVelocity) {
           entity.setVelocity(v)
@@ -231,6 +226,30 @@ class ScriptNodeTemplateBank {
       [],
       ([entity, s]) => {
         entity.setScale(s)
+      }
+    )
+  }
+  createExport() {
+    this.createInternal(
+      'math',
+      'ExportInt',
+      [],
+      [
+        ['min', 'int'],
+        ['max', 'int'],
+        ['default', 'int'],
+      ],
+      [0, 10, 5],
+      [['cur', 'int']],
+      (_, { entity, internal }) => {
+        if (entity.__export_current === undefined)
+          entity.__export_current = internal[2]
+        let cur = global.clamp(
+          entity.__export_current,
+          internal[0],
+          internal[1]
+        )
+        return [{ value: cur }]
       }
     )
   }

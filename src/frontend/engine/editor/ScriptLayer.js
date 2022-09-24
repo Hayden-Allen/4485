@@ -41,9 +41,8 @@ export class ScriptLayer extends Layer {
       // deselect previous
       if (this.selected) this.selected.selected = false
       // select new
-      this.selected = node || edge
+      this.setSelected(node || edge)
       if (this.selected) {
-        this.selected.selected = true
         this.selectedX = this.selected.x
         this.selectedY = this.selected.y
       } else {
@@ -78,6 +77,8 @@ export class ScriptLayer extends Layer {
       e.domEvent.preventDefault()
       e.domEvent.stopPropagation()
       this.createAddNodeMenuPopup()
+    } else if (e.button === 1 && (node || edge)) {
+      this.deleteProxy(node || edge)
     }
 
     return node || edge
@@ -135,7 +136,12 @@ export class ScriptLayer extends Layer {
   }
   onMouseMove() {
     // move selected node
-    if (!this.selectedPort && this.selected && this.input.leftMousePressed) {
+    if (
+      this.capturedLeftClick &&
+      !this.selectedPort &&
+      this.selected &&
+      this.input.leftMousePressed
+    ) {
       this.controls.setTransform(this.window.ctx)
       // transform mouse screen->world
       const [mx, my] = this.inverseTransformCoords(
@@ -179,30 +185,8 @@ export class ScriptLayer extends Layer {
     if (!e.repeat && e.ctrlPressed && e.key === 's') {
       this.graphvis.arrange()
     }
-    if (this.selected && (e.key === 'Backspace' || e.key === 'Delete')) {
-      if (this.selected instanceof ScriptEdgeProxy) {
-        const inputNode = this.selected.endProxy.node
-        const inputIndex = this.selected.endPort
-        const outputNode = this.selected.startProxy.node
-        const outputIndex = this.selected.startPort
-        this.graphvis.graph.removeEdge(
-          outputNode,
-          outputIndex,
-          inputNode,
-          inputIndex
-        )
-        this.graphvis.graph.removeEdge(
-          inputNode,
-          inputIndex,
-          outputNode,
-          outputIndex
-        )
-        this.graphvis.recompile()
-      } else {
-        this.graphvis.graph.removeNode(this.selected.node)
-        this.graphvis.recompile()
-      }
-    }
+    if (this.selected && (e.key === 'Backspace' || e.key === 'Delete'))
+      this.deleteProxy(this.selected)
   }
   onRender(e) {
     e.window.ctx.resetTransform()
@@ -312,6 +296,7 @@ export class ScriptLayer extends Layer {
     return [tw, th]
   }
   createPopup(PopupType, createPopupProps) {
+    this.capturedLeftClick = false
     const self = this
     const canvas = this.window.canvas
     const { beforeDestroyPopup, ...createdProps } = createPopupProps({
@@ -366,9 +351,9 @@ export class ScriptLayer extends Layer {
           )
           proxy.x = x
           proxy.y = y
+          self.setSelected(proxy)
         },
         beforeDestroyPopup: (popup) => {
-          console.log(popup)
           this.nodeMenuSearchQuery = popup.searchQuery
         },
       }
@@ -434,5 +419,33 @@ export class ScriptLayer extends Layer {
   }
   getIntPortEditorProps() {
     return {}
+  }
+  setSelected(proxy) {
+    this.selected = proxy
+    if (this.selected) this.selected.select()
+  }
+  deleteProxy(proxy) {
+    if (proxy instanceof ScriptEdgeProxy) {
+      const inputNode = proxy.endProxy.node
+      const inputIndex = proxy.endPort
+      const outputNode = proxy.startProxy.node
+      const outputIndex = proxy.startPort
+      this.graphvis.graph.removeEdge(
+        outputNode,
+        outputIndex,
+        inputNode,
+        inputIndex
+      )
+      this.graphvis.graph.removeEdge(
+        inputNode,
+        inputIndex,
+        outputNode,
+        outputIndex
+      )
+      this.graphvis.recompile()
+    } else {
+      this.graphvis.graph.removeNode(proxy.node)
+      this.graphvis.recompile()
+    }
   }
 }

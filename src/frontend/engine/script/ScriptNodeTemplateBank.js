@@ -52,7 +52,7 @@ class ScriptNodeTemplateBank {
       ([name, type, editorType]) => new ScriptNodePort(name, type, editorType)
     )
   }
-  create(type, name, inputs, outputs, fn) {
+  create(type, name, inputs, outputs, fn, isExport = false) {
     this.bank.set(
       name,
       new ScriptNodeTemplate(
@@ -60,7 +60,8 @@ class ScriptNodeTemplateBank {
         name,
         this.mapPorts(inputs),
         this.mapPorts(outputs),
-        fn
+        fn,
+        isExport
       )
     )
   }
@@ -70,7 +71,16 @@ class ScriptNodeTemplateBank {
       new EventScriptNodeTemplate(type, name, this.mapPorts(outputs))
     )
   }
-  createInternal(type, name, inputs, internals, defaultValues, outputs, fn) {
+  createInternal(
+    type,
+    name,
+    inputs,
+    internals,
+    defaultValues,
+    outputs,
+    fn,
+    isExport = false
+  ) {
     this.bank.set(
       name,
       new InternalScriptNodeTemplate(
@@ -80,7 +90,8 @@ class ScriptNodeTemplateBank {
         this.mapPorts(internals),
         defaultValues,
         this.mapPorts(outputs),
-        fn
+        fn,
+        isExport
       )
     )
   }
@@ -235,22 +246,13 @@ class ScriptNodeTemplateBank {
       'ExportInt',
       [],
       [
-        ['min', 'int'],
-        ['max', 'int'],
-        ['default', 'int'],
+        ['name', 'string'],
+        ['value', 'int'],
       ],
-      [0, 10, 5],
-      [['cur', 'int']],
-      (_, { entity, internal }) => {
-        if (entity.__export_current === undefined)
-          entity.__export_current = internal[2]
-        let cur = global.clamp(
-          entity.__export_current,
-          internal[0],
-          internal[1]
-        )
-        return [{ value: cur }]
-      }
+      ['export', 0],
+      [['value', 'int']],
+      (_, { internal }) => [{ value: internal[1] }],
+      true
     )
   }
 }

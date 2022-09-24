@@ -19,6 +19,8 @@ export class ScriptGraph extends Component {
     this.eventNodes = new Map()
     // nodes that have no input edges
     this.sourceNodes = []
+    // nodes whose internalValues are editable via the entity properties page
+    this.exportNodes = []
     // all edges (map ScriptNode.id to ScriptNodeEdgeList)
     this.edges = new Map()
     this.cachedCompile = undefined
@@ -178,12 +180,14 @@ export class ScriptGraph extends Component {
     return false
   }
   compile() {
+    if (this.cachedCompile) return this.cachedCompile
     // reset error status
     this.clearErrorsCallback()
     this.canErr = true
     // reset node groups
     this.eventNodes = new Map()
     this.sourceNodes = []
+    this.exportNodes = []
 
     // nodes from which order-building will start (any node with no inputs)
     let buildNodes = []
@@ -195,6 +199,8 @@ export class ScriptGraph extends Component {
         this.sourceNodes.push(node)
         buildNodes.push(node)
       }
+
+      if (node.isExport) this.exportNodes.push(node)
     })
 
     // determine execution order using topological sort
@@ -202,6 +208,7 @@ export class ScriptGraph extends Component {
     let order = []
     buildNodes.forEach((node) => this.traverse(node, visited, order))
 
+    this.cachedCompile = order
     return order
   }
   // dfs
@@ -228,7 +235,8 @@ export class ScriptGraph extends Component {
     order.unshift(node)
   }
   run(entity, eventName, ...eventData) {
-    if (!this.cachedCompile) this.cachedCompile = this.compile()
+    // only runs if necessary
+    this.compile()
 
     let startNode = this.eventNodes.get(eventName)
     // this graph doesn't respond to the given event

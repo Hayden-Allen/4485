@@ -9,17 +9,18 @@
   import ContextMenuLayout from 'components/popup/layouts/ContextMenuLayout.svelte'
   import MagnifyingGlass from 'icons/20/mini/magnifying-glass.svelte'
 
-  export let x = null,
-    y = null
-  export let checkCanReposition = null
-  export let onDestroyPopup = null
+  export let x = undefined,
+    y = undefined
+  export let checkCanReposition = undefined
+  export let onDestroyPopup = undefined
 
-  export let onAddNode = null
-  export let borderAlphaVarying = null
+  export let onAddNode = undefined
+  export let borderAlphaVarying = undefined
 
   export let searchQuery = ''
 
-  let inputEl = null
+  let inputEl = undefined,
+    containerEl = undefined
   let selectedCategory = 'all'
   let categories = []
 
@@ -79,9 +80,11 @@
   onMount(() => {
     inputEl.focus()
 
-    inputEl.addEventListener('keydown', (e) => {
+    containerEl.addEventListener('keydown', (e) => {
+      console.log(e)
       if (e.key === 'Shift') searchQuery = ''
-      if (e.key === 'Escape') onDestroyPopup()
+      else if (e.key === 'Escape') onDestroyPopup()
+      else inputEl.focus()
     })
   })
 </script>
@@ -95,7 +98,10 @@
   width="400px"
   height="320px"
 >
-  <div class="flex flex-col w-full h-full overflow-hidden">
+  <div
+    bind:this={containerEl}
+    class="flex flex-col w-full h-full overflow-hidden"
+  >
     <div
       class="grow-0 shrink-0 flex flex-row border-b border-solid border-neutral-700 h-10"
     >

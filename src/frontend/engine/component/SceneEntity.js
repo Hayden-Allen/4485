@@ -108,11 +108,6 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     super(gameWindow, pos, url, options)
     this.script = script
   }
-  // runControllers(deltaTimeSeconds) {
-  //   this.controllers.forEach((controller) =>
-  //     controller.run(this, deltaTimeSeconds)
-  //   )
-  // }
   runScript(event, ...data) {
     this.script.run(this, event, ...data)
   }

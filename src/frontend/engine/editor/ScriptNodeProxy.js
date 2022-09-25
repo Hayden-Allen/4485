@@ -3,10 +3,6 @@ import { UIElement } from './UIElement.js'
 import { global } from '%engine/Global.js'
 
 const LINE_WIDTH = [2, 4]
-// const COLORS = [
-//   { shadow: '#0007', node: '#262626', outline: '#737373' },
-//   { shadow: '#0007', node: '#262626', outline: '#e2e8f0' },
-// ]
 const COLORS = {
   entity: {
     shadow: '#0007',
@@ -140,16 +136,6 @@ export class ScriptNodeProxy extends UIElement {
       ty = this.y
     const selected = ~~(this.selected || this.hovered)
     // node
-    // window.drawRoundRectShadow(
-    //   tx,
-    //   ty,
-    //   this.w,
-    //   this.h,
-    //   PORT_RADIUS,
-    //   this.colors.shadow,
-    //   SHADOW_BLUR_FACTOR * zoom,
-    //   SHADOW_OFFSET_Y_FACTOR * zoom
-    // )
     window.drawRect(tx, ty, this.w, this.h, this.colors.node)
     window.drawRect(tx, ty, this.w, this.nameHeight, this.colors.title)
     // make sure lines are still visible when zoomed out
@@ -251,6 +237,27 @@ export class ScriptNodeProxy extends UIElement {
     this.node.data.internalPorts.forEach((port, i) => {
       const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
       const x = tx + PORT_NAME_PADDING_X
+      const width = window.textMetrics(
+        `${port.name}: ${this.node.internalValues[i]}`,
+        FONT_FAMILY,
+        PORT_FONT_SIZE
+      ).width
+      window.drawRect(
+        x - PORT_DOT_OFFSET / 2,
+        portY - this.portHeight / 2,
+        width + PORT_DOT_OFFSET,
+        this.portHeight,
+        '#171717'
+      )
+      window.strokeTransparentRect(
+        x - PORT_DOT_OFFSET / 2,
+        portY - this.portHeight / 2,
+        width + PORT_DOT_OFFSET,
+        this.portHeight,
+        this.colors.outline[selected],
+        lineWidth / 2,
+        selected ? visualizer.outlineAlpha.getValue() : 1
+      )
       window.drawVerticalCenteredText(
         `${port.name}: ${this.node.internalValues[i]}`,
         x,

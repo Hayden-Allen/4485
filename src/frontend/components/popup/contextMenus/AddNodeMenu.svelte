@@ -19,8 +19,7 @@
 
   export let searchQuery = ''
 
-  let inputEl = undefined,
-    containerEl = undefined
+  let inputEl = undefined
   let selectedCategory = 'all'
   let categories = []
 
@@ -79,17 +78,18 @@
 
   onMount(() => {
     inputEl.focus()
-
-    containerEl.addEventListener('keydown', (e) => {
-      console.log(e)
-      if (e.key === 'Shift') searchQuery = ''
-      else if (e.key === 'Escape') onDestroyPopup()
-      else inputEl.focus()
-    })
   })
+
+  function handleKeydown(e) {
+    console.log(e)
+    if (e.key === 'Control') searchQuery = ''
+    else if (e.key === 'Escape') onDestroyPopup()
+    else inputEl.focus()
+  }
 </script>
 
 <ContextMenuLayout
+  {handleKeydown}
   {x}
   {y}
   {checkCanReposition}
@@ -98,10 +98,7 @@
   width="400px"
   height="320px"
 >
-  <div
-    bind:this={containerEl}
-    class="flex flex-col w-full h-full overflow-hidden"
-  >
+  <div class="flex flex-col w-full h-full overflow-hidden">
     <div
       class="grow-0 shrink-0 flex flex-row border-b border-solid border-neutral-700 h-10"
     >

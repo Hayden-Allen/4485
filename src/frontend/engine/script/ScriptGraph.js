@@ -12,7 +12,12 @@ export class ScriptGraph extends Component {
     this.inputCache = inputCache
     this.pushErrorCallback = pushErrorCallback
     this.clearErrorsCallback = clearErrorsCallback
-
+    this.reset()
+  }
+  isEmpty() {
+    return !this.nodes.size
+  }
+  reset() {
     // all nodes (map ScriptNode.id to ScriptNode)
     this.nodes = new Map()
     // only event nodes (map ScriptNode.id to ScriptNode)
@@ -43,9 +48,11 @@ export class ScriptGraph extends Component {
       nodes,
       edges,
     }
-    return JSON.stringify(obj)
+    return obj
   }
   deserialize(obj) {
+    this.reset()
+
     this.debugName = obj.name
     let nodeIndex = new Map()
     for (const node of obj.nodes) {

@@ -9,6 +9,7 @@
   export let onDestroyPopup = null
 
   export let borderAlphaVarying = null
+  export let handleKeydown = null
 
   let borderAlpha = null
   let animationFrame = null
@@ -32,6 +33,7 @@
 
 <div
   class="fixed left-0 top-0 w-full h-full overflow-hidden"
+  on:keydown={handleKeydown}
   on:pointerdown={(e) => {
     e.preventDefault()
     e.stopPropagation()

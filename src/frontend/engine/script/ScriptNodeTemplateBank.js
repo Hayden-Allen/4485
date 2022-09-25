@@ -248,11 +248,29 @@ class ScriptNodeTemplateBank {
       [
         ['name', 'string'],
         ['value', 'int'],
+        ['min', 'int'],
+        ['max', 'int'],
       ],
-      ['export', 0],
+      ['export', 0, 0, 10],
       [['value', 'int']],
       (_, { internal }) => [{ value: internal[1] }],
       true
+    )
+    this.createInternal(
+      'math',
+      'TESTSETSETSET',
+      [],
+      [
+        ['int', 'int'],
+        ['float', 'float'],
+        ['key', 'string', 'key'],
+        ['string', 'string'],
+        ['bool', 'bool'],
+      ],
+      [0, 0, 'A', 'test', true],
+      [],
+      () => {},
+      false
     )
   }
 }

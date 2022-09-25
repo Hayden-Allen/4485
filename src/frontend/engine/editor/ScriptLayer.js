@@ -5,6 +5,9 @@ import { Vec2 } from '%util/Vec2.js'
 import AddNodeMenu from 'components/popup/contextMenus/AddNodeMenu.svelte'
 import KeyPortEditor from 'components/popup/editors/KeyEditor.svelte'
 import IntPortEditor from 'components/popup/editors/IntEditor.svelte'
+import BoolPortEditor from 'components/popup/editors/BoolEditor.svelte'
+import FloatPortEditor from 'components/popup/editors/FloatEditor.svelte'
+import StringPortEditor from 'components/popup/editors/StringEditor.svelte'
 import { PORT_COLOR } from './ScriptVisualizer.js'
 import { ScriptEdgeProxy } from './ScriptEdgeProxy'
 
@@ -181,9 +184,57 @@ export class ScriptLayer extends Layer {
 
     return this.capturedLeftClick && hit
   }
-  onKeyDown(e) {
-    if (!e.repeat && e.ctrlPressed && e.key === 's') {
+  async onKeyDown(e) {
+    if (
+      !e.repeat &&
+      e.ctrlPressed &&
+      e.shiftPressed &&
+      e.key.toLowerCase() === 'o'
+    ) {
+      e.domEvent.preventDefault()
+      let fileHandle = null
+      try {
+        ;[fileHandle] = await window.showOpenFilePicker({
+          types: [
+            {
+              description: 'JS file',
+              accept: { 'text/javascript': ['.js'] },
+            },
+          ],
+        })
+      } catch (err) {
+        return
+      }
+      const fileData = await fileHandle.getFile()
+      const text = await fileData.text()
+      const parsed = JSON.parse(text.replace('export default ', ''))
+      this.graphvis.graph.deserialize(parsed)
       this.graphvis.arrange()
+    }
+    if (!e.repeat && e.ctrlPressed && e.key.toLowerCase() === 's') {
+      e.domEvent.preventDefault()
+      this.graphvis.arrange()
+      if (e.shiftPressed) {
+        let fileHandle = null
+        try {
+          fileHandle = await window.showSaveFilePicker({
+            types: [
+              {
+                description: 'JS file',
+                accept: { 'text/javascript': ['.js'] },
+              },
+            ],
+          })
+        } catch (err) {
+          return
+        }
+        const writable = await fileHandle.createWritable()
+        const contents =
+          'export default ' +
+          JSON.stringify(this.graphvis.graph.serialize(), null, 2)
+        await writable.write(contents)
+        await writable.close()
+      }
     }
     if (this.selected && (e.key === 'Backspace' || e.key === 'Delete'))
       this.deleteProxy(this.selected)
@@ -364,30 +415,20 @@ export class ScriptLayer extends Layer {
     return this.createPopup(editor, getProps)
   }
   getCreateEditorPopupInfo(proxy, port) {
-    const nodeProps = { proxy, port }
-    if (port.port.editorTypename === 'key') {
-      return [
-        KeyPortEditor,
-        (options) =>
-          this.getPortEditorProps(
-            { ...options, ...nodeProps },
-            this.getKeyPortEditorProps
-          ),
-      ]
-    } else if (port.port.editorTypename === 'int') {
-      return [
-        IntPortEditor,
-        (options) =>
-          this.getPortEditorProps(
-            { ...options, ...nodeProps },
-            this.getIntPortEditorProps
-          ),
-      ]
-    } else {
-      return null
+    const typenameToEditor = {
+      key: KeyPortEditor,
+      int: IntPortEditor,
+      string: StringPortEditor,
+      bool: BoolPortEditor,
+      float: FloatPortEditor,
     }
+    const nodeProps = { proxy, port }
+    return [
+      typenameToEditor[port.port.editorTypename],
+      (options) => this.getPortEditorProps({ ...options, ...nodeProps }),
+    ]
   }
-  getPortEditorProps(options, getAdditionalProps) {
+  getPortEditorProps(options) {
     const { x: wx, y: wy } = options.proxy.getInternalPortCoords(
       options.port.index,
       this.window
@@ -404,21 +445,14 @@ export class ScriptLayer extends Layer {
         PORT_COLOR[options.port.port.typename].editor.placeholder,
       currentValue: options.proxy.node.internalValues[options.port.index],
       beforeDestroyPopup: (popup) => {
-        if (popup.validate()) {
+        if (!popup.validate || popup.validate()) {
           options.proxy.node.internalValues[options.port.index] =
             popup.currentValue
           options.proxy.computeNodeWidth(self.window)
         }
         options.proxy.deselect()
       },
-      ...getAdditionalProps(options),
     }
-  }
-  getKeyPortEditorProps() {
-    return {}
-  }
-  getIntPortEditorProps() {
-    return {}
   }
   setSelected(proxy) {
     this.selected = proxy

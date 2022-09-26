@@ -6,6 +6,7 @@ import {
 } from './ScriptNodeTemplate.js'
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
+import { global } from '%engine/Global.js'
 
 export const NODE_CATEGORY_COLORS = {
   all: {
@@ -51,7 +52,7 @@ class ScriptNodeTemplateBank {
       ([name, type, editorType]) => new ScriptNodePort(name, type, editorType)
     )
   }
-  create(type, name, inputs, outputs, fn) {
+  create(type, name, inputs, outputs, fn, isExport = false) {
     this.bank.set(
       name,
       new ScriptNodeTemplate(
@@ -59,7 +60,8 @@ class ScriptNodeTemplateBank {
         name,
         this.mapPorts(inputs),
         this.mapPorts(outputs),
-        fn
+        fn,
+        isExport
       )
     )
   }
@@ -69,7 +71,16 @@ class ScriptNodeTemplateBank {
       new EventScriptNodeTemplate(type, name, this.mapPorts(outputs))
     )
   }
-  createInternal(type, name, inputs, internals, defaultValues, outputs, fn) {
+  createInternal(
+    type,
+    name,
+    inputs,
+    internals,
+    defaultValues,
+    outputs,
+    fn,
+    isExport = false
+  ) {
     this.bank.set(
       name,
       new InternalScriptNodeTemplate(
@@ -79,7 +90,8 @@ class ScriptNodeTemplateBank {
         this.mapPorts(internals),
         defaultValues,
         this.mapPorts(outputs),
-        fn
+        fn,
+        isExport
       )
     )
   }
@@ -100,6 +112,7 @@ class ScriptNodeTemplateBank {
     this.createInput()
     this.createLogic()
     this.createMath()
+    this.createExport()
   }
   createEvents() {
     this.createEvent('event', 'OnTick', [])
@@ -148,15 +161,9 @@ class ScriptNodeTemplateBank {
     /**
      * @HATODO debug only
      */
-    this.create(
-      'math',
-      'PrintVec2',
-      [['v', 'object']],
-      [['none', 'any']],
-      ([v]) => {
-        console.log(v)
-      }
-    )
+    this.create('math', 'PrintVec2', [['v', 'object']], [], ([v]) => {
+      console.log(v)
+    })
     this.create(
       'math',
       'Vec2',
@@ -214,7 +221,6 @@ class ScriptNodeTemplateBank {
         ['v', 'object'],
       ],
       [],
-      // don't return anything
       ([entity, v]) => {
         if (entity.setVelocity) {
           entity.setVelocity(v)
@@ -232,6 +238,23 @@ class ScriptNodeTemplateBank {
       ([entity, s]) => {
         entity.setScale(s)
       }
+    )
+  }
+  createExport() {
+    this.createInternal(
+      'math',
+      'ExportInt',
+      [],
+      [
+        ['name', 'string'],
+        ['value', 'int'],
+        ['min', 'int'],
+        ['max', 'int'],
+      ],
+      ['export', 0, 0, 10],
+      [['value', 'int']],
+      (_, { internal }) => [{ value: internal[1] }],
+      true
     )
   }
 }

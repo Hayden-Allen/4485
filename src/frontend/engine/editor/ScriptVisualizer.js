@@ -19,6 +19,11 @@ export const PORT_COLOR = {
     name: '#f59e0b',
     dot: '#d97706',
     edge: '#b45309',
+    editor: {
+      background: '#713f12',
+      foreground: '#fefce8',
+      placeholder: '#fef08a',
+    },
   },
   number: {
     name: '#f59e0b',
@@ -35,6 +40,11 @@ export const PORT_COLOR = {
     name: '#0ea5e9',
     dot: '#0284c7',
     edge: '#0369a1',
+    editor: {
+      background: '#1e3a8a',
+      foreground: '#f0f9ff',
+      placeholder: '#bae6fd',
+    },
   },
   string: {
     name: '#f43f5e',
@@ -140,6 +150,8 @@ export class ScriptVisualizer {
     this.drawStack.forEach((proxy) => proxy.draw(this, window, zoom))
   }
   arrange() {
+    if (this.graph.isEmpty()) return
+
     let columns = []
     // x-axis
     {

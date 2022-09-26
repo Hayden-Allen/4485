@@ -26,7 +26,7 @@ export class ScriptNode extends Component {
     inputPorts,
     outputPorts,
     fn,
-    { internalPorts = [], internalValues = [] } = {}
+    { internalPorts = [], internalValues = [], isExport = false } = {}
   ) {
     super(templateName)
     /**
@@ -42,6 +42,7 @@ export class ScriptNode extends Component {
     this.outputs = []
     this.active = false
     this.internalValues = internalValues
+    this.isExport = isExport
   }
   serialize() {
     const obj = {

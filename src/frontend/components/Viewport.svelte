@@ -4,17 +4,21 @@
   export let onResize = undefined
   export let focusable = false
 
+  const BORDER_SIZE = 1
+
   let containerWidth = undefined,
     containerHeight = undefined
 
   $: {
     if (canvas && containerWidth && containerHeight) {
+      const containerWidthMinusBorder = containerWidth - BORDER_SIZE * 2
+      const containerHeightMinusBorder = containerHeight - BORDER_SIZE * 2
       if (targetAspectRatio) {
-        const ratio = containerWidth / containerHeight
+        const ratio = containerWidthMinusBorder / containerHeightMinusBorder
         // container is tall; canvas should fill horizontally
         if (ratio < targetAspectRatio) {
-          const width = Math.floor(containerWidth),
-            height = Math.floor(containerWidth / targetAspectRatio)
+          const width = Math.floor(containerWidthMinusBorder),
+            height = Math.floor(containerWidthMinusBorder / targetAspectRatio)
           canvas.width = width * window.devicePixelRatio
           canvas.height = height * window.devicePixelRatio
           canvas.style.width = `${width}px`
@@ -22,16 +26,18 @@
         }
         // container is wide; canvas should fill vertically
         else {
-          const width = Math.floor(containerHeight * targetAspectRatio),
-            height = Math.floor(containerHeight)
+          const width = Math.floor(
+              containerHeightMinusBorder * targetAspectRatio
+            ),
+            height = Math.floor(containerHeightMinusBorder)
           canvas.width = width * window.devicePixelRatio
           canvas.height = height * window.devicePixelRatio
           canvas.style.width = `${width}px`
           canvas.style.height = `${height}px`
         }
       } else {
-        const width = Math.floor(containerWidth),
-          height = Math.floor(containerHeight)
+        const width = Math.floor(containerWidthMinusBorder),
+          height = Math.floor(containerHeightMinusBorder)
         canvas.width = width * window.devicePixelRatio
         canvas.height = height * window.devicePixelRatio
         canvas.style.width = `${width}px`

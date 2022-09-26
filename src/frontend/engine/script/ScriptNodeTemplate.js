@@ -2,10 +2,11 @@ import { scriptDataType, validateScriptDataTypes } from './ScriptDataType.js'
 import { ScriptNode, ScriptNodeData } from './ScriptNode.js'
 
 export class ScriptNodeTemplate extends ScriptNodeData {
-  constructor(category, name, inputPorts, outputPorts, fn) {
+  constructor(category, name, inputPorts, outputPorts, fn, isExport) {
     super(inputPorts, [], outputPorts, fn)
     this.category = category
     this.name = name
+    this.isExport = isExport
   }
   createNode(graph) {
     return new ScriptNode(
@@ -14,7 +15,8 @@ export class ScriptNodeTemplate extends ScriptNodeData {
       graph,
       this.inputPorts,
       this.outputPorts,
-      this.fn
+      this.fn,
+      { isExport: this.isExport }
     )
   }
 }
@@ -23,10 +25,16 @@ export class ScriptNodeTemplate extends ScriptNodeData {
 // they are starting points for the graph
 export class EventScriptNodeTemplate extends ScriptNodeTemplate {
   constructor(category, name, outputPorts) {
-    super(category, name, [], outputPorts, (_, { node }) =>
-      node.outputs.map((value) => {
-        return { value, activate: true }
-      })
+    super(
+      category,
+      name,
+      [],
+      outputPorts,
+      (_, { node }) =>
+        node.outputs.map((value) => {
+          return { value, activate: true }
+        }),
+      false
     )
   }
 }
@@ -40,9 +48,10 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
     internalPorts,
     defaultValues,
     outputPorts,
-    fn
+    fn,
+    isExport
   ) {
-    super(category, name, inputPorts, outputPorts, fn)
+    super(category, name, inputPorts, outputPorts, fn, isExport)
     this.internalPorts = internalPorts
     this.defaultValues = defaultValues
     this.internalTypes = internalPorts.map(
@@ -63,7 +72,11 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
       this.inputPorts,
       this.outputPorts,
       this.fn,
-      { internalPorts: this.internalPorts, internalValues }
+      {
+        internalPorts: this.internalPorts,
+        internalValues,
+        isExport: this.isExport,
+      }
     )
     return node
   }
@@ -71,8 +84,16 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
 
 export class ConstantScriptNodeTemplate extends InternalScriptNodeTemplate {
   constructor(category, name, ports, defaultValues) {
-    super(category, name, [], ports, defaultValues, ports, (_, { internal }) =>
-      internal.map((value) => ({ value, activate: false }))
+    super(
+      category,
+      name,
+      [],
+      ports,
+      defaultValues,
+      ports,
+      (_, { internal }) =>
+        internal.map((value) => ({ value, activate: false })),
+      false
     )
   }
 }

@@ -3,6 +3,7 @@
   import Viewport from './Viewport.svelte'
   import Splitter from './Splitter.svelte'
   import Logger from './Logger.svelte'
+  import BehaviorsPanel from './BehaviorsPanel.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
   import {
@@ -29,61 +30,10 @@
 
   let gameWindow = undefined,
     scriptWindow = undefined,
+    scriptLayer = undefined,
     playerScript = undefined,
-    playerScriptErrors = []
-
-  function createPlayerScript(inputCache) {
-    let graph = new ScriptGraph(
-      'PlayerController',
-      inputCache,
-      (s) => (playerScriptErrors = [...playerScriptErrors, s]),
-      () => (playerScriptErrors = [])
-    )
-    const onTick = graph.createNode('OnTick')
-    // get input
-    const keyShiftPressed = graph.createNode('KeyPressed', ['shift'])
-    keyShiftPressed.attachAsInput(onTick, -1, -1)
-    const keyWPressed = graph.createNode('KeyPressed', ['w'])
-    keyWPressed.attachAsInput(onTick, -1, -1)
-    const keyAPressed = graph.createNode('KeyPressed', ['a'])
-    keyAPressed.attachAsInput(onTick, -1, -1)
-    const keySPressed = graph.createNode('KeyPressed', ['s'])
-    keySPressed.attachAsInput(onTick, -1, -1)
-    const keyDPressed = graph.createNode('KeyPressed', ['d'])
-    keyDPressed.attachAsInput(onTick, -1, -1)
-
-    // compute normalized velocity vector
-    const dx = graph.createNode('Subtract')
-    dx.attachAsInput(keyDPressed, 2, 0)
-    dx.attachAsInput(keyAPressed, 2, 1)
-    const dy = graph.createNode('Subtract')
-    dy.attachAsInput(keySPressed, 2, 0)
-    dy.attachAsInput(keyWPressed, 2, 1)
-    const vec2 = graph.createNode('Vec2')
-    vec2.attachAsInput(dx, 0, 0)
-    vec2.attachAsInput(dy, 0, 1)
-    const norm = graph.createNode('Normalize')
-    norm.attachAsInput(vec2, 0, 0)
-
-    // boost if shift pressed
-    const ci1 = graph.createNode('ConstInt', [5])
-    const ci2 = graph.createNode('ConstInt', [10])
-    const mux = graph.createNode('Mux2')
-    mux.attachAsInput(keyShiftPressed, 2, 0)
-    mux.attachAsInput(ci1, 0, 1)
-    mux.attachAsInput(ci2, 0, 2)
-    const scale = graph.createNode('ScaleVec2')
-    scale.attachAsInput(norm, 0, 0)
-    scale.attachAsInput(mux, 0, 1)
-
-    // set velocity
-    const entity = graph.createNode('GetControlledEntity')
-    const setVel = graph.createNode('SetEntityVelocity')
-    setVel.attachAsInput(entity, 0, 0)
-    setVel.attachAsInput(scale, 0, 1)
-
-    return graph
-  }
+    playerScriptErrors = [],
+    playerScriptEmpty = true
 
   onMount(() => {
     if (context) {
@@ -140,180 +90,18 @@
       0
     )
 
-    // playerScript = createPlayerScript(gameWindow.inputCache)
-    // console.log(playerScript.serialize())
-    let playerScript = new ScriptGraph(
+    playerScript = new ScriptGraph(
       'blah',
       gameWindow.inputCache,
-      (s) => (playerScriptErrors = [...playerScriptErrors, s]),
-      () => (playerScriptErrors = [])
+      (s) => {
+        playerScriptErrors = [...playerScriptErrors, s]
+        playerScriptEmpty = false
+      },
+      (empty) => {
+        playerScriptErrors = []
+        playerScriptEmpty = empty
+      }
     )
-    playerScript.deserialize({
-      name: 'PlayerController',
-      nodes: [
-        { type: 'OnTick', internalValues: [] },
-        { type: 'KeyPressed', internalValues: ['shift'] },
-        { type: 'KeyPressed', internalValues: ['w'] },
-        { type: 'KeyPressed', internalValues: ['a'] },
-        { type: 'KeyPressed', internalValues: ['s'] },
-        { type: 'KeyPressed', internalValues: ['d'] },
-        { type: 'Subtract', internalValues: [] },
-        { type: 'Subtract', internalValues: [] },
-        { type: 'Vec2', internalValues: [] },
-        { type: 'Normalize', internalValues: [] },
-        { type: 'ConstInt', internalValues: [5] },
-        { type: 'ConstInt', internalValues: [10] },
-        { type: 'Mux2', internalValues: [] },
-        { type: 'ScaleVec2', internalValues: [] },
-        { type: 'GetControlledEntity', internalValues: [] },
-        { type: 'SetEntityVelocity', internalValues: [] },
-      ],
-      edges: [
-        {
-          in: [],
-          out: [
-            {
-              outputIndex: -1,
-              inputIndex: -1,
-              outputNode: 0,
-              inputNode: 1,
-            },
-            {
-              outputIndex: -1,
-              inputIndex: -1,
-              outputNode: 0,
-              inputNode: 2,
-            },
-            {
-              outputIndex: -1,
-              inputIndex: -1,
-              outputNode: 0,
-              inputNode: 3,
-            },
-            {
-              outputIndex: -1,
-              inputIndex: -1,
-              outputNode: 0,
-              inputNode: 4,
-            },
-            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 5 },
-          ],
-        },
-        {
-          in: [
-            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 1 },
-          ],
-          out: [
-            { outputIndex: 2, inputIndex: 0, outputNode: 1, inputNode: 12 },
-          ],
-        },
-        {
-          in: [
-            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 2 },
-          ],
-          out: [{ outputIndex: 2, inputIndex: 1, outputNode: 2, inputNode: 7 }],
-        },
-        {
-          in: [
-            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 3 },
-          ],
-          out: [{ outputIndex: 2, inputIndex: 1, outputNode: 3, inputNode: 6 }],
-        },
-        {
-          in: [
-            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 4 },
-          ],
-          out: [{ outputIndex: 2, inputIndex: 0, outputNode: 4, inputNode: 7 }],
-        },
-        {
-          in: [
-            { outputIndex: -1, inputIndex: -1, outputNode: 0, inputNode: 5 },
-          ],
-          out: [{ outputIndex: 2, inputIndex: 0, outputNode: 5, inputNode: 6 }],
-        },
-        {
-          in: [
-            { outputIndex: 2, inputIndex: 0, outputNode: 5, inputNode: 6 },
-            { outputIndex: 2, inputIndex: 1, outputNode: 3, inputNode: 6 },
-          ],
-          out: [{ outputIndex: 0, inputIndex: 0, outputNode: 6, inputNode: 8 }],
-        },
-        {
-          in: [
-            { outputIndex: 2, inputIndex: 0, outputNode: 4, inputNode: 7 },
-            { outputIndex: 2, inputIndex: 1, outputNode: 2, inputNode: 7 },
-          ],
-          out: [{ outputIndex: 0, inputIndex: 1, outputNode: 7, inputNode: 8 }],
-        },
-        {
-          in: [
-            { outputIndex: 0, inputIndex: 0, outputNode: 6, inputNode: 8 },
-            { outputIndex: 0, inputIndex: 1, outputNode: 7, inputNode: 8 },
-          ],
-          out: [{ outputIndex: 0, inputIndex: 0, outputNode: 8, inputNode: 9 }],
-        },
-        {
-          in: [{ outputIndex: 0, inputIndex: 0, outputNode: 8, inputNode: 9 }],
-          out: [
-            { outputIndex: 0, inputIndex: 0, outputNode: 9, inputNode: 13 },
-          ],
-        },
-        {
-          in: [],
-          out: [
-            { outputIndex: 0, inputIndex: 1, outputNode: 10, inputNode: 12 },
-          ],
-        },
-        {
-          in: [],
-          out: [
-            { outputIndex: 0, inputIndex: 2, outputNode: 11, inputNode: 12 },
-          ],
-        },
-        {
-          in: [
-            { outputIndex: 2, inputIndex: 0, outputNode: 1, inputNode: 12 },
-            {
-              outputIndex: 0,
-              inputIndex: 1,
-              outputNode: 10,
-              inputNode: 12,
-            },
-            { outputIndex: 0, inputIndex: 2, outputNode: 11, inputNode: 12 },
-          ],
-          out: [
-            { outputIndex: 0, inputIndex: 1, outputNode: 12, inputNode: 13 },
-          ],
-        },
-        {
-          in: [
-            { outputIndex: 0, inputIndex: 0, outputNode: 9, inputNode: 13 },
-            { outputIndex: 0, inputIndex: 1, outputNode: 12, inputNode: 13 },
-          ],
-          out: [
-            { outputIndex: 0, inputIndex: 1, outputNode: 13, inputNode: 15 },
-          ],
-        },
-        {
-          in: [],
-          out: [
-            { outputIndex: 0, inputIndex: 0, outputNode: 14, inputNode: 15 },
-          ],
-        },
-        {
-          in: [
-            {
-              outputIndex: 0,
-              inputIndex: 0,
-              outputNode: 14,
-              inputNode: 15,
-            },
-            { outputIndex: 0, inputIndex: 1, outputNode: 13, inputNode: 15 },
-          ],
-          out: [],
-        },
-      ],
-    })
 
     let player = new ControlledSceneEntity(
       gameWindow,
@@ -343,10 +131,13 @@
       scriptInputLayer,
       scriptWindow
     )
-    scriptWindow.pushLayer(scriptControlsLayer)
-    scriptWindow.pushLayer(
-      new ScriptLayer(scriptInputLayer, scriptControlsLayer, playerScript)
+    scriptLayer = new ScriptLayer(
+      scriptInputLayer,
+      scriptControlsLayer,
+      playerScript
     )
+    scriptWindow.pushLayer(scriptControlsLayer)
+    scriptWindow.pushLayer(scriptLayer)
     scriptWindow.pushLayer(scriptInputLayer)
 
     context.windows.push(gameWindow)
@@ -377,16 +168,14 @@
    */
 
   let topSplit = 1 / 2
-  let midSplit = 2 / 3
-  let leftSplit = 1 / 3
-  let rightSplit = 2 / 3
+  let midSplit = 1 / 2
+  let bottomSplit = 1 / 2
 
   let topLeftBasis = null,
     topRightBasis = null
   let midTopBasis = null,
     midBottomBasis = null
   let bottomLeftBasis = null,
-    bottomMidBasis = null,
     bottomRightBasis = null
 
   $: {
@@ -394,9 +183,8 @@
     topRightBasis = (1 - topSplit) * 100
     midTopBasis = midSplit * 100
     midBottomBasis = (1 - midSplit) * 100
-    bottomLeftBasis = leftSplit * 100
-    bottomMidBasis = (rightSplit - leftSplit) * 100
-    bottomRightBasis = (1 - rightSplit) * 100
+    bottomLeftBasis = bottomSplit * 100
+    bottomRightBasis = (1 - bottomSplit) * 100
   }
 </script>
 
@@ -406,8 +194,20 @@
     style={`flex-basis: ${midTopBasis}%;`}
   >
     <div
-      class="relative grow shrink overflow-hidden bg-neutral-900"
+      class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${topLeftBasis}%;`}
+    >
+      <!-- Prefabs -->
+    </div>
+    <Splitter
+      bind:context
+      bind:split={topSplit}
+      minSplit={0.1}
+      maxSplit={0.9}
+    />
+    <div
+      class="relative grow shrink overflow-hidden bg-neutral-900"
+      style={`flex-basis: ${topRightBasis}%;`}
     >
       <div class="absolute t-0 l-0 w-full h-full p-2">
         <Viewport
@@ -426,23 +226,9 @@
           onResize={() => context.propagateResizeEvent()}
         />
       </div>
-    </div>
-    <Splitter
-      bind:context
-      bind:split={topSplit}
-      minSplit={0.1}
-      maxSplit={0.9}
-    />
-    <div
-      class="relative grow shrink overflow-hidden bg-neutral-900"
-      style={`flex-basis: ${topRightBasis}%;`}
-    >
-      <Viewport
-        focusable={true}
-        bind:canvas={scriptCanvas}
-        onResize={() => context.propagateResizeEvent()}
-      />
-      <Logger errors={playerScriptErrors} />
+      <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+        <p id="fps" class="text-neutral-100" />
+      </div>
     </div>
   </div>
   <Splitter
@@ -460,27 +246,29 @@
       class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomLeftBasis}%;`}
     >
-      <p id="fps" class="text-neutral-100" />
+      <BehaviorsPanel
+        onUseBehavior={(info) => {
+          playerScript.deserialize(info.script)
+          scriptLayer.graphvis.arrange()
+        }}
+      />
     </div>
     <Splitter
       bind:context
-      bind:split={leftSplit}
+      bind:split={bottomSplit}
       minSplit={0.1}
-      maxSplit={rightSplit - 0.1}
-    />
-    <div
-      class="grow shrink overflow-auto bg-neutral-900"
-      style={`flex-basis: ${bottomMidBasis}%;`}
-    />
-    <Splitter
-      bind:context
-      bind:split={rightSplit}
-      minSplit={leftSplit + 0.1}
       maxSplit={0.9}
     />
     <div
-      class="grow shrink overflow-auto bg-neutral-900"
+      class="relative grow shrink overflow-hidden bg-neutral-900"
       style={`flex-basis: ${bottomRightBasis}%;`}
-    />
+    >
+      <Viewport
+        focusable={true}
+        bind:canvas={scriptCanvas}
+        onResize={() => context.propagateResizeEvent()}
+      />
+      <Logger errors={playerScriptErrors} graphIsEmpty={playerScriptEmpty} />
+    </div>
   </div>
 </div>

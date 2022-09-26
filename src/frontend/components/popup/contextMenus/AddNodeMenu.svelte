@@ -1,3 +1,5 @@
+<svelte:options accessors />
+
 <script>
   import { onMount } from 'svelte'
   import {
@@ -7,16 +9,17 @@
   import ContextMenuLayout from 'components/popup/layouts/ContextMenuLayout.svelte'
   import MagnifyingGlass from 'icons/20/mini/magnifying-glass.svelte'
 
-  export let x = null,
-    y = null
-  export let checkCanReposition = null
-  export let onDestroyPopup = null
+  export let x = undefined,
+    y = undefined
+  export let checkCanReposition = undefined
+  export let onDestroyPopup = undefined
 
-  export let onAddNode = null
-  export let borderAlphaVarying = null
+  export let onAddNode = undefined
+  export let borderAlphaVarying = undefined
 
-  let inputEl = null
-  let searchQuery = ''
+  export let searchQuery = ''
+
+  let inputEl = undefined
   let selectedCategory = 'all'
   let categories = []
 
@@ -76,6 +79,14 @@
   onMount(() => {
     inputEl.focus()
   })
+
+  function handleKeydown(e) {
+    if (e.key === 'Escape') onDestroyPopup()
+    else {
+      searchQuery = ''
+      inputEl.focus()
+    }
+  }
 </script>
 
 <ContextMenuLayout
@@ -87,13 +98,18 @@
   width="400px"
   height="320px"
 >
-  <div class="flex flex-col w-full h-full overflow-hidden">
+  <div
+    class="flex flex-col w-full h-full overflow-hidden"
+    on:keydown={handleKeydown}
+    tabindex={0}
+  >
     <div
       class="grow-0 shrink-0 flex flex-row border-b border-solid border-neutral-700 h-10"
     >
       <input
         bind:this={inputEl}
         bind:value={searchQuery}
+        on:keydown={(e) => e.stopPropagation()}
         placeholder="Search..."
         class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-0 bg-neutral-800 text-neutral-100"
       />

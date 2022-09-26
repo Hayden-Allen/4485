@@ -17,6 +17,7 @@
     "eslint": "^8.16.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-svelte3": "^4.0.0",
+    "lunr": "^2.3.9",
     "matter-js": "^0.18.0",
     "mocha": "^10.0.0",
     "mongoose": "^6.5.2",

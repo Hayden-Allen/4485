@@ -157,16 +157,14 @@
    */
 
   let topSplit = 1 / 2
-  let midSplit = 2 / 3
-  let leftSplit = 1 / 3
-  let rightSplit = 2 / 3
+  let midSplit = 1 / 2
+  let bottomSplit = 1 / 2
 
   let topLeftBasis = null,
     topRightBasis = null
   let midTopBasis = null,
     midBottomBasis = null
   let bottomLeftBasis = null,
-    bottomMidBasis = null,
     bottomRightBasis = null
 
   $: {
@@ -174,9 +172,8 @@
     topRightBasis = (1 - topSplit) * 100
     midTopBasis = midSplit * 100
     midBottomBasis = (1 - midSplit) * 100
-    bottomLeftBasis = leftSplit * 100
-    bottomMidBasis = (rightSplit - leftSplit) * 100
-    bottomRightBasis = (1 - rightSplit) * 100
+    bottomLeftBasis = bottomSplit * 100
+    bottomRightBasis = (1 - bottomSplit) * 100
   }
 </script>
 
@@ -186,8 +183,18 @@
     style={`flex-basis: ${midTopBasis}%;`}
   >
     <div
-      class="relative grow shrink overflow-hidden bg-neutral-900"
+      class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${topLeftBasis}%;`}
+    />
+    <Splitter
+      bind:context
+      bind:split={topSplit}
+      minSplit={0.1}
+      maxSplit={0.9}
+    />
+    <div
+      class="relative grow shrink overflow-hidden bg-neutral-900"
+      style={`flex-basis: ${topRightBasis}%;`}
     >
       <div class="absolute t-0 l-0 w-full h-full p-2">
         <Viewport
@@ -206,23 +213,6 @@
           onResize={() => context.propagateResizeEvent()}
         />
       </div>
-    </div>
-    <Splitter
-      bind:context
-      bind:split={topSplit}
-      minSplit={0.1}
-      maxSplit={0.9}
-    />
-    <div
-      class="relative grow shrink overflow-hidden bg-neutral-900"
-      style={`flex-basis: ${topRightBasis}%;`}
-    >
-      <Viewport
-        focusable={true}
-        bind:canvas={scriptCanvas}
-        onResize={() => context.propagateResizeEvent()}
-      />
-      <Logger errors={playerScriptErrors} />
     </div>
   </div>
   <Splitter
@@ -244,23 +234,20 @@
     </div>
     <Splitter
       bind:context
-      bind:split={leftSplit}
+      bind:split={bottomSplit}
       minSplit={0.1}
-      maxSplit={rightSplit - 0.1}
-    />
-    <div
-      class="grow shrink overflow-auto bg-neutral-900"
-      style={`flex-basis: ${bottomMidBasis}%;`}
-    />
-    <Splitter
-      bind:context
-      bind:split={rightSplit}
-      minSplit={leftSplit + 0.1}
       maxSplit={0.9}
     />
     <div
-      class="grow shrink overflow-auto bg-neutral-900"
+      class="relative grow shrink overflow-hidden bg-neutral-900"
       style={`flex-basis: ${bottomRightBasis}%;`}
-    />
+    >
+      <Viewport
+        focusable={true}
+        bind:canvas={scriptCanvas}
+        onResize={() => context.propagateResizeEvent()}
+      />
+      <Logger errors={playerScriptErrors} />
+    </div>
   </div>
 </div>

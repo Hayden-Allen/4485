@@ -81,15 +81,15 @@
   })
 
   function handleKeydown(e) {
-    console.log(e)
-    if (e.key === 'Control') searchQuery = ''
-    else if (e.key === 'Escape') onDestroyPopup()
-    else inputEl.focus()
+    if (e.key === 'Escape') onDestroyPopup()
+    else {
+      searchQuery = ''
+      inputEl.focus()
+    }
   }
 </script>
 
 <ContextMenuLayout
-  {handleKeydown}
   {x}
   {y}
   {checkCanReposition}
@@ -98,13 +98,18 @@
   width="400px"
   height="320px"
 >
-  <div class="flex flex-col w-full h-full overflow-hidden">
+  <div
+    class="flex flex-col w-full h-full overflow-hidden"
+    on:keydown={handleKeydown}
+    tabindex={0}
+  >
     <div
       class="grow-0 shrink-0 flex flex-row border-b border-solid border-neutral-700 h-10"
     >
       <input
         bind:this={inputEl}
         bind:value={searchQuery}
+        on:keydown={(e) => e.stopPropagation()}
         placeholder="Search..."
         class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-0 bg-neutral-800 text-neutral-100"
       />

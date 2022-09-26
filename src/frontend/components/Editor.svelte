@@ -3,6 +3,7 @@
   import Viewport from './Viewport.svelte'
   import Splitter from './Splitter.svelte'
   import Logger from './Logger.svelte'
+  import BehaviorsPanel from './BehaviorsPanel.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
   import {
@@ -29,7 +30,10 @@
 
   let gameWindow = undefined,
     scriptWindow = undefined,
-    playerScriptErrors = []
+    scriptLayer = undefined,
+    playerScript = undefined,
+    playerScriptErrors = [],
+    playerScriptEmpty = true
 
   onMount(() => {
     if (context) {
@@ -86,13 +90,17 @@
       0
     )
 
-    // playerScript = createPlayerScript(gameWindow.inputCache)
-    // console.log(playerScript.serialize())
-    let playerScript = new ScriptGraph(
+    playerScript = new ScriptGraph(
       'blah',
       gameWindow.inputCache,
-      (s) => (playerScriptErrors = [...playerScriptErrors, s]),
-      () => (playerScriptErrors = [])
+      (s) => {
+        playerScriptErrors = [...playerScriptErrors, s]
+        playerScriptEmpty = false
+      },
+      (empty) => {
+        playerScriptErrors = []
+        playerScriptEmpty = empty
+      }
     )
 
     let player = new ControlledSceneEntity(
@@ -123,10 +131,13 @@
       scriptInputLayer,
       scriptWindow
     )
-    scriptWindow.pushLayer(scriptControlsLayer)
-    scriptWindow.pushLayer(
-      new ScriptLayer(scriptInputLayer, scriptControlsLayer, playerScript)
+    scriptLayer = new ScriptLayer(
+      scriptInputLayer,
+      scriptControlsLayer,
+      playerScript
     )
+    scriptWindow.pushLayer(scriptControlsLayer)
+    scriptWindow.pushLayer(scriptLayer)
     scriptWindow.pushLayer(scriptInputLayer)
 
     context.windows.push(gameWindow)
@@ -185,7 +196,9 @@
     <div
       class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${topLeftBasis}%;`}
-    />
+    >
+      <!-- Prefabs -->
+    </div>
     <Splitter
       bind:context
       bind:split={topSplit}
@@ -213,6 +226,9 @@
           onResize={() => context.propagateResizeEvent()}
         />
       </div>
+      <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+        <p id="fps" class="text-neutral-100" />
+      </div>
     </div>
   </div>
   <Splitter
@@ -230,7 +246,12 @@
       class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomLeftBasis}%;`}
     >
-      <p id="fps" class="text-neutral-100" />
+      <BehaviorsPanel
+        onUseBehavior={(info) => {
+          playerScript.deserialize(info.script)
+          scriptLayer.graphvis.arrange()
+        }}
+      />
     </div>
     <Splitter
       bind:context
@@ -247,7 +268,7 @@
         bind:canvas={scriptCanvas}
         onResize={() => context.propagateResizeEvent()}
       />
-      <Logger errors={playerScriptErrors} />
+      <Logger errors={playerScriptErrors} graphIsEmpty={playerScriptEmpty} />
     </div>
   </div>
 </div>

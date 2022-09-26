@@ -189,7 +189,7 @@ export class ScriptGraph extends Component {
   compile() {
     if (this.cachedCompile) return this.cachedCompile
     // reset error status
-    this.clearErrorsCallback()
+    this.clearErrorsCallback(this.isEmpty())
     this.canErr = true
     // reset node groups
     this.eventNodes = new Map()

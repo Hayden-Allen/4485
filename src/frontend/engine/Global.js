@@ -1,3 +1,4 @@
+import { Context } from '%engine/Context.js'
 import { VaryingController } from '%system/VaryingController.js'
 import { PhysicsEngine } from '%physics/PhysicsEngine.js'
 
@@ -18,10 +19,11 @@ export var global = {
     delta: 0,
   },
 
-  init: (context) => {
+  init: () => {
+    global.context = new Context()
     global.physicsEngine = new PhysicsEngine(0)
     global.varyingController = new VaryingController()
-    context.addSystem(global.varyingController)
+    global.context.addSystem(global.varyingController)
     window.oncontextmenu = (e) => {
       e.preventDefault()
       e.stopPropagation()

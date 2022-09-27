@@ -23,7 +23,12 @@ export class ScriptLayer extends Layer {
     this.selectedX = 0
     this.selectedY = 0
     this.hovered = undefined
-    this.nodeMenuSearchQuery = ''
+  }
+  setScript(script) {
+    this.playerScript = script
+    if (this.graphvis) {
+      this.graphvis.setGraph(this.playerScript)
+    }
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -76,7 +81,11 @@ export class ScriptLayer extends Layer {
       }
     }
     // right clicking (not on a node)
-    else if (e.button === 2 && !node) {
+    else if (
+      (e.button === 2 ||
+        (e.button === 0 && this.window.inputCache.isKeyPressed('Control'))) &&
+      !node
+    ) {
       e.domEvent.preventDefault()
       e.domEvent.stopPropagation()
       this.createAddNodeMenuPopup()
@@ -122,6 +131,16 @@ export class ScriptLayer extends Layer {
                   port.node,
                   port.index
                 )
+              this.graphvis.recompile()
+              this.selectedPort = undefined
+            }
+            // activation edge
+            else if (!port.port && port.node !== this.selectedPort.node) {
+              this.selectedPort.node.attachAsOutput(
+                this.selectedPort.index,
+                port.node,
+                port.index
+              )
               this.graphvis.recompile()
               this.selectedPort = undefined
             } else {
@@ -228,6 +247,7 @@ export class ScriptLayer extends Layer {
         } catch (err) {
           return
         }
+        this.graphvis.graph.debugName = fileHandle.name.split('.')[0]
         const writable = await fileHandle.createWritable()
         const contents =
           'export default ' +
@@ -376,13 +396,17 @@ export class ScriptLayer extends Layer {
     return popup
   }
   createAddNodeMenuPopup() {
+    if (this.selected) {
+      this.selected.deselect()
+      this.selected = undefined
+    }
+
     const self = this
     return this.createPopup(AddNodeMenu, ({ mouseX, mouseY, canvas }) => {
       const canvasBounds = canvas.getBoundingClientRect()
       return {
-        x: canvasBounds.left + mouseX,
-        y: canvasBounds.top + mouseY,
-        searchQuery: this.nodeMenuSearchQuery,
+        x: canvasBounds.left + mouseX / window.devicePixelRatio,
+        y: canvasBounds.top + mouseY / window.devicePixelRatio,
         borderAlphaVarying: self.graphvis.outlineAlpha,
         checkCanReposition: (x, y) => {
           return (
@@ -403,9 +427,6 @@ export class ScriptLayer extends Layer {
           proxy.x = x
           proxy.y = y
           self.setSelected(proxy)
-        },
-        beforeDestroyPopup: (popup) => {
-          this.nodeMenuSearchQuery = popup.searchQuery
         },
       }
     })
@@ -437,8 +458,8 @@ export class ScriptLayer extends Layer {
     const canvasBounds = options.canvas.getBoundingClientRect()
     const self = this
     return {
-      x: canvasBounds.left + sx,
-      y: canvasBounds.top + sy,
+      x: canvasBounds.left + sx / window.devicePixelRatio,
+      y: canvasBounds.top + sy / window.devicePixelRatio,
       bgColor: PORT_COLOR[options.port.port.typename].editor.background,
       fgColor: PORT_COLOR[options.port.port.typename].editor.foreground,
       placeholderColor:
@@ -481,5 +502,6 @@ export class ScriptLayer extends Layer {
       this.graphvis.graph.removeNode(proxy.node)
       this.graphvis.recompile()
     }
+    this.selected = undefined
   }
 }

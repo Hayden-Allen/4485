@@ -51,6 +51,8 @@ export class ScriptGraph extends Component {
     return obj
   }
   deserialize(obj) {
+    obj = JSON.parse(JSON.stringify(obj))
+
     this.reset()
 
     this.debugName = obj.name

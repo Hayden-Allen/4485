@@ -1,9 +1,10 @@
 <script>
   import { onMount } from 'svelte'
-  import Viewport from './Viewport.svelte'
-  import Splitter from './Splitter.svelte'
-  import Logger from './Logger.svelte'
-  import BehaviorsPanel from './BehaviorsPanel.svelte'
+  import Viewport from 'components/Viewport.svelte'
+  import Splitter from 'components/Splitter.svelte'
+  import BehaviorsPanel from 'components/BehaviorsPanel.svelte'
+  import BehaviorPropertiesGroup from 'components/BehaviorPropertiesGroup.svelte'
+  import ScriptGraphEditor from 'components/ScriptGraphEditor.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
   import {
@@ -13,36 +14,25 @@
   } from '%component/SceneEntity.js'
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
-  import { Window2D } from '%window/Window2D.js'
   import { Window3D } from '%window/Window3D.js'
   import { EditorLayer } from '%editor/EditorLayer.js'
-  import { ScriptInputLayer } from '%editor/ScriptInputLayer.js'
-  import { ScriptLayer } from '%editor/ScriptLayer.js'
-  import { ScriptControlsLayer } from '%editor/ScriptControlsLayer.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
-  import { Context } from '%engine/Context.js'
-
-  let context = undefined
 
   let gameCanvas = undefined,
-    uiCanvas = undefined,
-    scriptCanvas = undefined
+    uiCanvas = undefined
 
   let gameWindow = undefined,
-    scriptWindow = undefined,
-    scriptLayer = undefined,
+    player = undefined,
     playerScript = undefined,
     playerScriptErrors = [],
     playerScriptEmpty = true
 
-  onMount(() => {
-    if (context) {
-      return
-    }
+  let showGraphEditor = false
 
-    context = new Context()
-    global.init(context)
-    var game = new Game(context)
+  onMount(() => {
+    global.init()
+
+    var game = new Game(global.context)
 
     gameWindow = new Window3D(gameCanvas, uiCanvas, [0, 0, 1, 1])
 
@@ -90,24 +80,11 @@
       0
     )
 
-    playerScript = new ScriptGraph(
-      'blah',
-      gameWindow.inputCache,
-      (s) => {
-        playerScriptErrors = [...playerScriptErrors, s]
-        playerScriptEmpty = false
-      },
-      (empty) => {
-        playerScriptErrors = []
-        playerScriptEmpty = empty
-      }
-    )
-
-    let player = new ControlledSceneEntity(
+    player = new ControlledSceneEntity(
       gameWindow,
       new Vec2(0, 0),
       'https://art.pixilart.com/840bcbc293e372f.png',
-      playerScript,
+      undefined,
       { scale: 25 }
     )
     // add player at z-index 1
@@ -125,41 +102,13 @@
 
     gameWindow.pushLayer(new EditorLayer(game))
 
-    scriptWindow = new Window2D(scriptCanvas)
-    let scriptInputLayer = new ScriptInputLayer()
-    let scriptControlsLayer = new ScriptControlsLayer(
-      scriptInputLayer,
-      scriptWindow
-    )
-    scriptLayer = new ScriptLayer(
-      scriptInputLayer,
-      scriptControlsLayer,
-      playerScript
-    )
-    scriptWindow.pushLayer(scriptControlsLayer)
-    scriptWindow.pushLayer(scriptLayer)
-    scriptWindow.pushLayer(scriptInputLayer)
-
-    context.windows.push(gameWindow)
-    context.windows.push(scriptWindow)
-    context.run()
+    global.context.windows.push(gameWindow)
+    global.context.run()
   })
 
   $: {
-    if (gameCanvas) {
-      gameWindow.setCanvas(gameCanvas)
-    }
-  }
-
-  $: {
-    if (uiCanvas) {
-      gameWindow.setUICanvas(uiCanvas)
-    }
-  }
-
-  $: {
-    if (scriptCanvas) {
-      scriptWindow.setCanvas(scriptCanvas)
+    if (player) {
+      player.setScript(playerScript)
     }
   }
 
@@ -188,7 +137,9 @@
   }
 </script>
 
-<div class="w-full h-full flex flex-col bg-neutral-800 overflow-hidden">
+<div
+  class="w-full h-full flex flex-col bg-neutral-800 text-neutral-300 overflow-hidden"
+>
   <div
     class="grow shrink basis-0 overflow-hidden flex flex-row"
     style={`flex-basis: ${midTopBasis}%;`}
@@ -199,12 +150,7 @@
     >
       <!-- Prefabs -->
     </div>
-    <Splitter
-      bind:context
-      bind:split={topSplit}
-      minSplit={0.1}
-      maxSplit={0.9}
-    />
+    <Splitter bind:split={topSplit} minSplit={0.1} maxSplit={0.9} />
     <div
       class="relative grow shrink overflow-hidden bg-neutral-900"
       style={`flex-basis: ${topRightBasis}%;`}
@@ -215,7 +161,7 @@
           targetAspectRatio={global.canvas.targetWidth /
             global.canvas.targetHeight}
           bind:canvas={gameCanvas}
-          onResize={() => context.propagateResizeEvent()}
+          onResize={() => global.context.propagateResizeEvent()}
         />
       </div>
       <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
@@ -223,16 +169,15 @@
           targetAspectRatio={global.canvas.targetWidth /
             global.canvas.targetHeight}
           bind:canvas={uiCanvas}
-          onResize={() => context.propagateResizeEvent()}
+          onResize={() => global.context.propagateResizeEvent()}
         />
       </div>
       <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
-        <p id="fps" class="text-neutral-100" />
+        <p id="fps" />
       </div>
     </div>
   </div>
   <Splitter
-    bind:context
     bind:split={midSplit}
     isVertical={true}
     minSplit={0.1}
@@ -248,27 +193,46 @@
     >
       <BehaviorsPanel
         onUseBehavior={(info) => {
+          playerScript = new ScriptGraph(
+            'PlayerScript',
+            gameWindow.inputCache,
+            (s) => {
+              playerScriptErrors = [...playerScriptErrors, s]
+              playerScriptEmpty = false
+            },
+            (empty) => {
+              playerScriptErrors = []
+              playerScriptEmpty = empty
+            }
+          )
           playerScript.deserialize(info.script)
-          scriptLayer.graphvis.arrange()
         }}
       />
     </div>
-    <Splitter
-      bind:context
-      bind:split={bottomSplit}
-      minSplit={0.1}
-      maxSplit={0.9}
-    />
+    <Splitter bind:split={bottomSplit} minSplit={0.1} maxSplit={0.9} />
     <div
       class="relative grow shrink overflow-hidden bg-neutral-900"
       style={`flex-basis: ${bottomRightBasis}%;`}
     >
-      <Viewport
-        focusable={true}
-        bind:canvas={scriptCanvas}
-        onResize={() => context.propagateResizeEvent()}
-      />
-      <Logger errors={playerScriptErrors} graphIsEmpty={playerScriptEmpty} />
+      {#if showGraphEditor}
+        <ScriptGraphEditor
+          context={global.context}
+          script={playerScript}
+          errorsList={playerScriptErrors}
+          graphIsEmpty={playerScriptEmpty}
+          onBackClicked={() => (showGraphEditor = false)}
+        />
+      {:else if playerScript}
+        <div
+          class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
+        >
+          <BehaviorPropertiesGroup
+            script={playerScript}
+            onEditScript={() => (showGraphEditor = true)}
+            onDelete={() => (playerScript = undefined)}
+          />
+        </div>
+      {/if}
     </div>
   </div>
 </div>

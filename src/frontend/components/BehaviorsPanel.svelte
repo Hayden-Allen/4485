@@ -14,7 +14,6 @@
 
   function handleSelectInfo(info) {
     selectedInfo = info
-    console.log(info)
   }
 
   $: {
@@ -33,7 +32,6 @@
       }
     } else {
       candidates = behaviorInfoBank
-      selectedInfo = candidates[0]
     }
   }
 </script>

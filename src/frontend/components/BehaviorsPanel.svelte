@@ -32,6 +32,9 @@
       }
     } else {
       candidates = behaviorInfoBank
+      if (selectedInfo === null) {
+        selectedInfo = candidates[0]
+      }
     }
   }
 </script>
@@ -43,7 +46,7 @@
     <input
       bind:value={searchQuery}
       placeholder="Search..."
-      class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-0 bg-neutral-900 text-neutral-100"
+      class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-none bg-neutral-900 text-neutral-100"
     />
     <div
       class="absolute w-8 h-10 flex items-center justify-center text-neutral-500 pointer-events-none"

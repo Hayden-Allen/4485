@@ -32,8 +32,9 @@ export class Window {
 
     this.canvas.addEventListener('focus', (e) => {
       const rect = this.canvas.getBoundingClientRect()
-      const x = (e.clientX - rect.x) * (e.target.width / rect.width)
-      const y = (e.clientY - rect.y) * (e.target.height / rect.height)
+      // transform from DOM pixels to canvas pixels
+      const x = (global.mouseX - rect.x) * (e.target.width / rect.width)
+      const y = (global.mouseY - rect.y) * (e.target.height / rect.height)
       this.propagateEvent('onFocus', new FocusEvent(e, x, y))
     })
     this.canvas.addEventListener('keydown', (e) => {

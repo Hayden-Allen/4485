@@ -24,6 +24,12 @@ export class ScriptLayer extends Layer {
     this.selectedY = 0
     this.hovered = undefined
   }
+  setScript(script) {
+    this.playerScript = script
+    if (this.graphvis) {
+      this.graphvis.setGraph(this.playerScript)
+    }
+  }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
     this.graphvis = new ScriptVisualizer(this.window, this.playerScript)
@@ -241,6 +247,7 @@ export class ScriptLayer extends Layer {
         } catch (err) {
           return
         }
+        this.graphvis.graph.debugName = fileHandle.name.split('.')[0]
         const writable = await fileHandle.createWritable()
         const contents =
           'export default ' +
@@ -495,5 +502,6 @@ export class ScriptLayer extends Layer {
       this.graphvis.graph.removeNode(proxy.node)
       this.graphvis.recompile()
     }
+    this.selected = undefined
   }
 }

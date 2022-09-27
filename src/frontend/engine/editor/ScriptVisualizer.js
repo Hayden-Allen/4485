@@ -86,6 +86,10 @@ export class ScriptVisualizer {
       reset: true,
     })
   }
+  setGraph(graph) {
+    this.graph = graph
+    this.recompile()
+  }
   recompile() {
     this.graph.compile()
     this.generateProxies()
@@ -137,6 +141,8 @@ export class ScriptVisualizer {
     })
   }
   draw(window, zoom) {
+    if (!this.graph || this.graph.isEmpty()) return
+
     this.edgeProxies.forEach((proxy) => proxy.draw(this, window))
 
     // move selected node to top of stack if necessary
@@ -150,7 +156,7 @@ export class ScriptVisualizer {
     this.drawStack.forEach((proxy) => proxy.draw(this, window, zoom))
   }
   arrange() {
-    if (this.graph.isEmpty()) return
+    if (!this.graph || this.graph.isEmpty()) return
 
     let columns = []
     // x-axis

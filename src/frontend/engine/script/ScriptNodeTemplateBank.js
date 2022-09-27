@@ -6,7 +6,6 @@ import {
 } from './ScriptNodeTemplate.js'
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
-import { global } from '%engine/Global.js'
 
 export const NODE_CATEGORY_COLORS = {
   all: {
@@ -283,7 +282,8 @@ class ScriptNodeTemplateBank {
       ],
       ['export', 0],
       [['value', 'int']],
-      (_, { internal }) => [{ value: internal[1] }]
+      (_, { internal }) => [{ value: internal[1] }],
+      true
     )
     this.createInternal(
       'math',

@@ -1,6 +1,5 @@
 import lunr from 'lunr'
-import MoveBehaviorScript from '%behaviors/MoveBehaviorScript.js'
-import ExportMoveBehaviorScript from '%behaviors/ExportMoveBehaviorScript.js'
+import Move from '%behaviors/Move.js'
 
 class BehaviorInfo {
   constructor(name, description, script) {
@@ -11,16 +10,7 @@ class BehaviorInfo {
 }
 
 export const behaviorInfoBank = [
-  new BehaviorInfo(
-    'Move',
-    'Moves your character with WASD',
-    MoveBehaviorScript
-  ),
-  new BehaviorInfo(
-    'ExportMove',
-    'Customizable move script',
-    ExportMoveBehaviorScript
-  ),
+  new BehaviorInfo('Move', 'Moves your character with WASD', Move),
 ].sort((a, b) => (a.name > b.name ? 1 : -1))
 
 export const behaviorInfoIndex = lunr(function () {

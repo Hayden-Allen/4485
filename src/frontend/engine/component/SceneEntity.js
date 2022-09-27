@@ -108,7 +108,12 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     super(gameWindow, pos, url, options)
     this.script = script
   }
+  setScript(script) {
+    this.script = script
+  }
   runScript(event, ...data) {
-    this.script.run(this, event, ...data)
+    if (this.script) {
+      this.script.run(this, event, ...data)
+    }
   }
 }

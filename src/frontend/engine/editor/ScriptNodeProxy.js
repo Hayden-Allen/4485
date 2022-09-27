@@ -349,7 +349,6 @@ export class ScriptNodeProxy extends UIElement {
         this.nameHeight
       )
     ) {
-      console.log('A')
       return {
         undefined,
         in: false,

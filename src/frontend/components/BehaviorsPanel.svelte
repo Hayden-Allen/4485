@@ -14,6 +14,7 @@
 
   function handleSelectInfo(info) {
     selectedInfo = info
+    console.log(info)
   }
 
   $: {

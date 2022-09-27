@@ -161,11 +161,17 @@ class ScriptNodeTemplateBank {
         ]
       }
     )
-    this.createConstant(
+    this.createInternal(
       'input',
       'ExportKey',
-      [['key', 'string', 'key']],
-      ['a'],
+      [],
+      [
+        ['name', 'string'],
+        ['key', 'string', 'key'],
+      ],
+      ['export', 'a'],
+      [['key', 'string']],
+      (_, { internal }) => [{ value: internal[1] }],
       true
     )
   }
@@ -270,6 +276,18 @@ class ScriptNodeTemplateBank {
     this.createInternal(
       'math',
       'ExportInt',
+      [],
+      [
+        ['name', 'string'],
+        ['value', 'int'],
+      ],
+      ['export', 0],
+      [['value', 'int']],
+      (_, { internal }) => [{ value: internal[1] }]
+    )
+    this.createInternal(
+      'math',
+      'ExportIntRange',
       [],
       [
         ['name', 'string'],

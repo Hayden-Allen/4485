@@ -59,7 +59,8 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
     )
   }
   createNode(graph, internalValues) {
-    internalValues = internalValues || this.defaultValues
+    // make a copy of the array for each node
+    internalValues = internalValues || [...this.defaultValues]
     if (!validateScriptDataTypes(internalValues, this.internalTypes)) {
       console.error('Invalid inputs')
       return

@@ -17,7 +17,7 @@
   export let onAddNode = undefined
   export let borderAlphaVarying = undefined
 
-  export let searchQuery = ''
+  let searchQuery = ''
 
   let inputEl = undefined
   let selectedCategory = 'all'

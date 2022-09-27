@@ -95,14 +95,15 @@ class ScriptNodeTemplateBank {
       )
     )
   }
-  createConstant(type, name, ports, defaultValues) {
+  createConstant(type, name, ports, defaultValues, isExport = false) {
     this.bank.set(
       name,
       new ConstantScriptNodeTemplate(
         type,
         name,
         this.mapPorts(ports),
-        defaultValues
+        defaultValues,
+        isExport
       )
     )
   }
@@ -141,6 +142,31 @@ class ScriptNodeTemplateBank {
           { value: ~~pressed },
         ]
       }
+    )
+    this.create(
+      'input',
+      'VarKeyPressed',
+      [['key', 'string']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([key], { input }) => {
+        const pressed = input.isKeyPressed(key)
+        return [
+          { value: pressed, active: pressed },
+          { value: !pressed, active: !pressed },
+          { value: ~~pressed },
+        ]
+      }
+    )
+    this.createConstant(
+      'input',
+      'ExportKey',
+      [['key', 'string', 'key']],
+      ['a'],
+      true
     )
   }
   createMath() {

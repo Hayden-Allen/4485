@@ -333,6 +333,34 @@ export class ScriptNodeProxy extends UIElement {
     return { x: this.x + this.w, y }
   }
   checkPortIntersection(window, x, y) {
+    // check name intersection first (activation edge)
+    const nameWidth = window.textMetrics(
+      this.node.debugName,
+      FONT_FAMILY,
+      NAME_FONT_SIZE
+    ).width
+    if (
+      global.rectIntersect(
+        x,
+        y,
+        this.x + this.w / 2 - nameWidth / 2,
+        this.y,
+        nameWidth,
+        this.nameHeight
+      )
+    ) {
+      console.log('A')
+      return {
+        undefined,
+        in: false,
+        internal: false,
+        index: -1,
+        proxy: this,
+        node: this.node,
+        color: '#facc15',
+      }
+    }
+
     const data = this.node.data
     // inputs
     let ret = this.checkPortIntersectionOn(
@@ -381,7 +409,7 @@ export class ScriptNodeProxy extends UIElement {
     isInput,
     isInternal
   ) {
-    const portBaseY = this.y + this.nameHeight + this.portHeight / 2
+    const portBaseY = this.getPortBaseY()
     for (let i = 0; i < list.length; i++) {
       const port = list[i]
       const portY = portBaseY + i * this.portHeight

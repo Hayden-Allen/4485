@@ -23,7 +23,6 @@ export class ScriptLayer extends Layer {
     this.selectedX = 0
     this.selectedY = 0
     this.hovered = undefined
-    this.nodeMenuSearchQuery = ''
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
@@ -122,6 +121,16 @@ export class ScriptLayer extends Layer {
                   port.node,
                   port.index
                 )
+              this.graphvis.recompile()
+              this.selectedPort = undefined
+            }
+            // activation edge
+            else if (!port.port && port.node !== this.selectedPort.node) {
+              this.selectedPort.node.attachAsOutput(
+                this.selectedPort.index,
+                port.node,
+                port.index
+              )
               this.graphvis.recompile()
               this.selectedPort = undefined
             } else {
@@ -376,13 +385,17 @@ export class ScriptLayer extends Layer {
     return popup
   }
   createAddNodeMenuPopup() {
+    if (this.selected) {
+      this.selected.deselect()
+      this.selected = undefined
+    }
+
     const self = this
     return this.createPopup(AddNodeMenu, ({ mouseX, mouseY, canvas }) => {
       const canvasBounds = canvas.getBoundingClientRect()
       return {
         x: canvasBounds.left + mouseX,
         y: canvasBounds.top + mouseY,
-        searchQuery: this.nodeMenuSearchQuery,
         borderAlphaVarying: self.graphvis.outlineAlpha,
         checkCanReposition: (x, y) => {
           return (
@@ -403,9 +416,6 @@ export class ScriptLayer extends Layer {
           proxy.x = x
           proxy.y = y
           self.setSelected(proxy)
-        },
-        beforeDestroyPopup: (popup) => {
-          this.nodeMenuSearchQuery = popup.searchQuery
         },
       }
     })

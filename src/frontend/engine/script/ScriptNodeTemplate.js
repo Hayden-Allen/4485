@@ -83,7 +83,7 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
 }
 
 export class ConstantScriptNodeTemplate extends InternalScriptNodeTemplate {
-  constructor(category, name, ports, defaultValues) {
+  constructor(category, name, ports, defaultValues, isExport) {
     super(
       category,
       name,
@@ -93,7 +93,7 @@ export class ConstantScriptNodeTemplate extends InternalScriptNodeTemplate {
       ports,
       (_, { internal }) =>
         internal.map((value) => ({ value, activate: false })),
-      false
+      isExport
     )
   }
 }

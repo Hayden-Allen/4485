@@ -75,7 +75,11 @@ export class ScriptLayer extends Layer {
       }
     }
     // right clicking (not on a node)
-    else if (e.button === 2 && !node) {
+    else if (
+      (e.button === 2 ||
+        (e.button === 0 && this.window.inputCache.isKeyPressed('Control'))) &&
+      !node
+    ) {
       e.domEvent.preventDefault()
       e.domEvent.stopPropagation()
       this.createAddNodeMenuPopup()
@@ -394,8 +398,8 @@ export class ScriptLayer extends Layer {
     return this.createPopup(AddNodeMenu, ({ mouseX, mouseY, canvas }) => {
       const canvasBounds = canvas.getBoundingClientRect()
       return {
-        x: canvasBounds.left + mouseX,
-        y: canvasBounds.top + mouseY,
+        x: canvasBounds.left + mouseX / window.devicePixelRatio,
+        y: canvasBounds.top + mouseY / window.devicePixelRatio,
         borderAlphaVarying: self.graphvis.outlineAlpha,
         checkCanReposition: (x, y) => {
           return (
@@ -447,8 +451,8 @@ export class ScriptLayer extends Layer {
     const canvasBounds = options.canvas.getBoundingClientRect()
     const self = this
     return {
-      x: canvasBounds.left + sx,
-      y: canvasBounds.top + sy,
+      x: canvasBounds.left + sx / window.devicePixelRatio,
+      y: canvasBounds.top + sy / window.devicePixelRatio,
       bgColor: PORT_COLOR[options.port.port.typename].editor.background,
       fgColor: PORT_COLOR[options.port.port.typename].editor.foreground,
       placeholderColor:

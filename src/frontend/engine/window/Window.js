@@ -32,8 +32,8 @@ export class Window {
 
     this.canvas.addEventListener('focus', (e) => {
       const rect = this.canvas.getBoundingClientRect()
-      const mx = global.mouseX - rect.x,
-        my = global.mouseY - rect.y
+      const mx = (global.mouseX - rect.x) * (e.target.width / rect.width),
+        my = (global.mouseY - rect.y) * (e.target.height / rect.height)
       this.propagateEvent('onFocus', new FocusEvent(e, mx, my))
     })
     this.canvas.addEventListener('keydown', (e) => {
@@ -45,9 +45,8 @@ export class Window {
     this.canvas.addEventListener('pointermove', (e) => {
       const rect = this.canvas.getBoundingClientRect()
       // transform from DOM pixels to canvas pixels
-      const x = (e.clientX - Math.floor(rect.x)) * (e.target.width / rect.width)
-      const y =
-        (e.clientY - Math.floor(rect.y)) * (e.target.height / rect.height)
+      const x = (e.clientX - rect.x) * (e.target.width / rect.width)
+      const y = (e.clientY - rect.y) * (e.target.height / rect.height)
       this.propagateEvent('onMouseMove', new MouseMoveEvent(e, x, y))
     })
     this.canvas.addEventListener('pointerdown', (e) => {

@@ -6,7 +6,6 @@ import {
 } from './ScriptNodeTemplate.js'
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
-import { global } from '%engine/Global.js'
 
 export const NODE_CATEGORY_COLORS = {
   all: {
@@ -95,14 +94,15 @@ class ScriptNodeTemplateBank {
       )
     )
   }
-  createConstant(type, name, ports, defaultValues) {
+  createConstant(type, name, ports, defaultValues, isExport = false) {
     this.bank.set(
       name,
       new ConstantScriptNodeTemplate(
         type,
         name,
         this.mapPorts(ports),
-        defaultValues
+        defaultValues,
+        isExport
       )
     )
   }
@@ -141,6 +141,37 @@ class ScriptNodeTemplateBank {
           { value: ~~pressed },
         ]
       }
+    )
+    this.create(
+      'input',
+      'VarKeyPressed',
+      [['key', 'string']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([key], { input }) => {
+        const pressed = input.isKeyPressed(key)
+        return [
+          { value: pressed, active: pressed },
+          { value: !pressed, active: !pressed },
+          { value: ~~pressed },
+        ]
+      }
+    )
+    this.createInternal(
+      'input',
+      'ExportKey',
+      [],
+      [
+        ['name', 'string'],
+        ['key', 'string', 'key'],
+      ],
+      ['export', 'a'],
+      [['key', 'string']],
+      (_, { internal }) => [{ value: internal[1] }],
+      true
     )
   }
   createMath() {
@@ -244,6 +275,19 @@ class ScriptNodeTemplateBank {
     this.createInternal(
       'math',
       'ExportInt',
+      [],
+      [
+        ['name', 'string'],
+        ['value', 'int'],
+      ],
+      ['export', 0],
+      [['value', 'int']],
+      (_, { internal }) => [{ value: internal[1] }],
+      true
+    )
+    this.createInternal(
+      'math',
+      'ExportIntRange',
       [],
       [
         ['name', 'string'],

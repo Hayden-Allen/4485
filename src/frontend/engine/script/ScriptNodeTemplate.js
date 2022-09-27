@@ -59,7 +59,8 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
     )
   }
   createNode(graph, internalValues) {
-    internalValues = internalValues || this.defaultValues
+    // make a copy of the array for each node
+    internalValues = internalValues || [...this.defaultValues]
     if (!validateScriptDataTypes(internalValues, this.internalTypes)) {
       console.error('Invalid inputs')
       return
@@ -83,7 +84,7 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
 }
 
 export class ConstantScriptNodeTemplate extends InternalScriptNodeTemplate {
-  constructor(category, name, ports, defaultValues) {
+  constructor(category, name, ports, defaultValues, isExport) {
     super(
       category,
       name,
@@ -93,7 +94,7 @@ export class ConstantScriptNodeTemplate extends InternalScriptNodeTemplate {
       ports,
       (_, { internal }) =>
         internal.map((value) => ({ value, activate: false })),
-      false
+      isExport
     )
   }
 }

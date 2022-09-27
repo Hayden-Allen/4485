@@ -45,7 +45,7 @@
     on:keydown={handleKeyDown}
     value=""
     placeholder={currentValue}
-    class="grow-1 shrink-1 p-2 w-full min-w-0 border-0 outline-0 bg-inherit text-inherit"
+    class="grow-1 shrink-1 p-2 w-full min-w-0 border-0 outline-none bg-inherit text-inherit"
     style={`--placeholder-color: ${placeholderColor};`}
   />
 </EditorLayout>

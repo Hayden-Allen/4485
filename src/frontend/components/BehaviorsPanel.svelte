@@ -32,7 +32,9 @@
       }
     } else {
       candidates = behaviorInfoBank
-      selectedInfo = candidates[0]
+      if (selectedInfo === null) {
+        selectedInfo = candidates[0]
+      }
     }
   }
 </script>
@@ -44,7 +46,7 @@
     <input
       bind:value={searchQuery}
       placeholder="Search..."
-      class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-0 bg-neutral-900 text-neutral-100"
+      class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-none bg-neutral-900"
     />
     <div
       class="absolute w-8 h-10 flex items-center justify-center text-neutral-500 pointer-events-none"
@@ -61,9 +63,7 @@
         <button
           on:click={() => handleSelectInfo(info)}
           class={`flex flex-row items-center p-2 cursor-pointer hover:bg-neutral-700 focus:bg-neutral-700 outline-0 text-left ${
-            info === selectedInfo
-              ? 'bg-neutral-700 text-neutral-100'
-              : 'text-neutral-300'
+            info === selectedInfo ? 'bg-neutral-700' : ''
           } ${
             i < candidates.length - 1
               ? 'border-b border-solid border-neutral-700'
@@ -75,7 +75,7 @@
       {/each}
     </div>
     <div
-      class="grow-1 shrink-1 flex flex-row w-full h-full p-4 overflow-hidden text-neutral-300"
+      class="grow-1 shrink-1 flex flex-row w-full h-full p-4 overflow-hidden"
     >
       {#if selectedInfo}
         <div class="grow-1 shrink-1 w-full">
@@ -90,7 +90,7 @@
           />
           <button
             on:click={() => onUseBehavior(selectedInfo)}
-            class="mt-4 relative rounded-full bg-sky-600 font-bold w-full h-10"
+            class="mt-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-full h-10"
           >
             <div
               class="absolute w-full"

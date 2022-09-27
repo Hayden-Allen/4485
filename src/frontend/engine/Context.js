@@ -34,4 +34,10 @@ export class Context {
       console.warn(`Overwriting system '${system.name}'`)
     this.systems.set(system.name, system)
   }
+  removeWindow(window) {
+    const i = this.windows.indexOf(window)
+    if (i !== -1) {
+      this.windows.splice(i, 1)
+    }
+  }
 }

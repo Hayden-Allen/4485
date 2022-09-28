@@ -188,6 +188,16 @@ class ScriptNodeTemplateBank {
       [['a-b', 'number']],
       ([a, b]) => [{ value: a - b }]
     )
+    this.create(
+      'math',
+      'Multiply',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [['a*b', 'number']],
+      ([a, b]) => [{ value: a * b }]
+    )
     // vector
     /**
      * @HATODO debug only
@@ -272,6 +282,32 @@ class ScriptNodeTemplateBank {
     )
     this.create(
       'entity',
+      'SetEntityVelocityX',
+      [
+        ['entity', 'object'],
+        ['x', 'number'],
+      ],
+      [],
+      ([entity, x]) => {
+        if (entity.setVelocity) {
+          entity.setVelocityX(x)
+        }
+      }
+    )
+    this.create(
+      'entity',
+      'ApplyEntityForce',
+      [
+        ['entity', 'object'],
+        ['force', 'object'],
+      ],
+      [],
+      ([entity, force]) => {
+        entity.applyForce(force)
+      }
+    )
+    this.create(
+      'entity',
       'GetEntityVelocity',
       [['entity', 'object']],
       [['v', 'object']],
@@ -301,6 +337,19 @@ class ScriptNodeTemplateBank {
       ],
       ['export', 0],
       [['value', 'int']],
+      (_, { internal }) => [{ value: internal[1] }],
+      true
+    )
+    this.createInternal(
+      'math',
+      'ExportFloat',
+      [],
+      [
+        ['name', 'string'],
+        ['value', 'float'],
+      ],
+      ['export', 0],
+      [['value', 'float']],
       (_, { internal }) => [{ value: internal[1] }],
       true
     )

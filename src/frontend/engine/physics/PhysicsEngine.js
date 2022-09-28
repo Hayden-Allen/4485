@@ -1,13 +1,11 @@
 import matter from 'matter-js'
-const { Engine, Runner, Bodies, Composite, Events } = matter
+const { Engine, Bodies, Composite, Events } = matter
 import { Vec2 } from '%util/Vec2.js'
 
 export class PhysicsEngine {
   constructor(gravityScale) {
     this.engine = Engine.create()
     this.engine.gravity.scale *= gravityScale
-    this.runner = Runner.create()
-    Runner.run(this.runner, this.engine)
 
     Events.on(this.engine, 'collisionStart', (event) => {
       event.pairs.forEach((pair) => {
@@ -21,6 +19,9 @@ export class PhysicsEngine {
           pair.bodyB._owner.runBehavior('OnCollide', normal, pair.bodyA._owner)
       })
     })
+  }
+  update(deltaTime) {
+    Engine.update(this.engine, deltaTime)
   }
   createRect(pos, dim, options = {}) {
     // disable rotation

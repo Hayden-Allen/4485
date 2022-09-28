@@ -1,5 +1,6 @@
 <script>
   import IntEditor from 'components/scriptPropertyEditors/IntEditor.svelte'
+  import FloatEditor from 'components/scriptPropertyEditors/FloatEditor.svelte'
   import KeyEditor from 'components/scriptPropertyEditors/KeyEditor.svelte'
   import Pencil from 'icons/20/mini/pencil.svelte'
   import Trash from 'icons/20/mini/trash.svelte'
@@ -53,6 +54,11 @@
         <div class="grow-1 shrink-1 w-full overflow-hidden">
           {#if exportNode.data.internalPorts[1].editorTypename === 'int'}
             <IntEditor
+              currentValue={exportNode.internalValues[1]}
+              onApply={(value) => (exportNode.internalValues[1] = value)}
+            />
+          {:else if exportNode.data.internalPorts[1].editorTypename === 'float'}
+            <FloatEditor
               currentValue={exportNode.internalValues[1]}
               onApply={(value) => (exportNode.internalValues[1] = value)}
             />

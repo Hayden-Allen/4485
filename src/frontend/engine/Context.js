@@ -24,6 +24,12 @@ export class Context {
     // so skip this frame if more than half a second has passed since the last frame
     if (deltaTime > 500) return
 
+    // update physics
+    /**
+     * @HATODO move this into context
+     * FIXME: Use variable delta like Matter Runner
+     */
+    global.physicsEngine.update(1000 / 160)
     // run engine logic
     this.systems.forEach((system) => system.update(deltaTime))
     // draw everything

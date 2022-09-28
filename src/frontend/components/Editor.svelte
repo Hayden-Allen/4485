@@ -225,7 +225,10 @@
           <ScriptPropertiesPanel
             entity={player}
             onEditScript={(script) => (graphEditorScript = script)}
-            onDeleteScript={(script) => player.removeScript(script)}
+            onDeleteScript={(script) => {
+              player.removeScript(script)
+              player.behavior.scripts = player.behavior.scripts
+            }}
           />
         </div>
       {/if}

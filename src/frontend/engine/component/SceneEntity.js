@@ -98,8 +98,17 @@ export class DynamicSceneEntity extends SceneEntity {
 
     this.renderable.setTransform(this.pos)
   }
+  applyForce(f) {
+    Body.applyForce(this.physicsProxy, this.physicsProxy.position, f)
+  }
   setVelocity(v) {
     Body.setVelocity(this.physicsProxy, { x: v.x, y: v.y })
+  }
+  setVelocityX(x) {
+    Body.setVelocity(this.physicsProxy, {
+      x: x,
+      y: this.physicsProxy.velocity.y,
+    })
   }
 }
 
@@ -110,6 +119,12 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
   }
   addScript(script) {
     this.behavior.scripts.push(script)
+  }
+  removeScript(script) {
+    const i = this.behavior.scripts.indexOf(script)
+    if (i !== -1) {
+      this.behavior.scripts.splice(i, 1)
+    }
   }
   runBehavior(event, ...data) {
     this.behavior.run(this, event, ...data)

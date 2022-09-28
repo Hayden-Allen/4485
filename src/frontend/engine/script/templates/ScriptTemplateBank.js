@@ -4,25 +4,17 @@ import PlatformerMove from '%script/templates/PlatformerMove.js'
 import PlatformerJump from '%script/templates/PlatformerJump.js'
 
 class ScriptTemplateInfo {
-  constructor(name, description, script) {
-    this.name = name
+  constructor(description, script) {
+    this.name = script.name
     this.description = description
     this.script = script
   }
 }
 
 export const scriptTemplateBank = [
-  new ScriptTemplateInfo(
-    'TopDownMove',
-    'Moves your character with WASD',
-    TopDownMove
-  ),
-  new ScriptTemplateInfo(
-    'PlatformerMove',
-    'Moves your character with AD',
-    PlatformerMove
-  ),
-  new ScriptTemplateInfo('PlatformerJump', 'Jumps', PlatformerJump),
+  new ScriptTemplateInfo('Moves your character with WASD', TopDownMove),
+  new ScriptTemplateInfo('Moves your character with AD', PlatformerMove),
+  new ScriptTemplateInfo('Jumps', PlatformerJump),
 ].sort((a, b) => (a.name > b.name ? 1 : -1))
 
 export const scriptTemplateIndex = lunr(function () {

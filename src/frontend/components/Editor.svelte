@@ -3,7 +3,7 @@
   import Viewport from 'components/Viewport.svelte'
   import Splitter from 'components/Splitter.svelte'
   import BehaviorsPanel from 'components/BehaviorsPanel.svelte'
-  import BehaviorPropertiesGroup from 'components/BehaviorPropertiesGroup.svelte'
+  import BehaviorPropertiesPanel from 'components/BehaviorPropertiesPanel.svelte'
   import ScriptGraphEditor from 'components/ScriptGraphEditor.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
@@ -17,17 +17,17 @@
   import { Window3D } from '%window/Window3D.js'
   import { EditorLayer } from '%editor/EditorLayer.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
+  import { Behavior } from '%behaviors/Behavior.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
 
   let gameWindow = undefined,
     player = undefined,
-    playerScript = undefined,
-    playerScriptErrors = [],
-    playerScriptEmpty = true
+    graphEditorScriptErrors = [],
+    graphEditorScriptEmpty = true
 
-  let showGraphEditor = false
+  let graphEditorScript = undefined
 
   onMount(() => {
     global.init()
@@ -43,7 +43,7 @@
       indices = [],
       i = 0
     for (var y = 0; y < 50; y += size) {
-      for (var x = 0; x < 50; x += size) {
+      for (var x = 0; x < 500; x += size) {
         const sx = x / 10,
           sy = y / 10
         const s = 1
@@ -73,7 +73,7 @@
     game.addStaticSceneEntity(
       new SceneEntity(
         gameWindow,
-        new Vec2(0, 0),
+        new Vec2(-700, -300),
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
         { vertices, indices, scale: 25 }
       ),
@@ -84,7 +84,7 @@
       gameWindow,
       new Vec2(0, 0),
       'https://art.pixilart.com/840bcbc293e372f.png',
-      undefined,
+      new Behavior('default'),
       { scale: 25 }
     )
     // add player at z-index 1
@@ -105,12 +105,6 @@
     global.context.windows.push(gameWindow)
     global.context.run()
   })
-
-  $: {
-    if (player) {
-      player.setScript(playerScript)
-    }
-  }
 
   /*
    * Handles
@@ -193,19 +187,21 @@
     >
       <BehaviorsPanel
         onUseBehavior={(info) => {
-          playerScript = new ScriptGraph(
-            'PlayerScript',
+          let script = new ScriptGraph(
+            'Script',
             gameWindow.inputCache,
             (s) => {
-              playerScriptErrors = [...playerScriptErrors, s]
-              playerScriptEmpty = false
+              graphEditorScriptErrors = [...graphEditorScriptErrors, s]
+              graphEditorScriptEmpty = false
             },
             (empty) => {
-              playerScriptErrors = []
-              playerScriptEmpty = empty
+              graphEditorScriptErrors = []
+              graphEditorScriptEmpty = empty
             }
           )
-          playerScript.deserialize(info.script)
+          script.deserialize(info.script)
+          player.addScript(script)
+          player.behavior.scripts = player.behavior.scripts
         }}
       />
     </div>
@@ -214,22 +210,22 @@
       class="relative grow shrink overflow-hidden bg-neutral-900"
       style={`flex-basis: ${bottomRightBasis}%;`}
     >
-      {#if showGraphEditor}
+      {#if graphEditorScript}
         <ScriptGraphEditor
           context={global.context}
-          script={playerScript}
-          errorsList={playerScriptErrors}
-          graphIsEmpty={playerScriptEmpty}
-          onBackClicked={() => (showGraphEditor = false)}
+          script={graphEditorScript}
+          errorsList={graphEditorScriptErrors}
+          graphIsEmpty={graphEditorScriptEmpty}
+          onBackClicked={() => (graphEditorScript = undefined)}
         />
-      {:else if playerScript}
+      {:else if player}
         <div
           class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
         >
-          <BehaviorPropertiesGroup
-            script={playerScript}
-            onEditScript={() => (showGraphEditor = true)}
-            onDelete={() => (playerScript = undefined)}
+          <BehaviorPropertiesPanel
+            entity={player}
+            onEditScript={(script) => (graphEditorScript = script)}
+            onDeleteScript={(script) => player.removeScript(script)}
           />
         </div>
       {/if}

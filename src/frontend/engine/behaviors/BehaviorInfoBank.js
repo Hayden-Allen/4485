@@ -1,5 +1,7 @@
 import lunr from 'lunr'
-import Move from '%behaviors/Move.js'
+import TopDownMove from '%behaviors/TopDownMove.js'
+import PlatformerMove from '%behaviors/PlatformerMove.js'
+import PlatformerJump from '%behaviors/PlatformerJump.js'
 
 class BehaviorInfo {
   constructor(name, description, script) {
@@ -10,7 +12,17 @@ class BehaviorInfo {
 }
 
 export const behaviorInfoBank = [
-  new BehaviorInfo('Move', 'Moves your character with WASD', Move),
+  new BehaviorInfo(
+    'TopDownMove',
+    'Moves your character with WASD',
+    TopDownMove
+  ),
+  new BehaviorInfo(
+    'PlatformerMove',
+    'Moves your character with AD',
+    PlatformerMove
+  ),
+  new BehaviorInfo('PlatformerJump', 'Jumps', PlatformerJump),
 ].sort((a, b) => (a.name > b.name ? 1 : -1))
 
 export const behaviorInfoIndex = lunr(function () {

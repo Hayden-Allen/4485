@@ -21,7 +21,7 @@ export var global = {
 
   init: () => {
     global.context = new Context()
-    global.physicsEngine = new PhysicsEngine(0)
+    global.physicsEngine = new PhysicsEngine(-2)
     global.varyingController = new VaryingController()
     global.context.addSystem(global.varyingController)
     window.oncontextmenu = (e) => {

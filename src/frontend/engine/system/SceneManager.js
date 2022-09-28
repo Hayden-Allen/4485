@@ -7,8 +7,7 @@ export class SceneManager extends System {
   innerUpdate(deltaTime, scene) {
     const deltaTimeSeconds = deltaTime / 1000
     scene.controlledComponents.forEach((component) =>
-      // component.runControllers(deltaTimeSeconds)
-      component.runScript('OnTick')
+      component.runBehavior('OnTick')
     )
     scene.layers.forEach((layer) => layer.update(deltaTimeSeconds))
   }

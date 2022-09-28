@@ -203,7 +203,19 @@ class ScriptNodeTemplateBank {
         ['y', 'number'],
       ],
       [['v', 'object']],
-      ([x, y]) => [{ value: new Vec2(x, y) }]
+      ([x, y]) => {
+        return [{ value: new Vec2(x, y) }]
+      }
+    )
+    this.create(
+      'math',
+      'Vec2Components',
+      [['v', 'object']],
+      [
+        ['x', 'number'],
+        ['y', 'number'],
+      ],
+      ([v]) => [{ value: v.x }, { value: v.y }]
     )
     this.create(
       'math',
@@ -257,6 +269,13 @@ class ScriptNodeTemplateBank {
           entity.setVelocity(v)
         }
       }
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocity',
+      [['entity', 'object']],
+      [['v', 'object']],
+      ([entity]) => [{ value: entity.physicsProxy.velocity }]
     )
     this.create(
       'entity',

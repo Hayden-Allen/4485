@@ -16,9 +16,9 @@ export class PhysicsEngine {
           -pair.collision.normal.y
         )
         if (pair.bodyA._owner.script)
-          pair.bodyA._owner.runScript('OnCollide', normal, pair.bodyB._owner)
+          pair.bodyA._owner.runBehavior('OnCollide', normal, pair.bodyB._owner)
         if (pair.bodyB._owner.script)
-          pair.bodyB._owner.runScript('OnCollide', normal, pair.bodyA._owner)
+          pair.bodyB._owner.runBehavior('OnCollide', normal, pair.bodyA._owner)
       })
     })
   }

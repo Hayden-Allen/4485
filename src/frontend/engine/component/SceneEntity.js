@@ -99,21 +99,19 @@ export class DynamicSceneEntity extends SceneEntity {
     this.renderable.setTransform(this.pos)
   }
   setVelocity(v) {
-    Body.setVelocity(this.physicsProxy, { x: v.x, y: -v.y })
+    Body.setVelocity(this.physicsProxy, { x: v.x, y: v.y })
   }
 }
 
 export class ControlledSceneEntity extends DynamicSceneEntity {
-  constructor(gameWindow, pos, url, script, options = {}) {
+  constructor(gameWindow, pos, url, behavior, options = {}) {
     super(gameWindow, pos, url, options)
-    this.script = script
+    this.behavior = behavior
   }
-  setScript(script) {
-    this.script = script
+  addScript(script) {
+    this.behavior.scripts.push(script)
   }
-  runScript(event, ...data) {
-    if (this.script) {
-      this.script.run(this, event, ...data)
-    }
+  runBehavior(event, ...data) {
+    this.behavior.run(this, event, ...data)
   }
 }

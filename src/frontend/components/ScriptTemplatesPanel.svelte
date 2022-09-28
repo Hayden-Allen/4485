@@ -1,39 +1,39 @@
 <script>
   import {
-    behaviorInfoBank,
-    behaviorInfoIndex,
-  } from '%behaviors/BehaviorInfoBank.js'
+    scriptTemplateBank,
+    scriptTemplateIndex,
+  } from '%script/templates/ScriptTemplateBank.js'
   import MagnifyingGlass from 'icons/20/mini/magnifying-glass.svelte'
   import ArrowRight from 'icons/20/mini/arrow-right.svelte'
 
-  export let onUseBehavior = undefined
+  export let onUseScript = undefined
 
   let searchQuery = ''
   let candidates = null
-  let selectedInfo = null
+  let selectedTemplate = null
 
-  function handleSelectInfo(info) {
-    selectedInfo = info
+  function handleSelectTemplate(template) {
+    selectedTemplate = template
   }
 
   $: {
     const q = searchQuery.trim()
     if (q.length >= 3) {
       candidates = []
-      for (const result of behaviorInfoIndex.search(q)) {
-        candidates.push(behaviorInfoBank[parseInt(result.ref)])
+      for (const result of scriptTemplateIndex.search(q)) {
+        candidates.push(scriptTemplateBank[parseInt(result.ref)])
       }
-      if (candidates.indexOf(selectedInfo) === -1) {
+      if (candidates.indexOf(selectedTemplate) === -1) {
         if (candidates.length > 0) {
-          selectedInfo = candidates[0]
+          selectedTemplate = candidates[0]
         } else {
-          selectedInfo = null
+          selectedTemplate = null
         }
       }
     } else {
-      candidates = behaviorInfoBank
-      if (selectedInfo === null) {
-        selectedInfo = candidates[0]
+      candidates = scriptTemplateBank
+      if (selectedTemplate === null) {
+        selectedTemplate = candidates[0]
       }
     }
   }
@@ -59,44 +59,44 @@
     <div
       class="grow-0 shrink-0 flex flex-col w-64 h-full border-r border-solid border-neutral-700"
     >
-      {#each candidates as info, i}
+      {#each candidates as template, i}
         <button
-          on:click={() => handleSelectInfo(info)}
+          on:click={() => handleSelectTemplate(template)}
           class={`flex flex-row items-center p-2 cursor-pointer hover:bg-neutral-700 focus:bg-neutral-700 outline-0 text-left ${
-            info === selectedInfo ? 'bg-neutral-700' : ''
+            template === selectedTemplate ? 'bg-neutral-700' : ''
           } ${
             i < candidates.length - 1
               ? 'border-b border-solid border-neutral-700'
               : ''
           }`}
         >
-          {info.name}
+          {template.name}
         </button>
       {/each}
     </div>
     <div
       class="grow-1 shrink-1 flex flex-row w-full h-full p-4 overflow-hidden"
     >
-      {#if selectedInfo}
+      {#if selectedTemplate}
         <div class="grow-1 shrink-1 w-full">
-          <div class="font-bold text-2xl mb-2">{selectedInfo.name}</div>
-          <div>{selectedInfo.description}</div>
+          <div class="font-bold text-2xl mb-2">{selectedTemplate.name}</div>
+          <div>{selectedTemplate.description}</div>
         </div>
         <div class="flex flex-col grow-0 shrink-0 w-56 ml-4">
           <img
             class="grow-0 shrink-0 w-full rounded-md"
-            alt={`${selectedInfo.name} behavior preview`}
+            alt={`${selectedTemplate.name} script preview`}
             src="https://media2.giphy.com/media/Vuw9m5wXviFIQ/giphy.gif"
           />
           <button
-            on:click={() => onUseBehavior(selectedInfo)}
+            on:click={() => onUseScript(selectedTemplate)}
             class="mt-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-full h-10"
           >
             <div
               class="absolute w-full"
               style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
             >
-              Use This Behavior
+              Use This Script
             </div>
             <div
               class="absolute w-5 h-5"

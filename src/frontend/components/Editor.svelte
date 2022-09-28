@@ -2,8 +2,8 @@
   import { onMount } from 'svelte'
   import Viewport from 'components/Viewport.svelte'
   import Splitter from 'components/Splitter.svelte'
-  import BehaviorsPanel from 'components/BehaviorsPanel.svelte'
-  import BehaviorPropertiesPanel from 'components/BehaviorPropertiesPanel.svelte'
+  import ScriptTemplatesPanel from 'components/ScriptTemplatesPanel.svelte'
+  import ScriptPropertiesPanel from 'components/ScriptPropertiesPanel.svelte'
   import ScriptGraphEditor from 'components/ScriptGraphEditor.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
@@ -17,7 +17,7 @@
   import { Window3D } from '%window/Window3D.js'
   import { EditorLayer } from '%editor/EditorLayer.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
-  import { Behavior } from '%behaviors/Behavior.js'
+  import { Behavior } from '%script/Behavior.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -185,10 +185,10 @@
       class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomLeftBasis}%;`}
     >
-      <BehaviorsPanel
-        onUseBehavior={(info) => {
+      <ScriptTemplatesPanel
+        onUseScript={(info) => {
           let script = new ScriptGraph(
-            'Script',
+            'default',
             gameWindow.inputCache,
             (s) => {
               graphEditorScriptErrors = [...graphEditorScriptErrors, s]
@@ -222,7 +222,7 @@
         <div
           class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
         >
-          <BehaviorPropertiesPanel
+          <ScriptPropertiesPanel
             entity={player}
             onEditScript={(script) => (graphEditorScript = script)}
             onDeleteScript={(script) => player.removeScript(script)}

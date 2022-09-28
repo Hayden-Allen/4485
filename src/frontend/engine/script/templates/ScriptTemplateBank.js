@@ -1,9 +1,9 @@
 import lunr from 'lunr'
-import TopDownMove from '%behaviors/TopDownMove.js'
-import PlatformerMove from '%behaviors/PlatformerMove.js'
-import PlatformerJump from '%behaviors/PlatformerJump.js'
+import TopDownMove from '%script/templates/TopDownMove.js'
+import PlatformerMove from '%script/templates/PlatformerMove.js'
+import PlatformerJump from '%script/templates/PlatformerJump.js'
 
-class BehaviorInfo {
+class ScriptTemplateInfo {
   constructor(name, description, script) {
     this.name = name
     this.description = description
@@ -11,26 +11,26 @@ class BehaviorInfo {
   }
 }
 
-export const behaviorInfoBank = [
-  new BehaviorInfo(
+export const scriptTemplateBank = [
+  new ScriptTemplateInfo(
     'TopDownMove',
     'Moves your character with WASD',
     TopDownMove
   ),
-  new BehaviorInfo(
+  new ScriptTemplateInfo(
     'PlatformerMove',
     'Moves your character with AD',
     PlatformerMove
   ),
-  new BehaviorInfo('PlatformerJump', 'Jumps', PlatformerJump),
+  new ScriptTemplateInfo('PlatformerJump', 'Jumps', PlatformerJump),
 ].sort((a, b) => (a.name > b.name ? 1 : -1))
 
-export const behaviorInfoIndex = lunr(function () {
+export const scriptTemplateIndex = lunr(function () {
   this.field('name')
   this.field('description')
   this.ref('id')
 
-  behaviorInfoBank.forEach((info, i) => {
+  scriptTemplateBank.forEach((info, i) => {
     this.add({
       id: i,
       name: info.name,

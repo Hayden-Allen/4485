@@ -1,6 +1,6 @@
 <script>
-  import IntEditor from 'components/behaviorPropertyEditors/IntEditor.svelte'
-  import KeyEditor from 'components/behaviorPropertyEditors/KeyEditor.svelte'
+  import IntEditor from 'components/scriptPropertyEditors/IntEditor.svelte'
+  import KeyEditor from 'components/scriptPropertyEditors/KeyEditor.svelte'
   import Pencil from 'icons/20/mini/pencil.svelte'
   import Trash from 'icons/20/mini/trash.svelte'
 

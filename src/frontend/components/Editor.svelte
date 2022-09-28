@@ -74,7 +74,10 @@
       new SceneEntity(
         gameWindow,
         new Vec2(-700, -300),
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        0,
+        [
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        ],
         { vertices, indices, scale: 25 }
       ),
       0
@@ -83,7 +86,11 @@
     player = new ControlledSceneEntity(
       gameWindow,
       new Vec2(0, 0),
-      'https://art.pixilart.com/840bcbc293e372f.png',
+      500,
+      [
+        'https://art.pixilart.com/840bcbc293e372f.png',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+      ],
       new Behavior('default'),
       { scale: 25 }
     )
@@ -94,7 +101,8 @@
       new DynamicSceneEntity(
         gameWindow,
         new Vec2(-100, 0),
-        'https://art.pixilart.com/840bcbc293e372f.png',
+        0,
+        ['https://art.pixilart.com/840bcbc293e372f.png'],
         { scale: 25 }
       ),
       1

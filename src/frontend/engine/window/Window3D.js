@@ -6,26 +6,37 @@ import { ShaderProgram } from '%graphics/ShaderProgram.js'
 import * as mat4 from '%glMatrix/mat4.js'
 import * as vec4 from '%glMatrix/vec4.js'
 
-const VERTEX_SOURCE = `
-  attribute vec2 i_pos;
-  attribute vec2 i_tex;
+const VERTEX_SOURCE = `#version 300 es 
+  precision highp float;
+  precision highp int;
+  precision highp int;
+  
+  layout(location = 0) in vec2 i_pos;
+  layout(location = 1) in vec2 i_tex;
 
   uniform mat4 u_mvp;
 
-  varying highp vec2 v_tex;
+  out vec2 v_tex;
 
   void main() {
     gl_Position = u_mvp * vec4(i_pos, -1, 1);
     v_tex = i_tex;
   }
 `
-const FRAGMENT_SOURCE = `
-  uniform sampler2D u_texture;
+const FRAGMENT_SOURCE = `#version 300 es
+  precision highp float;
+  precision highp int;
+  precision highp sampler2DArray;
 
-  varying highp vec2 v_tex;
+  uniform sampler2DArray u_texture;
+  uniform int u_frame;
+
+  in vec2 v_tex;
+
+  out vec4 o_color;
 
   void main() {
-    gl_FragColor = texture2D(u_texture, v_tex);
+    o_color = texture(u_texture, vec3(v_tex, u_frame));
   }
 `
 
@@ -35,14 +46,7 @@ export class Window3D extends Window {
     /**
      * @HATODO move into EditorLayer
      */
-    // this.camera = new Camera([-1, 0, 0], 45)
-    this.camera = new Camera(
-      [0, 0, 0],
-      0,
-      this.canvas.width,
-      0,
-      this.canvas.height
-    )
+    this.camera = undefined
     this.shaderProgram = new ShaderProgram(
       this.gl,
       VERTEX_SOURCE,
@@ -72,13 +76,14 @@ export class Window3D extends Window {
   propagateResizeEvent() {
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     super.propagateResizeEvent()
-    this.camera = new Camera(
-      [0, 0, 0],
-      -this.canvas.width / 2,
-      this.canvas.width / 2,
-      -this.canvas.height / 2,
-      this.canvas.height / 2
-    )
+    if (!this.camera)
+      this.camera = new Camera(
+        [0, 0, 0],
+        -this.canvas.width / 2,
+        this.canvas.width / 2,
+        -this.canvas.height / 2,
+        this.canvas.height / 2
+      )
   }
   draw(renderable) {
     this.renderer.draw(renderable, this.camera, this.shaderProgram)

@@ -404,9 +404,23 @@ export class ScriptLayer extends Layer {
     const self = this
     return this.createPopup(AddNodeMenu, ({ mouseX, mouseY, canvas }) => {
       const canvasBounds = canvas.getBoundingClientRect()
+      const width = 400,
+        height = 320
+      const x = global.clamp(
+        canvasBounds.left + mouseX / window.devicePixelRatio,
+        canvasBounds.left,
+        canvasBounds.right - width
+      )
+      const y = global.clamp(
+        canvasBounds.top + mouseY / window.devicePixelRatio,
+        canvasBounds.top,
+        canvasBounds.bottom - height
+      )
       return {
-        x: canvasBounds.left + mouseX / window.devicePixelRatio,
-        y: canvasBounds.top + mouseY / window.devicePixelRatio,
+        x,
+        y,
+        width: width / window.devicePixelRatio,
+        height: height / window.devicePixelRatio,
         borderAlphaVarying: self.graphvis.outlineAlpha,
         checkCanReposition: (x, y) => {
           return (
@@ -470,6 +484,11 @@ export class ScriptLayer extends Layer {
           options.proxy.node.internalValues[options.port.index] =
             popup.currentValue
           options.proxy.computeNodeWidth(self.window)
+          /**
+           * @HATODO don't necessarily need to do this
+           * just need to rebuild exportNodes in the graph (in case values changed)
+           */
+          self.graphvis.recompile()
         }
         options.proxy.deselect()
       },

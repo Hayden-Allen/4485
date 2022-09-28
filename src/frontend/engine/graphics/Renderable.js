@@ -1,10 +1,17 @@
 import * as mat4 from '%glMatrix/mat4.js'
 import { Texture } from './Texture.js'
 
-let textureCache = new Map()
-
 export class Renderable {
-  constructor(gl, pos, program, vertices, indices, url, { scale = 1 } = {}) {
+  constructor(
+    gl,
+    pos,
+    program,
+    vertices,
+    indices,
+    frameTime,
+    urls,
+    { scale = 1 } = {}
+  ) {
     this.vertexArray = undefined
     this.vertexBuffer = undefined
     this.indexBuffer = undefined
@@ -13,12 +20,7 @@ export class Renderable {
     this.transform = mat4.create()
     this.scale = scale
     this.setTransform(pos)
-
-    if (textureCache.has(url)) this.texture = textureCache.get(url)
-    else {
-      this.texture = new Texture(gl, url)
-      textureCache.set(url, this.texture)
-    }
+    this.texture = new Texture(gl, frameTime, urls)
   }
   setTransform(pos) {
     mat4.fromTranslation(this.transform, [pos.x, pos.y, 0])
@@ -54,7 +56,8 @@ export class Renderable {
   }
   bind(gl, shaderProgram) {
     gl.bindVertexArray(this.vertexArray)
-    this.texture.bind(gl, 0)
+    const frame = this.texture.bind(gl, 0)
     shaderProgram.uniform1i(gl, 'u_texture', 0)
+    shaderProgram.uniform1i(gl, 'u_frame', frame)
   }
 }

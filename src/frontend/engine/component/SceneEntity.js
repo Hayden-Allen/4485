@@ -23,7 +23,7 @@ class SceneEntityOptions {
 
 // base class for everything that exists in the scene
 export class SceneEntity extends Component {
-  constructor(gameWindow, pos, url, options = {}) {
+  constructor(gameWindow, pos, frameTime, urls, options = {}) {
     super('SceneEntity')
     this.ops = new SceneEntityOptions(options)
     const vertexData = this.ops.vertices,
@@ -34,7 +34,8 @@ export class SceneEntity extends Component {
       gameWindow.shaderProgram,
       vertexData,
       indexData,
-      url,
+      frameTime,
+      urls,
       { scale: this.ops.scale }
     )
 
@@ -85,8 +86,8 @@ export class SceneEntity extends Component {
 }
 
 export class DynamicSceneEntity extends SceneEntity {
-  constructor(gameWindow, pos, url, options = {}) {
-    super(gameWindow, pos, url, { isStatic: false, ...options })
+  constructor(gameWindow, pos, frameTime, urls, options = {}) {
+    super(gameWindow, pos, frameTime, urls, { isStatic: false, ...options })
     const v = options.vel || new Vec2(0, 0)
     Body.setVelocity(this.physicsProxy, { x: v.x, y: v.y })
   }
@@ -113,8 +114,8 @@ export class DynamicSceneEntity extends SceneEntity {
 }
 
 export class ControlledSceneEntity extends DynamicSceneEntity {
-  constructor(gameWindow, pos, url, behavior, options = {}) {
-    super(gameWindow, pos, url, options)
+  constructor(gameWindow, pos, frameTime, urls, behavior, options = {}) {
+    super(gameWindow, pos, frameTime, urls, options)
     this.behavior = behavior
   }
   addScript(script) {

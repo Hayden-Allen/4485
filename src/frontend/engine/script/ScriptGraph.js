@@ -6,6 +6,19 @@ const EVENT_NODE_NAMES = new Set()
 EVENT_NODE_NAMES.add('OnTick')
 EVENT_NODE_NAMES.add('OnCollide')
 
+class ExportNodeProxy {
+  constructor(node) {
+    this.node = node
+    this.name = node.internalValues[0]
+    this.value = node.internalValues[1]
+    this.type = node.data.internalPorts[1].editorTypename
+  }
+  setValue(v) {
+    this.value = v
+    this.node.internalValues[1] = v
+  }
+}
+
 export class ScriptGraph extends Component {
   constructor(name, inputCache, pushErrorCallback, clearErrorsCallback) {
     super(name)
@@ -208,8 +221,7 @@ export class ScriptGraph extends Component {
         this.sourceNodes.push(node)
         buildNodes.push(node)
       }
-
-      if (node.isExport) this.exportNodes.push(node)
+      if (node.isExport) this.exportNodes.push(new ExportNodeProxy(node))
     })
 
     // determine execution order using topological sort

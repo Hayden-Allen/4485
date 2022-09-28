@@ -19,17 +19,18 @@ export class Context {
   run() {
     requestAnimationFrame(this.run.bind(this))
 
-    const deltaTime = global.beginFrame()
+    const { deltaTime, deltaCorrection } = global.beginFrame()
     // this is a failsafe; because this runs in the browser, switching to a different tab allows the user to make the delta time arbitraily large, which obviously breaks stuff
     // so skip this frame if more than half a second has passed since the last frame
-    if (deltaTime > 500) return
+    // this is also necessary to prevent physics from breaking
+    if (deltaTime > 30) return
 
     // update physics
     /**
      * @HATODO move this into context
      * FIXME: Use variable delta like Matter Runner
      */
-    global.physicsEngine.update(1000 / 160)
+    global.physicsEngine.update(deltaTime, deltaCorrection)
     // run engine logic
     this.systems.forEach((system) => system.update(deltaTime))
     // draw everything

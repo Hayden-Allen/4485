@@ -17,6 +17,7 @@ export var global = {
     last: 0,
     now: 0,
     delta: 0,
+    lastDelta: 0,
   },
 
   init: () => {
@@ -39,13 +40,14 @@ export var global = {
   },
   updateTime: () => {
     global.time.now = performance.now()
+    global.time.lastDelta = global.time.delta
     global.time.delta = global.time.now - global.time.last
     global.time.last = global.time.now
     return global.time.delta
   },
   beginFrame: () => {
     const deltaTime = global.updateTime()
-    return deltaTime
+    return { deltaTime, deltaCorrection: deltaTime / global.time.lastDelta }
   },
   clamp: (x, min, max) => {
     return Math.min(max, Math.max(x, min))

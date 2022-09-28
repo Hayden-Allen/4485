@@ -11,6 +11,8 @@
 
   export let x = undefined,
     y = undefined
+  export let width = undefined,
+    height = undefined
   export let checkCanReposition = undefined
   export let onDestroyPopup = undefined
 
@@ -95,8 +97,8 @@
   {checkCanReposition}
   {onDestroyPopup}
   {borderAlphaVarying}
-  width="400px"
-  height="320px"
+  width={`${width}px`}
+  height={`${height}px`}
 >
   <div
     class="flex flex-col w-full h-full overflow-hidden"

@@ -11,11 +11,15 @@ export class Camera {
   ) {
     let proj = mat4.create(),
       tran = mat4.create()
-    // mat4.perspective(proj, (fovDegrees * Math.PI) / 180, aspect, near, far)
     mat4.ortho(proj, left, right, bottom, top, near, far)
     mat4.translate(tran, tran, position)
 
     this.matrix = mat4.create()
     mat4.mul(this.matrix, proj, tran)
+  }
+  inverse() {
+    let i = mat4.create()
+    mat4.invert(i, this.matrix)
+    return i
   }
 }

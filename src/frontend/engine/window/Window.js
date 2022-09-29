@@ -56,11 +56,25 @@ export class Window {
       })
 
       this.canvas.setPointerCapture(e.pointerId)
-      this.propagateEvent('onMouseDown', new MouseDownEvent(e))
+      this.propagateEvent(
+        'onMouseDown',
+        new MouseDownEvent(
+          e,
+          this.inputCache.mousePos.x,
+          this.inputCache.mousePos.y
+        )
+      )
     })
     this.canvas.addEventListener('pointerup', (e) => {
       this.canvas.releasePointerCapture(e.pointerId)
-      this.propagateEvent('onMouseUp', new MouseUpEvent(e))
+      this.propagateEvent(
+        'onMouseUp',
+        new MouseUpEvent(
+          e,
+          this.inputCache.mousePos.x,
+          this.inputCache.mousePos.y
+        )
+      )
     })
     this.canvas.addEventListener('wheel', (e) => {
       this.propagateEvent('onMouseScroll', new MouseScrollEvent(e))

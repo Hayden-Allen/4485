@@ -56,7 +56,7 @@ export class Window3D extends Window {
     this.fpsElement = document.getElementById('fps')
     this.fpsSamples = new Array(100).fill(0)
     // debug draw
-    this.uiCanvas = new Window2D(uiCanvas)
+    this.uiCanvas = new Window2D(uiCanvas, undefined, { doScaling: false })
   }
   setCanvas(canvas) {
     super.setCanvas(canvas)
@@ -100,10 +100,9 @@ export class Window3D extends Window {
       minimumIntegerDigits: 3,
     })} fps`
   }
-  strokeRect(transform, x, y, w, h, color) {
+  strokeRect(x, y, w, h, color, width) {
     // world->NDC matrix
-    let mvp = mat4.create()
-    mat4.mul(mvp, this.camera.matrix, transform)
+    let mvp = this.camera.matrix
     // position of top left corner
     let pos = vec4.fromValues(x, y, -1, 1)
     vec4.transformMat4(pos, pos, mvp)
@@ -119,7 +118,6 @@ export class Window3D extends Window {
       sh = (dim[1] * this.canvas.height) / 2
 
     // console.log(sx, sy, sw, sh)
-    this.uiCanvas.ctx.strokeStyle = color
-    this.uiCanvas.ctx.strokeRect(sx, sy, sw, sh)
+    this.uiCanvas.strokeRect(sx, sy, sw, sh, color, width)
   }
 }

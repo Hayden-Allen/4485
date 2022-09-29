@@ -22,8 +22,9 @@ function _roundRectPolyfill(ctx, x, y, width, height, radius, fill, stroke) {
 }
 
 export class Window2D extends Window {
-  constructor(canvas, clearColor) {
+  constructor(canvas, clearColor, { doScaling = true } = {}) {
     super(canvas, clearColor)
+    this.doScaling = doScaling
   }
   setCanvas(canvas) {
     super.setCanvas(canvas)
@@ -202,6 +203,7 @@ export class Window2D extends Window {
     return this.ctx.measureText(string)
   }
   getScalingFactor() {
+    if (!this.doScaling) return 1
     const xs = this.canvas.width / global.canvas.targetWidth
     const ys = this.canvas.height / global.canvas.targetHeight
     return Math.min(xs, ys)

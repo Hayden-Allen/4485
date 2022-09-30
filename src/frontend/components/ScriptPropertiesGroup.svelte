@@ -14,7 +14,9 @@
   $: {
     if (script) {
       sortedExportNodes = [...script.exportNodes]
-      sortedExportNodes.sort((a, b) => (a.name > b.name ? 1 : -1))
+      sortedExportNodes.sort((a, b) =>
+        a.internalValues[0] > b.internalValues[0] ? 1 : -1
+      )
     } else {
       sortedExportNodes = []
     }
@@ -47,23 +49,23 @@
         <div
           class="grow-0 shrink-0 p-2 text-ellipsis whitespace-nowrap overflow-hidden w-48 border-solid border-neutral-700 border-r"
         >
-          {exportNode.name}
+          {exportNode.internalValues[0]}
         </div>
         <div class="grow-1 shrink-1 w-full overflow-hidden">
-          {#if exportNode.type === 'int'}
+          {#if exportNode.data.internalPorts[1].editorTypename === 'int'}
             <IntEditor
-              currentValue={exportNode.value}
-              onApply={(value) => exportNode.setValue(value)}
+              currentValue={exportNode.internalValues[1]}
+              onApply={(value) => (exportNode.internalValues[1] = value)}
             />
-          {:else if exportNode.type === 'float'}
+          {:else if exportNode.data.internalPorts[1].editorTypename === 'float'}
             <FloatEditor
-              currentValue={exportNode.value}
-              onApply={(value) => exportNode.setValue(value)}
+              currentValue={exportNode.internalValues[1]}
+              onApply={(value) => (exportNode.internalValues[1] = value)}
             />
-          {:else if exportNode.type === 'key'}
+          {:else if exportNode.data.internalPorts[1].editorTypename === 'key'}
             <KeyEditor
-              currentValue={exportNode.value}
-              onApply={(value) => exportNode.setValue(value)}
+              currentValue={exportNode.internalValues[1]}
+              onApply={(value) => (exportNode.internalValues[1] = value)}
             />
           {/if}
         </div>

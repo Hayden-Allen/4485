@@ -86,10 +86,6 @@ export class ScriptVisualizer {
       reset: true,
     })
   }
-  setGraph(graph) {
-    this.graph = graph
-    this.recompile()
-  }
   recompile() {
     this.graph.compile()
     this.generateProxies()

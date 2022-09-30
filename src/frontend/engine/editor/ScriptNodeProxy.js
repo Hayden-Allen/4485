@@ -88,15 +88,16 @@ export class ScriptNodeProxy extends UIElement {
           window.textMetrics(outputPorts[i].name, FONT_FAMILY, PORT_FONT_SIZE)
             .width + PORT_NAME_PADDING_X
         )
-      if (i < internalPorts.length)
+      if (i < internalPorts.length) {
         internalWidth = Math.max(
           internalWidth,
           window.textMetrics(
-            `${internalPorts[i].name}: ${this.node.internalValues[i]}`,
+            `${internalPorts[i].name}: ${this.getInternalValueDisplayStr(i)}`,
             FONT_FAMILY,
             PORT_FONT_SIZE
           ).width + PORT_NAME_PADDING_X
         )
+      }
     }
     this.w =
       Math.max(inWidth + internalWidth + outWidth, Math.ceil(text.width)) +
@@ -235,10 +236,12 @@ export class ScriptNodeProxy extends UIElement {
       // )
     })
     this.node.data.internalPorts.forEach((port, i) => {
+      const correctedInternalValue = this.getInternalValueDisplayStr(i)
+
       const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
       const x = tx + PORT_NAME_PADDING_X
       const width = window.textMetrics(
-        `${port.name}: ${this.node.internalValues[i]}`,
+        `${port.name}: ${correctedInternalValue}`,
         FONT_FAMILY,
         PORT_FONT_SIZE
       ).width
@@ -259,7 +262,7 @@ export class ScriptNodeProxy extends UIElement {
         selected ? visualizer.outlineAlpha.getValue() : 1
       )
       window.drawVerticalCenteredText(
-        `${port.name}: ${this.node.internalValues[i]}`,
+        `${port.name}: ${correctedInternalValue}`,
         x,
         portY,
         FONT_FAMILY,
@@ -273,7 +276,7 @@ export class ScriptNodeProxy extends UIElement {
           window.textMetrics(`${port.name}: `, FONT_FAMILY, PORT_FONT_SIZE)
             .width
         const valueWidth = window.textMetrics(
-          `${this.node.internalValues[i]}`,
+          correctedInternalValue,
           FONT_FAMILY,
           PORT_FONT_SIZE
         ).width
@@ -288,6 +291,11 @@ export class ScriptNodeProxy extends UIElement {
         )
       }
     })
+  }
+  getInternalValueDisplayStr(portIndex) {
+    return this.node.data.internalPorts[portIndex].editorTypename === 'key'
+      ? global.keyToDisplayStr(this.node.internalValues[portIndex])
+      : this.node.internalValues[portIndex]
   }
   getPortBaseY() {
     return this.y + this.nameHeight + this.portHeight / 2
@@ -392,7 +400,7 @@ export class ScriptNodeProxy extends UIElement {
       y,
       data.internalPorts,
       () => this.x + PORT_NAME_PADDING_X,
-      (port, i) => `${port.name}: ${this.node.internalValues[i]}`,
+      (port, i) => `${port.name}: ${this.getInternalValueDisplayStr(i)}`,
       false,
       true
     )

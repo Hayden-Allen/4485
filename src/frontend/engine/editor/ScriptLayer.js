@@ -27,7 +27,7 @@ export class ScriptLayer extends Layer {
   setScript(script) {
     this.playerScript = script
     if (this.graphvis) {
-      this.graphvis.setGraph(this.playerScript)
+      this.graphvis.graph = this.playerScript
     }
   }
   onAttach() {

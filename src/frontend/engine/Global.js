@@ -78,4 +78,11 @@ export var global = {
       dy = y1 - y2
     return Math.sqrt(dx * dx + dy * dy)
   },
+  keyToDisplayStr: (key) => {
+    if (key === ' ') {
+      return 'Space'
+    } else {
+      return key
+    }
+  },
 }

@@ -3,12 +3,10 @@ import { Window } from './Window.js'
 import { Window2D } from './Window2D.js'
 import { Camera } from '%graphics/Camera.js'
 import { ShaderProgram } from '%graphics/ShaderProgram.js'
-import * as mat4 from '%glMatrix/mat4.js'
 import * as vec4 from '%glMatrix/vec4.js'
 
 const VERTEX_SOURCE = `#version 300 es 
   precision highp float;
-  precision highp int;
   precision highp int;
   
   layout(location = 0) in vec2 i_pos;

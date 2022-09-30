@@ -14,7 +14,6 @@ export class EditorLayer extends Layer {
     })
     this.showDebug = true
     this.fps = 0
-    this.selectedEntity = undefined
     this.setSelectedEntity = setSelectedEntity
   }
   onAppTick(e) {

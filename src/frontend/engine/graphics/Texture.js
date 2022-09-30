@@ -5,6 +5,8 @@ let imageCache = new Map()
 
 export class Texture {
   constructor(gl, frameTime, urls) {
+    this.resizeCanvas = document.createElement('canvas')
+    this.resizeCtx = this.resizeCanvas.getContext('2d')
     this.texture = gl.createTexture()
     this.frame = 0
     this.frameCount = urls.length
@@ -26,18 +28,26 @@ export class Texture {
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.texture)
       this.createEmptyTexture(gl, maxWidth, maxHeight, urls.length)
       images.forEach((image, i) => {
+        /**
+         * @HATODO find a better way to do this
+         */
+        this.resizeCanvas.width = maxWidth
+        this.resizeCanvas.height = maxHeight
+        this.resizeCtx.clearRect(0, 0, maxWidth, maxHeight)
+        this.resizeCtx.drawImage(image, 0, 0, maxWidth, maxHeight)
+
         gl.texSubImage3D(
           gl.TEXTURE_2D_ARRAY,
           0,
           0,
           0,
           i,
-          image.width,
-          image.height,
+          this.resizeCanvas.width,
+          this.resizeCanvas.height,
           1,
           gl.RGBA,
           gl.UNSIGNED_BYTE,
-          image
+          this.resizeCanvas
         )
       })
 

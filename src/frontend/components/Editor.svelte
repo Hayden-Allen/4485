@@ -26,7 +26,8 @@
     player = undefined,
     graphEditorScriptErrors = [],
     graphEditorScriptEmpty = true,
-    editorLayer = undefined
+    editorLayer = undefined,
+    selectedEntity = undefined
 
   let graphEditorScript = undefined
 
@@ -109,13 +110,7 @@
       1
     )
 
-    /**
-     * @HATODO svelte sucks
-     */
-    let sse = (e) => {
-      editorLayer.selectedEntity = e
-    }
-    editorLayer = new EditorLayer(game, sse)
+    editorLayer = new EditorLayer(game, (e) => (selectedEntity = e))
     gameWindow.pushLayer(editorLayer)
 
     global.context.windows.push(gameWindow)
@@ -239,7 +234,7 @@
           class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
         >
           <ScriptPropertiesPanel
-            entity={editorLayer.selectedEntity}
+            entity={selectedEntity}
             onEditScript={(script) => (graphEditorScript = script)}
             onDeleteScript={(script) => {
               player.removeScript(script)

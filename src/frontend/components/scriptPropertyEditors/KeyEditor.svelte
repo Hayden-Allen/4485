@@ -1,4 +1,6 @@
 <script>
+  import { global } from '%engine/Global.js'
+
   export let currentValue = undefined
   export let onApply = undefined
 
@@ -23,7 +25,7 @@
 <input
   on:keydown={handleKeyDown}
   value=""
-  placeholder={currentValue}
+  placeholder={global.keyToDisplayStr(currentValue)}
   class="p-2 w-full h-full min-w-0 bg-inherit text-inherit"
 />
 

@@ -53,7 +53,17 @@ export class Texture {
     }
     urls.forEach((url) => {
       if (imageCache.has(url)) {
-        images.push(imageCache.get(url))
+        const cachedImage = imageCache.get(url)
+        images.push(cachedImage)
+        /**
+         * @HATODO
+         * sometimes the cached image isn't loaded yet
+         */
+        // if (!cachedImage.complete) {
+        //   cachedImage.onload = tryLoad
+        // } else {
+        //   tryLoad()
+        // }
         tryLoad()
       } else {
         const img = new Image()

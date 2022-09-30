@@ -54,7 +54,6 @@ export class EditorLayer extends Layer {
     vec4.transformMat4(tc, [mouseX, mouseY, 0, 1], this.window.camera.inverse())
     const worldMouseX = tc[0]
     const worldMouseY = tc[1]
-    console.log(worldMouseX, worldMouseY)
 
     let selected = undefined
     this.game.currentScene.controlledComponents.forEach((e) => {

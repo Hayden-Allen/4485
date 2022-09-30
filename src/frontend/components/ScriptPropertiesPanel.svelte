@@ -4,10 +4,6 @@
   export let entity = undefined
   export let onEditScript = undefined
   export let onDeleteScript = undefined
-
-  $: {
-    console.log(entity)
-  }
 </script>
 
 {#if entity}

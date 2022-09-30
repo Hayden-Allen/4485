@@ -422,13 +422,30 @@ export class ScriptLayer extends Layer {
         width: width / window.devicePixelRatio,
         height: height / window.devicePixelRatio,
         borderAlphaVarying: self.graphvis.outlineAlpha,
-        checkCanReposition: (x, y) => {
-          return (
+        computeReposition: (x, y) => {
+          if (
             x > canvasBounds.left &&
             x < canvasBounds.right &&
             y > canvasBounds.top &&
             y < canvasBounds.bottom
-          )
+          ) {
+            const newX = global.clamp(
+              x,
+              canvasBounds.left,
+              canvasBounds.right - width
+            )
+            const newY = global.clamp(
+              y,
+              canvasBounds.top,
+              canvasBounds.bottom - height
+            )
+            self.input.mouseX =
+              (x - canvasBounds.left) * window.devicePixelRatio
+            self.input.mouseY = (y - canvasBounds.top) * window.devicePixelRatio
+            return { x: newX, y: newY }
+          } else {
+            return null
+          }
         },
         onAddNode: (name) => {
           const node = self.graphvis.graph.createNode(name)

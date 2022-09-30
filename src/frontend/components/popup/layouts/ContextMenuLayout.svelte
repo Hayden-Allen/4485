@@ -5,7 +5,7 @@
     y = null
   export let width = null,
     height = null
-  export let checkCanReposition = null
+  export let computeReposition = null
   export let onDestroyPopup = null
 
   export let borderAlphaVarying = null
@@ -35,9 +35,12 @@
   on:pointerdown={(e) => {
     e.preventDefault()
     e.stopPropagation()
-    if (e.button === 2 && checkCanReposition(e.clientX, e.clientY)) {
-      x = e.clientX
-      y = e.clientY
+    if (e.button === 2) {
+      const repositioned = computeReposition(e.clientX, e.clientY)
+      if (repositioned) {
+        x = repositioned.x
+        y = repositioned.y
+      }
     } else {
       onDestroyPopup()
     }

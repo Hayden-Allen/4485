@@ -13,7 +13,7 @@
     y = undefined
   export let width = undefined,
     height = undefined
-  export let checkCanReposition = undefined
+  export let computeReposition = undefined
   export let onDestroyPopup = undefined
 
   export let onAddNode = undefined
@@ -94,7 +94,7 @@
 <ContextMenuLayout
   {x}
   {y}
-  {checkCanReposition}
+  {computeReposition}
   {onDestroyPopup}
   {borderAlphaVarying}
   width={`${width}px`}

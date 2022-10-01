@@ -1,6 +1,8 @@
 <script>
   export let currentValue = undefined
   export let onApply = undefined
+  export let onFocus = undefined,
+    onBlur = undefined
 
   function validate() {
     return !isNaN(parseFloat(currentValue))
@@ -24,11 +26,13 @@
 
 <input
   on:change={validateAndApply}
+  on:focus={onFocus}
+  on:blur={onBlur}
   type="number"
   step="0.01"
   bind:value={currentValue}
   placeholder={currentValue}
-  class="p-2 w-full h-full min-w-0 bg-inherit text-inherit"
+  class="p-2 w-full h-full min-w-0 border-0 outline-none bg-inherit text-inherit"
 />
 
 <style>

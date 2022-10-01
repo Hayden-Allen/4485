@@ -75,22 +75,18 @@
       {/each}
     </div>
     <div
-      class="grow-1 shrink-1 flex flex-row w-full h-full p-4 overflow-hidden"
+      class="grow-1 shrink-1 flex flex-col w-full h-full p-4 overflow-hidden"
     >
       {#if selectedTemplate}
-        <div class="grow-1 shrink-1 w-full">
-          <div class="font-bold text-2xl mb-2">{selectedTemplate.name}</div>
-          <div>{selectedTemplate.description}</div>
-        </div>
-        <div class="flex flex-col grow-0 shrink-0 w-56 ml-4">
-          <img
-            class="grow-0 shrink-0 w-full rounded-md"
-            alt={`${selectedTemplate.name} script preview`}
-            src="https://media2.giphy.com/media/Vuw9m5wXviFIQ/giphy.gif"
-          />
+        <div class="grow-0 shrink-0 flex flex-row w-full overflow-hidden mb-2">
+          <div
+            class="grow-1 shrink-1 w-full font-bold text-2xl overflow-hidden whitespace-nowrap text-ellipsis"
+          >
+            {selectedTemplate.name}
+          </div>
           <button
             on:click={() => onUseScript(selectedTemplate)}
-            class="mt-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-full h-10"
+            class="grow-0 shrink-0 ml-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-52 h-10"
           >
             <div
               class="absolute w-full"
@@ -105,6 +101,11 @@
               <ArrowRight />
             </div>
           </button>
+        </div>
+        <div
+          class="grow-1 shrink-1 w-full h-full overflow-hidden text-ellipsis"
+        >
+          {selectedTemplate.description}
         </div>
       {/if}
     </div>

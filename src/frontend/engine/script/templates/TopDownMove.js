@@ -59,7 +59,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyRight', 'd'],
+      internalValues: ['keyRight', 'D'],
     },
     {
       type: 'VarKeyPressed',
@@ -67,7 +67,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyLeft', 'a'],
+      internalValues: ['keyLeft', 'A'],
     },
     {
       type: 'VarKeyPressed',
@@ -75,7 +75,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyDown', 's'],
+      internalValues: ['keyDown', 'S'],
     },
     {
       type: 'VarKeyPressed',
@@ -83,7 +83,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyUp', 'w'],
+      internalValues: ['keyUp', 'W'],
     },
   ],
   edges: [

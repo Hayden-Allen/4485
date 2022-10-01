@@ -12,6 +12,7 @@ class ExportNodeProxy {
     this.name = node.internalValues[0]
     this.value = node.internalValues[1]
     this.valueType = node.data.internalPorts[1].typename
+    this.editorType = node.data.internalPorts[1].editorTypename
   }
   setName(name) {
     this.name = name

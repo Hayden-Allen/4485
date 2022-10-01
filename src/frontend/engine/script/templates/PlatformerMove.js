@@ -39,7 +39,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyRight', 'd'],
+      internalValues: ['keyRight', 'D'],
     },
     {
       type: 'VarKeyPressed',
@@ -47,7 +47,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyLeft', 'a'],
+      internalValues: ['keyLeft', 'A'],
     },
     {
       type: 'SetEntityVelocityX',

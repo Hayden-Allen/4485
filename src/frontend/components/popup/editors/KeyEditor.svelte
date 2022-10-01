@@ -23,7 +23,7 @@
   function handleKeyDown(event) {
     event.preventDefault()
     event.stopPropagation()
-    currentValue = event.key
+    currentValue = event.key.length === 1 ? event.key.toUpperCase() : event.key
     onDestroyPopup()
   }
 

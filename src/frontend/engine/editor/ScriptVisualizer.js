@@ -87,7 +87,7 @@ export class ScriptVisualizer {
     })
   }
   recompile() {
-    this.graph.compile()
+    this.graph.forceCompile()
     this.generateProxies()
   }
   generateProxies() {

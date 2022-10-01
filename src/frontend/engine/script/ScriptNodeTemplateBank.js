@@ -3,6 +3,7 @@ import {
   InternalScriptNodeTemplate,
   ScriptNodeTemplate,
   ConstantScriptNodeTemplate,
+  ExportNodeTemplate,
 } from './ScriptNodeTemplate.js'
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
@@ -51,11 +52,11 @@ class ScriptNodeTemplateBank {
       ([name, type, editorType]) => new ScriptNodePort(name, type, editorType)
     )
   }
-  create(type, name, inputs, outputs, fn, isExport = false) {
+  create(category, name, inputs, outputs, fn, isExport = false) {
     this.bank.set(
       name,
       new ScriptNodeTemplate(
-        type,
+        category,
         name,
         this.mapPorts(inputs),
         this.mapPorts(outputs),
@@ -64,14 +65,14 @@ class ScriptNodeTemplateBank {
       )
     )
   }
-  createEvent(type, name, outputs) {
+  createEvent(category, name, outputs) {
     this.bank.set(
       name,
-      new EventScriptNodeTemplate(type, name, this.mapPorts(outputs))
+      new EventScriptNodeTemplate(category, name, this.mapPorts(outputs))
     )
   }
   createInternal(
-    type,
+    category,
     name,
     inputs,
     internals,
@@ -83,7 +84,7 @@ class ScriptNodeTemplateBank {
     this.bank.set(
       name,
       new InternalScriptNodeTemplate(
-        type,
+        category,
         name,
         this.mapPorts(inputs),
         this.mapPorts(internals),
@@ -94,15 +95,36 @@ class ScriptNodeTemplateBank {
       )
     )
   }
-  createConstant(type, name, ports, defaultValues, isExport = false) {
+  createConstant(category, name, ports, defaultValues, isExport = false) {
     this.bank.set(
       name,
       new ConstantScriptNodeTemplate(
-        type,
+        category,
         name,
         this.mapPorts(ports),
         defaultValues,
         isExport
+      )
+    )
+  }
+  createExport(
+    category,
+    name,
+    value,
+    valueName,
+    valueType,
+    { additionalPorts = [], additionalValues = [] } = {}
+  ) {
+    this.bank.set(
+      name,
+      new ExportNodeTemplate(
+        category,
+        name,
+        value,
+        valueName,
+        valueType,
+        this.mapPorts(additionalPorts),
+        additionalValues
       )
     )
   }
@@ -112,7 +134,7 @@ class ScriptNodeTemplateBank {
     this.createInput()
     this.createLogic()
     this.createMath()
-    this.createExport()
+    this.createExports()
   }
   createEvents() {
     this.createEvent('event', 'OnTick', [])
@@ -326,48 +348,16 @@ class ScriptNodeTemplateBank {
       }
     )
   }
-  createExport() {
-    this.createInternal(
-      'math',
-      'ExportInt',
-      [],
-      [
-        ['name', 'string'],
-        ['value', 'int'],
-      ],
-      ['export', 0],
-      [['value', 'int']],
-      (_, { internal }) => [{ value: internal[1] }],
-      true
-    )
-    this.createInternal(
-      'math',
-      'ExportFloat',
-      [],
-      [
-        ['name', 'string'],
-        ['value', 'float'],
-      ],
-      ['export', 0],
-      [['value', 'float']],
-      (_, { internal }) => [{ value: internal[1] }],
-      true
-    )
-    this.createInternal(
-      'math',
-      'ExportIntRange',
-      [],
-      [
-        ['name', 'string'],
-        ['value', 'int'],
+  createExports() {
+    this.createExport('math', 'ExportInt', 'value', 0, 'int')
+    this.createExport('math', 'ExportIntRange', 'value', 0, 'int', {
+      additionalPorts: [
         ['min', 'int'],
         ['max', 'int'],
       ],
-      ['export', 0, 0, 10],
-      [['value', 'int']],
-      (_, { internal }) => [{ value: internal[1] }],
-      true
-    )
+      additionalValues: [0, 10],
+    })
+    this.createExport('math', 'ExportFloat', 'value', 0, 'float')
   }
 }
 

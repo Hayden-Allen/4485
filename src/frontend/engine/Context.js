@@ -4,6 +4,7 @@ export class Context {
   constructor() {
     this.systems = new Map()
     this.windows = []
+    this.paused = false
 
     window.addEventListener('resize', () => this.propagateResizeEvent())
     window.addEventListener('keydown', (e) => {
@@ -25,14 +26,13 @@ export class Context {
     // this is also necessary to prevent physics from breaking
     if (deltaTime > 30) return
 
-    // update physics
-    /**
-     * @HATODO move this into context
-     * FIXME: Use variable delta like Matter Runner
-     */
-    global.physicsEngine.update(deltaTime, deltaCorrection)
-    // run engine logic
-    this.systems.forEach((system) => system.update(deltaTime))
+    global.varyingController.update(deltaTime)
+    if (!this.paused) {
+      // update physics
+      global.physicsEngine.update(deltaTime, deltaCorrection)
+      // run engine logic
+      this.systems.forEach((system) => system.update(deltaTime))
+    }
     // draw everything
     this.windows.forEach((window) => window.update(deltaTime))
   }

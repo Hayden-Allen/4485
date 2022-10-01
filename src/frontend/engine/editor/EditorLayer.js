@@ -1,5 +1,5 @@
 import { Layer } from '%window/Layer.js'
-import { Varying } from '%component/Varying.js'
+import { Varying } from '%util/Varying.js'
 import * as vec4 from '%glMatrix/vec4.js'
 import { global } from '%engine/Global.js'
 
@@ -7,7 +7,6 @@ export class EditorLayer extends Layer {
   constructor(game, setSelectedEntity) {
     super('EditorLayer')
     this.game = game
-    this.paused = false
     this.textSize = new Varying(75, 100, -1, { step: 0.5 })
     this.textTheta = new Varying(-Math.PI / 16, Math.PI / 16, -1, {
       step: 0.33,
@@ -17,14 +16,14 @@ export class EditorLayer extends Layer {
     this.setSelectedEntity = setSelectedEntity
   }
   onAppTick(e) {
-    if (!this.paused) this.fps = 1000 / e.deltaTime
+    if (!global.context.paused) this.fps = 1000 / e.deltaTime
     return false
   }
   onKeyDown(e) {
     if (!e.repeat) {
       switch (e.key) {
         case 'Escape':
-          this.paused ^= 1
+          global.context.paused ^= 1
           break
         case '`':
           this.showDebug ^= 1
@@ -45,6 +44,26 @@ export class EditorLayer extends Layer {
         5
       )
     })
+
+    if (global.context.paused) {
+      e.window.uiCanvas.drawTransparentRect(
+        0,
+        0,
+        e.window.canvas.width,
+        e.window.canvas.height,
+        '#000',
+        0.5
+      )
+      e.window.uiCanvas.drawCenteredText(
+        'PAUSED',
+        e.window.canvas.width / 2,
+        e.window.canvas.height / 2,
+        'courier new',
+        this.textSize.getValue(),
+        '#0f0',
+        { theta: this.textTheta.getValue() }
+      )
+    }
   }
   onMouseDown(e) {
     const mouseX = (2 * e.x) / this.window.canvas.width - 1

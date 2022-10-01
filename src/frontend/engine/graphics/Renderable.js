@@ -56,8 +56,8 @@ export class Renderable {
   }
   bind(gl, shaderProgram) {
     gl.bindVertexArray(this.vertexArray)
-    const frame = this.texture.bind(gl, 0)
+    this.texture.bind(gl, 0)
     shaderProgram.uniform1i(gl, 'u_texture', 0)
-    shaderProgram.uniform1i(gl, 'u_frame', frame)
+    shaderProgram.uniform1i(gl, 'u_frame', this.texture.frame)
   }
 }

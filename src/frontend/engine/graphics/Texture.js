@@ -57,31 +57,23 @@ export class Texture {
     }
 
     let loadCount = 0
-    let tryLoad = () => {
+    let tryLoad = (url, img) => {
       loadCount++
       if (loadCount === urls.length) bufferData()
+      // this may result in some images being loaded twice, but avoids the problem of incomplete images being added to the cache
+      if (!imageCache.has(url)) imageCache.set(url, img)
     }
     urls.forEach((url) => {
       if (imageCache.has(url)) {
         const cachedImage = imageCache.get(url)
         images.push(cachedImage)
-        /**
-         * @HATODO
-         * sometimes the cached image isn't loaded yet
-         */
-        // if (!cachedImage.complete) {
-        //   cachedImage.onload = tryLoad
-        // } else {
-        //   tryLoad()
-        // }
         tryLoad()
       } else {
         const img = new Image()
         img.crossOrigin = 'anonymous'
-        img.onload = tryLoad
+        img.onload = () => tryLoad(url, img)
         img.src = url
         images.push(img)
-        imageCache.set(url, img)
       }
     })
   }
@@ -103,13 +95,16 @@ export class Texture {
     gl.activeTexture(gl.TEXTURE0 + slot)
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.texture)
 
+    /**
+     * @HATODO hacky?
+     */
     if (
+      !global.context.paused &&
       this.frameCount > 1 &&
       global.time.now - this.lastSwitch >= this.frameTime
     ) {
       this.frame = (this.frame + 1) % this.frameCount
       this.lastSwitch = global.time.now
     }
-    return this.frame
   }
 }

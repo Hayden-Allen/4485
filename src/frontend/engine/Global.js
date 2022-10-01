@@ -1,5 +1,5 @@
 import { Context } from '%engine/Context.js'
-import { VaryingController } from '%system/VaryingController.js'
+import { VaryingController } from '%util/VaryingController.js'
 import { PhysicsEngine } from '%physics/PhysicsEngine.js'
 
 export var global = {

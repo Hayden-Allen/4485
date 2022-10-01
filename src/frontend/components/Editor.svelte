@@ -211,8 +211,8 @@
             }
           )
           script.deserialize(info.script)
-          player.addScript(script)
-          player.behavior.scripts = player.behavior.scripts
+          selectedEntity.addScript(script)
+          selectedEntity.behavior.scripts = selectedEntity.behavior.scripts
         }}
       />
     </div>
@@ -229,16 +229,16 @@
           graphIsEmpty={graphEditorScriptEmpty}
           onBackClicked={() => (graphEditorScript = undefined)}
         />
-      {:else if player}
+      {:else if selectedEntity}
         <div
           class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
         >
           <ScriptPropertiesPanel
-            entity={selectedEntity}
+            scripts={selectedEntity.behavior.scripts}
             onEditScript={(script) => (graphEditorScript = script)}
             onDeleteScript={(script) => {
-              player.removeScript(script)
-              player.behavior.scripts = player.behavior.scripts
+              selectedEntity.removeScript(script)
+              selectedEntity.behavior.scripts = selectedEntity.behavior.scripts
             }}
           />
         </div>

@@ -1,6 +1,6 @@
 import { ScriptNodeProxy } from './ScriptNodeProxy.js'
 import { ScriptEdgeProxy } from './ScriptEdgeProxy.js'
-import { Varying } from '%component/Varying.js'
+import { Varying } from '%util/Varying.js'
 
 const PADDING_X = 100,
   PADDING_Y = 50

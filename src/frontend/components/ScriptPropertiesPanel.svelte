@@ -1,17 +1,15 @@
 <script>
   import ScriptPropertiesGroup from 'components/ScriptPropertiesGroup.svelte'
 
-  export let entity = undefined
+  export let scripts = undefined
   export let onEditScript = undefined
   export let onDeleteScript = undefined
 </script>
 
-{#if entity}
-  {#each entity.behavior.scripts as script}
-    <ScriptPropertiesGroup
-      {script}
-      onEditScript={() => onEditScript(script)}
-      onDelete={() => onDeleteScript(script)}
-    />
-  {/each}
-{/if}
+{#each scripts as script}
+  <ScriptPropertiesGroup
+    {script}
+    onEditScript={() => onEditScript(script)}
+    onDelete={() => onDeleteScript(script)}
+  />
+{/each}

@@ -30,6 +30,10 @@ export class ScriptGraph extends Component {
     this.inputCache = inputCache
     this.pushErrorCallback = pushErrorCallback
     this.clearErrorsCallback = clearErrorsCallback
+    /**
+     * @HATODO move this somewhere else??
+     */
+    this.collapsed = false
     this.reset()
   }
   isEmpty() {

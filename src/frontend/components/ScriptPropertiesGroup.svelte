@@ -10,10 +10,12 @@
   export let script = undefined
   export let onEditScript = undefined
   export let onDelete = undefined
+  export let isLast = false
+  export let collapsed = false
+  export let onToggleCollapsed = undefined
 
   let sortedExportNodes = []
   let focusedNode = undefined
-  let collapsed = false
 
   $: {
     if (script) {
@@ -28,7 +30,7 @@
 <div class="flex flex-col grow-0 shrink-0 w-full overflow-x-hidden">
   <button
     class="bg-neutral-800 flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left"
-    on:click={() => (collapsed = !collapsed)}
+    on:click={onToggleCollapsed}
   >
     <div
       class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
@@ -47,67 +49,67 @@
       </div>
     </div>
     <button
-      class="grow-0 shrink-0 p-2 hover:bg-neutral-500 hover:text-neutral-100"
+      class="grow-0 shrink-0 p-2 hover:bg-neutral-500 hover:text-neutral-100 h-full"
       on:click={(e) => {
         e.stopPropagation()
         onEditScript()
       }}><div class="w-5 h-5"><Pencil /></div></button
     >
     <button
-      class="grow-0 shrink-0 p-2 hover:bg-neutral-500 hover:text-neutral-100"
+      class="grow-0 shrink-0 p-2 hover:bg-neutral-500 hover:text-neutral-100 h-full"
       on:click={(e) => {
         e.stopPropagation()
         onDelete()
       }}><div class="w-5 h-5"><Trash /></div></button
     >
   </button>
-  <div
-    class={`flex flex-col grow-0 shrink-0 w-full overflow-hidden ${
-      collapsed ? 'h-0' : 'h-auto'
-    }`}
-  >
-    {#each sortedExportNodes as exportNode}
-      <div
-        class="flex flex-row grow-0 shrink-0 border-b border-solid border-neutral-700 transition-all"
-        style={exportNode === focusedNode
-          ? `background-color: ${
-              PORT_COLOR[exportNode.valueType].editor.background
-            }3F;`
-          : ''}
-      >
+  {#if !collapsed}
+    <div class="flex flex-col grow-0 shrink-0 w-full overflow-hidden">
+      {#each sortedExportNodes as exportNode}
         <div
-          class={`grow-0 shrink-0 p-2 text-ellipsis whitespace-nowrap overflow-hidden w-48 transition-all ${
-            exportNode === focusedNode ? 'font-bold' : ''
-          }`}
-          style={`color: ${PORT_COLOR[exportNode.valueType].name}`}
+          class={`flex flex-row grow-0 shrink-0 ${
+            isLast ? 'border-b' : 'not-last:border-b'
+          } border-solid border-neutral-700 transition-all`}
+          style={exportNode === focusedNode
+            ? `background-color: ${
+                PORT_COLOR[exportNode.valueType].editor.background
+              }3F;`
+            : ''}
         >
-          {exportNode.name}
+          <div
+            class={`grow-0 shrink-0 p-2 text-ellipsis whitespace-nowrap overflow-hidden w-48 transition-all ${
+              exportNode === focusedNode ? 'font-bold' : ''
+            }`}
+            style={`color: ${PORT_COLOR[exportNode.valueType].name}`}
+          >
+            {exportNode.name}
+          </div>
+          <div class="grow-1 shrink-1 w-full overflow-hidden">
+            {#if exportNode.editorType === 'int'}
+              <IntEditor
+                currentValue={exportNode.value}
+                onApply={(value) => exportNode.setValue(value)}
+                onFocus={() => (focusedNode = exportNode)}
+                onBlur={() => (focusedNode = undefined)}
+              />
+            {:else if exportNode.editorType === 'float'}
+              <FloatEditor
+                currentValue={exportNode.value}
+                onApply={(value) => exportNode.setValue(value)}
+                onFocus={() => (focusedNode = exportNode)}
+                onBlur={() => (focusedNode = undefined)}
+              />
+            {:else if exportNode.editorType === 'key'}
+              <KeyEditor
+                currentValue={exportNode.value}
+                onApply={(value) => exportNode.setValue(value)}
+                onFocus={() => (focusedNode = exportNode)}
+                onBlur={() => (focusedNode = undefined)}
+              />
+            {/if}
+          </div>
         </div>
-        <div class="grow-1 shrink-1 w-full overflow-hidden">
-          {#if exportNode.editorType === 'int'}
-            <IntEditor
-              currentValue={exportNode.value}
-              onApply={(value) => exportNode.setValue(value)}
-              onFocus={() => (focusedNode = exportNode)}
-              onBlur={() => (focusedNode = undefined)}
-            />
-          {:else if exportNode.editorType === 'float'}
-            <FloatEditor
-              currentValue={exportNode.value}
-              onApply={(value) => exportNode.setValue(value)}
-              onFocus={() => (focusedNode = exportNode)}
-              onBlur={() => (focusedNode = undefined)}
-            />
-          {:else if exportNode.editorType === 'key'}
-            <KeyEditor
-              currentValue={exportNode.value}
-              onApply={(value) => exportNode.setValue(value)}
-              onFocus={() => (focusedNode = exportNode)}
-              onBlur={() => (focusedNode = undefined)}
-            />
-          {/if}
-        </div>
-      </div>
-    {/each}
-  </div>
+      {/each}
+    </div>
+  {/if}
 </div>

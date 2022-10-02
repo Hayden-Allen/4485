@@ -114,20 +114,23 @@ export class DynamicSceneEntity extends SceneEntity {
 }
 
 export class ControlledSceneEntity extends DynamicSceneEntity {
-  constructor(gameWindow, pos, frameTime, urls, behavior, options = {}) {
+  constructor(
+    gameWindow,
+    pos,
+    frameTime,
+    urls,
+    states,
+    currentState,
+    options = {}
+  ) {
     super(gameWindow, pos, frameTime, urls, options)
-    this.behavior = behavior
-  }
-  addScript(script) {
-    this.behavior.scripts.push(script)
-  }
-  removeScript(script) {
-    const i = this.behavior.scripts.indexOf(script)
-    if (i !== -1) {
-      this.behavior.scripts.splice(i, 1)
-    }
+    this.states = states
+    this.currentState = currentState
   }
   runBehavior(event, ...data) {
-    this.behavior.run(this, event, ...data)
+    /**
+     * @HATODO optimize this (cache actual current state, not just name)
+     */
+    this.states.get(this.currentState).run(this, event, ...data)
   }
 }

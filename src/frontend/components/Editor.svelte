@@ -3,7 +3,7 @@
   import Viewport from 'components/Viewport.svelte'
   import Splitter from 'components/Splitter.svelte'
   import ScriptTemplatesPanel from 'components/ScriptTemplatesPanel.svelte'
-  import ScriptPropertiesPanel from 'components/ScriptPropertiesPanel.svelte'
+  import StatesPanel from 'components/StatesPanel.svelte'
   import ScriptGraphEditor from 'components/ScriptGraphEditor.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
@@ -27,7 +27,8 @@
     graphEditorScriptErrors = [],
     graphEditorScriptEmpty = true,
     editorLayer = undefined,
-    selectedEntity = undefined
+    selectedEntity = undefined,
+    selectedState = undefined
 
   let graphEditorScript = undefined
 
@@ -93,7 +94,8 @@
         'https://art.pixilart.com/840bcbc293e372f.png',
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
       ],
-      new Behavior('default'),
+      new Map([['default', new Behavior()]]),
+      'default',
       { scale: 25 }
     )
     // add player at z-index 1
@@ -110,7 +112,10 @@
       1
     )
 
-    editorLayer = new EditorLayer(game, (e) => (selectedEntity = e))
+    editorLayer = new EditorLayer(game, (e) => {
+      selectedState = undefined
+      selectedEntity = e
+    })
     gameWindow.pushLayer(editorLayer)
 
     global.context.windows.push(gameWindow)
@@ -211,8 +216,8 @@
             }
           )
           script.deserialize(info.script)
-          selectedEntity.addScript(script)
-          selectedEntity.behavior.scripts = selectedEntity.behavior.scripts
+          selectedState.scripts = [...selectedState.scripts, script]
+          selectedEntity.states = selectedEntity.states
         }}
       />
     </div>
@@ -233,13 +238,23 @@
         <div
           class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
         >
-          <ScriptPropertiesPanel
-            scripts={selectedEntity.behavior.scripts}
-            onEditScript={(script) => (graphEditorScript = script)}
-            onDeleteScript={(script) => {
-              selectedEntity.removeScript(script)
-              selectedEntity.behavior.scripts = selectedEntity.behavior.scripts
+          <StatesPanel
+            states={selectedEntity.states}
+            {selectedState}
+            onSelectState={(name, state) => (selectedState = state)}
+            onRenameState={(name, state) => {
+              selectedEntity.states.delete(name)
+              selectedEntity.states.set(
+                window.prompt('Enter new state name:'),
+                state
+              )
+              selectedEntity.states = selectedEntity.states
             }}
+            onDeleteState={(name, state) => {
+              selectedEntity.states.delete(name)
+              selectedEntity.states = selectedEntity.states
+            }}
+            onEditScript={(script) => (graphEditorScript = script)}
           />
         </div>
       {/if}

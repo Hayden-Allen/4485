@@ -231,8 +231,11 @@ export class ScriptGraph extends Component {
         this.eventNodes.set(node.debugName, node)
         buildNodes.push(node)
       } else if (!this.getEdges(node).in.length) {
+        node.isSource = true
         this.sourceNodes.push(node)
         buildNodes.push(node)
+      } else {
+        node.isSource = false
       }
       if (node.isExport) this.exportNodes.push(new ExportNodeProxy(node))
     })

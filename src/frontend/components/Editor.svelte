@@ -115,6 +115,7 @@
     editorLayer = new EditorLayer(game, (e) => {
       selectedState = undefined
       selectedEntity = e
+      if (!selectedEntity) graphEditorScript = undefined
     })
     gameWindow.pushLayer(editorLayer)
 
@@ -233,6 +234,7 @@
           errorsList={graphEditorScriptErrors}
           graphIsEmpty={graphEditorScriptEmpty}
           onBackClicked={() => (graphEditorScript = undefined)}
+          states={selectedEntity.states}
         />
       {:else if selectedEntity}
         <div
@@ -255,6 +257,14 @@
               selectedEntity.states = selectedEntity.states
             }}
             onEditScript={(script) => (graphEditorScript = script)}
+            onAddState={() => {
+              const name = window.prompt('Enter new state name:').trim()
+              if (selectedEntity.states.has(name))
+                if (!window.confirm(`State '${name}' exists. Overwrite?`))
+                  return
+              selectedEntity.states.set(name, new Behavior())
+              selectedEntity.states = selectedEntity.states
+            }}
           />
         </div>
       {/if}

@@ -113,7 +113,11 @@ class ScriptNodeTemplateBank {
     value,
     valueName,
     valueType,
-    { additionalPorts = [], additionalValues = [] } = {}
+    {
+      additionalPorts = [],
+      additionalValues = [],
+      valueEditorType = valueType,
+    } = {}
   ) {
     this.bank.set(
       name,
@@ -123,6 +127,7 @@ class ScriptNodeTemplateBank {
         value,
         valueName,
         valueType,
+        valueEditorType,
         this.mapPorts(additionalPorts),
         additionalValues
       )
@@ -181,19 +186,6 @@ class ScriptNodeTemplateBank {
           { value: ~~pressed },
         ]
       }
-    )
-    this.createInternal(
-      'input',
-      'ExportKey',
-      [],
-      [
-        ['name', 'string'],
-        ['key', 'string', 'key'],
-      ],
-      ['export', 'a'],
-      [['key', 'string']],
-      (_, { internal }) => [{ value: internal[1] }],
-      true
     )
   }
   createMath() {
@@ -347,6 +339,19 @@ class ScriptNodeTemplateBank {
         entity.setScale(s)
       }
     )
+    this.create(
+      'entity',
+      'SetEntityState',
+      [
+        ['entity', 'object'],
+        ['state', 'string'],
+      ],
+      [],
+      ([entity, state]) => {
+        entity.currentState = state
+        console.log('SET STATE', state)
+      }
+    )
   }
   createExports() {
     this.createExport('math', 'ExportInt', 'value', 0, 'int')
@@ -358,6 +363,23 @@ class ScriptNodeTemplateBank {
       additionalValues: [0, 10],
     })
     this.createExport('math', 'ExportFloat', 'value', 0, 'float')
+    this.createInternal(
+      'input',
+      'ExportKey',
+      [],
+      [
+        ['name', 'string'],
+        ['key', 'string', 'key'],
+      ],
+      ['export', 'A'],
+      [['key', 'string']],
+      (_, { internal }) => [{ value: internal[1] }],
+      true
+    )
+
+    this.createExport('entity', 'ExportState', 'state', '---', 'string', {
+      valueEditorType: 'state',
+    })
   }
 }
 

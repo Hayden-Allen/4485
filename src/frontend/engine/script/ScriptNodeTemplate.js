@@ -106,6 +106,7 @@ export class ExportNodeTemplate extends InternalScriptNodeTemplate {
     valueName,
     value,
     valueType,
+    valueEditorType,
     additionalPorts,
     additionalValues
   ) {
@@ -115,7 +116,7 @@ export class ExportNodeTemplate extends InternalScriptNodeTemplate {
       [],
       [
         new ScriptNodePort('name', 'string'),
-        new ScriptNodePort(valueName, valueType),
+        new ScriptNodePort(valueName, valueType, valueEditorType),
         ...additionalPorts,
       ],
       ['export', value, ...additionalValues],

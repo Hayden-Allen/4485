@@ -3,6 +3,7 @@
   import ChevronRight from 'icons/20/mini/chevron-right.svelte'
   import Pencil from 'icons/20/mini/pencil.svelte'
   import Trash from 'icons/20/mini/trash.svelte'
+  import Plus from 'icons/20/mini/plus.svelte'
 
   export let states = undefined
   export let selectedState = undefined
@@ -10,6 +11,7 @@
   export let onRenameState = undefined
   export let onDeleteState = undefined
   export let onEditScript = undefined
+  export let onAddState = undefined
 
   let items = undefined
 
@@ -92,3 +94,21 @@
     </div>
   {/each}
 </div>
+
+<button
+  on:click={onAddState}
+  class="grow-0 shrink-0 ml-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-52 h-10"
+>
+  <div
+    class="absolute w-full"
+    style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
+  >
+    Add State
+  </div>
+  <div
+    class="absolute w-5 h-5"
+    style="top: 50%; right: 0; transform: translate(-16px, -50%);"
+  >
+    <Plus />
+  </div>
+</button>

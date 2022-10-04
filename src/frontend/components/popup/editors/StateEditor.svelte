@@ -51,7 +51,6 @@
     bind:this={inputEl}
     on:change={(e) => {
       currentValue = e.target.value
-      console.log(currentValue)
       onDestroyPopup()
     }}
     value={currentValue}

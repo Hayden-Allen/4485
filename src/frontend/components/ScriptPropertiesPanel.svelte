@@ -3,12 +3,14 @@
   import { flip } from 'svelte/animate'
   import { dndzone } from 'svelte-dnd-action'
   import ScriptPropertiesGroup from 'components/ScriptPropertiesGroup.svelte'
+  import Plus from 'icons/20/mini/plus.svelte'
 
   export let scripts = undefined
   export let onRearrangeScripts = undefined
   export let onEditScript = undefined
   export let onDeleteScript = undefined
   export let isLast = false
+  export let onAddScript = undefined
 
   let dndItems = undefined
 
@@ -58,3 +60,20 @@
     </div>
   {/each}
 </div>
+<button
+  on:click={onAddScript}
+  class="grow-0 shrink-0 ml-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-52 h-10"
+>
+  <div
+    class="absolute w-full"
+    style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
+  >
+    New Script
+  </div>
+  <div
+    class="absolute w-5 h-5"
+    style="top: 50%; right: 0; transform: translate(-16px, -50%);"
+  >
+    <Plus />
+  </div>
+</button>

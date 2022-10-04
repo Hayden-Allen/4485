@@ -146,6 +146,21 @@
     bottomLeftBasis = bottomSplit * 100
     bottomRightBasis = (1 - bottomSplit) * 100
   }
+
+  function createEmptyScript(name) {
+    return new ScriptGraph(
+      name,
+      gameWindow.inputCache,
+      (s) => {
+        graphEditorScriptErrors = [...graphEditorScriptErrors, s]
+        graphEditorScriptEmpty = false
+      },
+      (empty) => {
+        graphEditorScriptErrors = []
+        graphEditorScriptEmpty = empty
+      }
+    )
+  }
 </script>
 
 <div
@@ -204,18 +219,7 @@
     >
       <ScriptTemplatesPanel
         onUseScript={(info) => {
-          let script = new ScriptGraph(
-            'default',
-            gameWindow.inputCache,
-            (s) => {
-              graphEditorScriptErrors = [...graphEditorScriptErrors, s]
-              graphEditorScriptEmpty = false
-            },
-            (empty) => {
-              graphEditorScriptErrors = []
-              graphEditorScriptEmpty = empty
-            }
-          )
+          let script = createEmptyScript('default')
           script.deserialize(info.script)
           selectedState.scripts = [...selectedState.scripts, script]
           selectedEntity.states = selectedEntity.states
@@ -258,11 +262,24 @@
             }}
             onEditScript={(script) => (graphEditorScript = script)}
             onAddState={() => {
-              const name = window.prompt('Enter new state name:').trim()
+              let name = window.prompt('Enter new state name:')
+              if (!name) return
+              name = name.trim()
+
               if (selectedEntity.states.has(name))
                 if (!window.confirm(`State '${name}' exists. Overwrite?`))
                   return
               selectedEntity.states.set(name, new Behavior())
+              selectedEntity.states = selectedEntity.states
+            }}
+            onAddScript={() => {
+              let name = window.prompt('Enter new state name:')
+              if (!name) return
+              name = name.trim()
+
+              selectedEntity.states
+                .get(selectedEntity.currentState)
+                .scripts.push(createEmptyScript(name))
               selectedEntity.states = selectedEntity.states
             }}
           />

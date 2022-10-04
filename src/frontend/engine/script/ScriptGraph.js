@@ -27,6 +27,7 @@ class ExportNodeProxy {
 export class ScriptGraph extends Component {
   constructor(name, inputCache, pushErrorCallback, clearErrorsCallback) {
     super(name)
+    console.trace()
     this.inputCache = inputCache
     this.pushErrorCallback = pushErrorCallback
     this.clearErrorsCallback = clearErrorsCallback

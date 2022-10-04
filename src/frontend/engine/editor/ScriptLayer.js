@@ -511,7 +511,6 @@ export class ScriptLayer extends Layer {
         if (!popup.validate || popup.validate()) {
           options.proxy.node.internalValues[options.port.index] =
             popup.currentValue
-          console.log(popup.currentValue, options.proxy.node.internalValues)
           options.proxy.computeNodeWidth(self.window)
           /**
            * @HATODO don't necessarily need to do this

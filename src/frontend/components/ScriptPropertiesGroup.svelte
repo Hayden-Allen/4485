@@ -30,10 +30,10 @@
 <div class="flex flex-col grow-0 shrink-0 w-full overflow-x-hidden">
   <button
     class="bg-neutral-800 flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left"
-    on:click={onToggleCollapsed}
   >
     <div
       class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
+      on:click={onToggleCollapsed}
     >
       <div
         class={`grow-0 shrink-0 w-5 h-5 mr-2 transition-all duration-75 ${

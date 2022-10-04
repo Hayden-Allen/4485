@@ -4,6 +4,7 @@ import { Window2D } from './Window2D.js'
 import { Camera } from '%graphics/Camera.js'
 import { ShaderProgram } from '%graphics/ShaderProgram.js'
 import * as vec4 from '%glMatrix/vec4.js'
+import { global } from '%engine/Global.js'
 
 const VERTEX_SOURCE = `#version 300 es 
   precision highp float;
@@ -44,7 +45,13 @@ export class Window3D extends Window {
     /**
      * @HATODO move into EditorLayer
      */
-    this.camera = undefined
+    this.camera = new Camera(
+      [0, 0, 0],
+      -global.canvas.targetWidth / 2,
+      global.canvas.targetWidth / 2,
+      -global.canvas.targetHeight / 2,
+      global.canvas.targetHeight / 2
+    )
     this.shaderProgram = new ShaderProgram(
       this.gl,
       VERTEX_SOURCE,
@@ -74,14 +81,6 @@ export class Window3D extends Window {
   propagateResizeEvent() {
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     super.propagateResizeEvent()
-    if (!this.camera)
-      this.camera = new Camera(
-        [0, 0, 0],
-        -this.canvas.width / 2,
-        this.canvas.width / 2,
-        -this.canvas.height / 2,
-        this.canvas.height / 2
-      )
   }
   draw(renderable) {
     this.renderer.draw(renderable, this.camera, this.shaderProgram)

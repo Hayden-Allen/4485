@@ -12,6 +12,7 @@
   export let onDeleteState = undefined
   export let onEditScript = undefined
   export let onAddState = undefined
+  export let onAddScript = undefined
 
   let items = undefined
 
@@ -31,6 +32,23 @@
   }
 </script>
 
+<button
+  on:click={onAddState}
+  class="grow-0 shrink-0 ml-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-52 h-10"
+>
+  <div
+    class="absolute w-full"
+    style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
+  >
+    New State
+  </div>
+  <div
+    class="absolute w-5 h-5"
+    style="top: 50%; right: 0; transform: translate(-16px, -50%);"
+  >
+    <Plus />
+  </div>
+</button>
 <div class="grow-0 shrink-0 flex flex-col overflow-x-hidden">
   {#each items as item}
     <div
@@ -81,6 +99,7 @@
           scripts={item.state.scripts}
           onRearrangeScripts={(scripts) => (item.state.scripts = scripts)}
           {onEditScript}
+          {onAddScript}
           onDeleteScript={(script) => {
             const newScripts = [...item.state.scripts]
             const i = newScripts.indexOf(script)
@@ -94,21 +113,3 @@
     </div>
   {/each}
 </div>
-
-<button
-  on:click={onAddState}
-  class="grow-0 shrink-0 ml-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-52 h-10"
->
-  <div
-    class="absolute w-full"
-    style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
-  >
-    Add State
-  </div>
-  <div
-    class="absolute w-5 h-5"
-    style="top: 50%; right: 0; transform: translate(-16px, -50%);"
-  >
-    <Plus />
-  </div>
-</button>

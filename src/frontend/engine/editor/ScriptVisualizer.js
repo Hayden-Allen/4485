@@ -68,6 +68,9 @@ export const PORT_COLOR = {
     edge: '#9ca3af',
   },
 }
+
+const GRID_SIZE = 100,
+  GRID_CELL_SIZE = 100
 export class ScriptVisualizer {
   constructor(window, graph) {
     this.graph = graph
@@ -136,7 +139,28 @@ export class ScriptVisualizer {
       }
     })
   }
+  drawGrid(window) {
+    for (let y = -GRID_SIZE / 2; y <= GRID_SIZE / 2; y++) {
+      window.drawLine(
+        (-GRID_SIZE / 2) * GRID_CELL_SIZE,
+        y * GRID_CELL_SIZE,
+        (GRID_SIZE / 2) * GRID_CELL_SIZE,
+        y * GRID_CELL_SIZE,
+        '#333'
+      )
+    }
+    for (let x = -GRID_SIZE / 2; x <= GRID_SIZE / 2; x++) {
+      window.drawLine(
+        x * GRID_CELL_SIZE,
+        (-GRID_SIZE / 2) * GRID_CELL_SIZE,
+        x * GRID_CELL_SIZE,
+        (GRID_SIZE / 2) * GRID_CELL_SIZE,
+        '#333'
+      )
+    }
+  }
   draw(window, zoom) {
+    this.drawGrid(window)
     if (!this.graph || this.graph.isEmpty()) return
 
     this.edgeProxies.forEach((proxy) => proxy.draw(this, window))

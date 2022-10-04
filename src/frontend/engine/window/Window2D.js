@@ -48,22 +48,31 @@ export class Window2D extends Window {
     this.ctx.globalCompositeOperation = 'source-over'
   }
   drawLine(x0, y0, x1, y1, color, width) {
+    const prevWidth = this.ctx.lineWidth
+    this.ctx.lineWidth = width
+
     const [cx0, cy0] = this.scaleCoords(x0, y0)
     const [cx1, cy1] = this.scaleCoords(x1, y1)
     this.ctx.strokeStyle = color
-    this.ctx.lineWidth = width
     this.ctx.lineCap = 'round'
     this.ctx.beginPath()
     this.ctx.moveTo(cx0, cy0)
     this.ctx.lineTo(cx1, cy1)
     this.ctx.stroke()
     this.ctx.closePath()
+
+    this.ctx.lineWidth = prevWidth
   }
   drawTransparentLine(x0, y0, x1, y1, color, width, alpha) {
+    const prevWidth = this.ctx.lineWidth
+    this.ctx.lineWidth = width
+
     const prevAlpha = this.ctx.globalAlpha
     this.ctx.globalAlpha = alpha
     this.drawLine(x0, y0, x1, y1, color, width)
+
     this.ctx.globalAlpha = prevAlpha
+    this.ctx.lineWidth = prevWidth
   }
   drawRect(x, y, w, h, color) {
     const [cx, cy] = this.scaleCoords(x, y)
@@ -72,11 +81,15 @@ export class Window2D extends Window {
     this.ctx.fillRect(cx, cy, cw, ch)
   }
   strokeRect(x, y, w, h, color, width) {
+    const prevWidth = this.ctx.lineWidth
+    this.ctx.lineWidth = width
+
     const [cx, cy] = this.scaleCoords(x, y)
     const [cw, ch] = this.scaleDims(w, h)
     this.ctx.strokeStyle = color
-    this.ctx.lineWidth = width
     this.ctx.strokeRect(cx, cy, cw, ch)
+
+    this.ctx.lineWidth = prevWidth
   }
   drawTransparentRect(x, y, w, h, color, alpha) {
     const prevAlpha = this.ctx.globalAlpha
@@ -85,13 +98,17 @@ export class Window2D extends Window {
     this.ctx.globalAlpha = prevAlpha
   }
   strokeTransparentRect(x, y, w, h, color, width, alpha) {
+    const prevWidth = this.ctx.lineWidth
+    this.ctx.lineWidth = width
     const prevAlpha = this.ctx.globalAlpha
     this.ctx.globalAlpha = alpha
+
     const [cx, cy] = this.scaleCoords(x, y)
     const [cw, ch] = this.scaleDims(w, h)
     this.ctx.strokeStyle = color
-    this.ctx.lineWidth = width
     this.ctx.strokeRect(cx, cy, cw, ch)
+
+    this.ctx.lineWidth = prevWidth
     this.ctx.globalAlpha = prevAlpha
   }
   drawImage(img, x, y, w, h) {

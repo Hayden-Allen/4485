@@ -1,6 +1,7 @@
 export const scriptDataType = {
   int: 0x1,
   float: 0x2,
+  number: 0x2 | 0x1,
   array: 0x4,
   object: 0x8,
   bool: 0x10,

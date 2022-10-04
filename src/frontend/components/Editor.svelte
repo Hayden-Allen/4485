@@ -249,11 +249,13 @@
             {selectedState}
             onSelectState={(name, state) => (selectedState = state)}
             onRenameState={(name, state) => {
+              let newName = window.prompt('Enter new state name:')
+              if (!newName) return
+              newName = newName.trim()
+
               selectedEntity.states.delete(name)
-              selectedEntity.states.set(
-                window.prompt('Enter new state name:'),
-                state
-              )
+              selectedEntity.states.set(newName, state)
+              selectedEntity.currentState = newName
               selectedEntity.states = selectedEntity.states
             }}
             onDeleteState={(name, state) => {

@@ -63,6 +63,7 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
     internalValues = internalValues || [...this.defaultValues]
     if (!validateScriptDataTypes(internalValues, this.internalTypes)) {
       console.error('Invalid inputs')
+      console.log(internalValues, this.internalTypes)
       return
     }
 

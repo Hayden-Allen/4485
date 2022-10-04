@@ -8,6 +8,7 @@ export var global = {
   fps: 60,
   mouseX: 0,
   mouseY: 0,
+  epsilon: 10e-5,
 
   canvas: {
     targetWidth: 1920,

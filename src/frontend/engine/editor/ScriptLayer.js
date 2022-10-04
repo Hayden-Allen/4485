@@ -475,6 +475,7 @@ export class ScriptLayer extends Layer {
       string: StringPortEditor,
       bool: BoolPortEditor,
       float: FloatPortEditor,
+      number: FloatPortEditor,
       state: StatePortEditor,
     }
     const type = typenameToEditor[port.port.editorTypename]

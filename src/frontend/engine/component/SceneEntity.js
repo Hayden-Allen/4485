@@ -126,11 +126,23 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     super(gameWindow, pos, frameTime, urls, options)
     this.states = states
     this.currentState = currentState
+    this.firstRun = true
   }
   runBehavior(event, ...data) {
     /**
      * @HATODO optimize this (cache actual current state, not just name)
      */
-    this.states.get(this.currentState).run(this, event, ...data)
+    const state = this.states.get(this.currentState)
+    if (this.firstRun) {
+      state.run(this, 'OnSwitch')
+      this.firstRun = false
+    }
+    state.run(this, event, ...data)
+  }
+  setState(state) {
+    if (state !== this.currentState) {
+      this.currentState = state
+      this.firstRun = true
+    }
   }
 }

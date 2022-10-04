@@ -29,6 +29,11 @@ export const PORT_COLOR = {
     name: '#f59e0b',
     dot: '#d97706',
     edge: '#b45309',
+    editor: {
+      background: '#713f12',
+      foreground: '#fefce8',
+      placeholder: '#fef08a',
+    },
   },
 
   object: {

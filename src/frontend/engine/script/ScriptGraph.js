@@ -5,6 +5,7 @@ import { ScriptEdge, ScriptNodeEdgeList } from './ScriptEdge.js'
 const EVENT_NODE_NAMES = new Set()
 EVENT_NODE_NAMES.add('OnTick')
 EVENT_NODE_NAMES.add('OnCollide')
+EVENT_NODE_NAMES.add('OnSwitch')
 
 class ExportNodeProxy {
   constructor(node) {
@@ -27,7 +28,6 @@ class ExportNodeProxy {
 export class ScriptGraph extends Component {
   constructor(name, inputCache, pushErrorCallback, clearErrorsCallback) {
     super(name)
-    console.trace()
     this.inputCache = inputCache
     this.pushErrorCallback = pushErrorCallback
     this.clearErrorsCallback = clearErrorsCallback
@@ -279,6 +279,8 @@ export class ScriptGraph extends Component {
     let startNode = this.eventNodes.get(eventName)
     // this graph doesn't respond to the given event
     if (!startNode) return
+
+    // console.log(`Run '${this.debugName}.${eventName}`)
 
     this.nodes.forEach((node) => (node.active = false))
     // activate given event node and set its outputs

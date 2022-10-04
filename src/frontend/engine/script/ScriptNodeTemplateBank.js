@@ -140,6 +140,20 @@ class ScriptNodeTemplateBank {
     this.createLogic()
     this.createMath()
     this.createExports()
+    /**
+     * @HATODO remove
+     */
+    this.createInternal(
+      'logic',
+      '__debug',
+      [],
+      [['msg', 'string']],
+      ['debug'],
+      [],
+      (_, { internal, entity }) => {
+        entity.logInfo(internal[0])
+      }
+    )
   }
   createEvents() {
     this.createEvent('event', 'OnTick', [])
@@ -147,6 +161,7 @@ class ScriptNodeTemplateBank {
       ['normal', 'object'],
       ['entity', 'object'],
     ])
+    this.createEvent('event', 'OnSwitch', [])
   }
   createInput() {
     this.createInternal(
@@ -258,6 +273,39 @@ class ScriptNodeTemplateBank {
       [['n', 'object']],
       ([v]) => [{ value: v.norm() }]
     )
+    this.create(
+      'math',
+      'Vec2Equal',
+      [
+        ['v1', 'object'],
+        ['v2', 'object'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([v1, v2]) => {
+        const equal = v1.equals(v2)
+        return [
+          { value: equal, active: equal },
+          { value: !equal, active: !equal },
+          { value: ~~equal },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'ConstVec2',
+      [],
+      [
+        ['x', 'number'],
+        ['y', 'number'],
+      ],
+      [0, 0],
+      [['v', 'object']],
+      (_, { internal }) => [{ value: new Vec2(internal[0], internal[1]) }]
+    )
   }
   createLogic() {
     this.create(
@@ -348,8 +396,7 @@ class ScriptNodeTemplateBank {
       ],
       [],
       ([entity, state]) => {
-        entity.currentState = state
-        console.log('SET STATE', state)
+        entity.setState(state)
       }
     )
   }

@@ -3,7 +3,7 @@
   import ChevronRight from 'icons/20/mini/chevron-right.svelte'
   import Pencil from 'icons/20/mini/pencil.svelte'
   import Trash from 'icons/20/mini/trash.svelte'
-  import Plus from 'icons/20/mini/plus.svelte'
+  import Plus from 'icons/24/outline/plus.svelte'
 
   export let states = undefined
   export let selectedState = undefined
@@ -32,27 +32,10 @@
   }
 </script>
 
-<button
-  on:click={onAddState}
-  class="grow-0 shrink-0 ml-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-52 h-10"
->
-  <div
-    class="absolute w-full"
-    style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
-  >
-    New State
-  </div>
-  <div
-    class="absolute w-5 h-5"
-    style="top: 50%; right: 0; transform: translate(-16px, -50%);"
-  >
-    <Plus />
-  </div>
-</button>
-<div class="grow-0 shrink-0 flex flex-col overflow-x-hidden">
+<div class="grow-0 shrink-0 flex flex-col overflow-x-clip">
   {#each items as item}
     <div
-      class="grow-0 shrink-0 flex flex-col overflow-x-hidden"
+      class="grow-0 shrink-0 flex flex-col overflow-x-clip"
       on:click={() => onSelectState(item.name, item.state)}
     >
       <button
@@ -60,18 +43,21 @@
           item.state === selectedState
             ? 'bg-neutral-100 text-neutral-900'
             : 'bg-neutral-800'
-        } flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left`}
-        on:click={() => (item.state.collapsed = !item.state.collapsed)}
+        } flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left sticky top-0`}
       >
         <div
           class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
         >
-          <div
-            class={`grow-0 shrink-0 w-5 h-5 mr-2 transition-all duration-75 ${
+          <button
+            on:click={() => (item.state.collapsed = !item.state.collapsed)}
+            class={`hover:bg-neutral-500 hover:text-neutral-100 rounded-full grow-0 shrink-0 w-5 h-5 mr-2 transition-all duration-75 ${
               item.state.collapsed ? '' : 'rotate-90'
             }`}
           >
             <ChevronRight />
+          </button>
+          <div class="grow-0 shrink-0 overflow-hidden font-normal mr-1">
+            State:
           </div>
           <div
             class="grow-1 shrink-1 overflow-hidden text-ellipsis whitespace-nowrap"
@@ -112,4 +98,13 @@
       {/if}
     </div>
   {/each}
+  <button
+    on:click={onAddState}
+    class="grow-0 shrink-0 flex flex-row items-center justify-center p-2 sticky bottom-0 bg-neutral-900 hover:bg-neutral-800 border-t border-solid border-neutral-700 transition-all font-bold w-full"
+  >
+    <div class="grow-0 shrink-0 w-6 h-6 mr-2">
+      <Plus />
+    </div>
+    <div class="grow-0 shrink-0">New State</div>
+  </button>
 </div>

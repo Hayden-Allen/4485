@@ -28,19 +28,22 @@
 </script>
 
 <div class="flex flex-col grow-0 shrink-0 w-full overflow-x-hidden">
-  <button
-    class="bg-neutral-800 flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left"
+  <div
+    class="pl-8 bg-neutral-800 flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left"
   >
     <div
       class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
-      on:click={onToggleCollapsed}
     >
-      <div
-        class={`grow-0 shrink-0 w-5 h-5 mr-2 transition-all duration-75 ${
+      <button
+        on:click={onToggleCollapsed}
+        class={`grow-0 shrink-0 w-5 h-5 mr-2 hover:bg-neutral-500 hover:text-neutral-100 rounded-full transition-all duration-75 ${
           collapsed ? '' : 'rotate-90'
         }`}
       >
         <ChevronRight />
+      </button>
+      <div class="grow-0 shrink-0 overflow-hidden font-normal mr-1">
+        Script:
       </div>
       <div
         class="grow-1 shrink-1 overflow-hidden text-ellipsis whitespace-nowrap"
@@ -62,12 +65,12 @@
         onDelete()
       }}><div class="w-5 h-5"><Trash /></div></button
     >
-  </button>
+  </div>
   {#if !collapsed}
     <div class="flex flex-col grow-0 shrink-0 w-full overflow-hidden">
       {#each sortedExportNodes as exportNode}
         <div
-          class={`flex flex-row grow-0 shrink-0 ${
+          class={`pl-16 flex flex-row grow-0 shrink-0 ${
             isLast ? 'border-b' : 'not-last:border-b'
           } border-solid border-neutral-700 transition-all`}
           style={exportNode === focusedNode

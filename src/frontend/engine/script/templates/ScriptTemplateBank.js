@@ -1,4 +1,5 @@
 import lunr from 'lunr'
+import CustomScript from '%script/templates/CustomScript.js'
 import TopDownMove from '%script/templates/TopDownMove.js'
 import PlatformerMove from '%script/templates/PlatformerMove.js'
 import PlatformerJump from '%script/templates/PlatformerJump.js'
@@ -13,6 +14,7 @@ class ScriptTemplateInfo {
 }
 
 export const scriptTemplateBank = [
+  new ScriptTemplateInfo('Start your custom script from scratch', CustomScript),
   new ScriptTemplateInfo('Moves your character with WASD', TopDownMove),
   new ScriptTemplateInfo('Moves your character with AD', PlatformerMove),
   new ScriptTemplateInfo('Jumps', PlatformerJump),

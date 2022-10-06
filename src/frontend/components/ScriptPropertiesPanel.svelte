@@ -10,7 +10,6 @@
   export let onEditScript = undefined
   export let onDeleteScript = undefined
   export let isLast = false
-  export let onAddScript = undefined
 
   let dndItems = undefined
 

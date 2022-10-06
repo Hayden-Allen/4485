@@ -35,6 +35,7 @@ export class ScriptGraph extends Component {
      * @HATODO move this somewhere else??
      */
     this.collapsed = false
+    this.firstRun = true
     this.reset()
   }
   isEmpty() {
@@ -53,6 +54,7 @@ export class ScriptGraph extends Component {
     this.edges = new Map()
     this.cachedCompile = undefined
     this.canErr = true
+    this.firstRun = true
   }
   serialize() {
     let nodes = []
@@ -275,6 +277,12 @@ export class ScriptGraph extends Component {
   run(entity, eventName, ...eventData) {
     // only runs if necessary
     this.compile()
+
+    // check if we need to run OnSwitch
+    if (this.firstRun) {
+      this.firstRun = false
+      this.run(entity, 'OnSwitch')
+    }
 
     let startNode = this.eventNodes.get(eventName)
     // this graph doesn't respond to the given event

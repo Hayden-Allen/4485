@@ -9,4 +9,7 @@ export class Behavior {
   run(entity, event, ...data) {
     this.scripts.forEach((script) => script.run(entity, event, ...data))
   }
+  reset() {
+    this.scripts.forEach((script) => (script.firstRun = true))
+  }
 }

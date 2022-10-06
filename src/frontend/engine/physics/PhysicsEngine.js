@@ -9,14 +9,18 @@ export class PhysicsEngine {
 
     Events.on(this.engine, 'collisionStart', (event) => {
       event.pairs.forEach((pair) => {
-        const normal = new Vec2(
+        // normal relative to pair.bodyB (+y is up)
+        const normalB = new Vec2(
           pair.collision.normal.x,
           -pair.collision.normal.y
         )
+        // normal relative to pair.bodyA
+        const normalA = normalB.scale(-1)
+
         if (pair.bodyA._owner.states)
-          pair.bodyA._owner.runBehavior('OnCollide', normal, pair.bodyB._owner)
+          pair.bodyA._owner.runBehavior('OnCollide', normalA, pair.bodyB._owner)
         if (pair.bodyB._owner.states)
-          pair.bodyB._owner.runBehavior('OnCollide', normal, pair.bodyA._owner)
+          pair.bodyB._owner.runBehavior('OnCollide', normalB, pair.bodyA._owner)
       })
     })
   }

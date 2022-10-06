@@ -23,12 +23,15 @@ export class Scene extends Component {
   }
   // TODO limit z in some way?
   addStaticEntity(component, z) {
+    component.bindToScene(this, z)
     this.addBase('static', component, z)
   }
   addDynamicEntity(component, z) {
+    component.bindToScene(this, z)
     this.addBase('dynamic', component, z)
   }
   addControlledEntity(component, z) {
+    component.bindToScene(this, z)
     this.addDynamicEntity(component, z)
     this.controlledComponents.set(component.id, component)
   }
@@ -56,7 +59,9 @@ export class Scene extends Component {
     this.removeBase('dynamic', component)
   }
   removeControlledEntity(component) {
-    this.removeDynamicComponent(component)
-    this.controlledComponents.delete(component.id)
+    if (component.states) {
+      this.removeDynamicEntity(component)
+      this.controlledComponents.delete(component.id)
+    }
   }
 }

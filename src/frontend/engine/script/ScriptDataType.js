@@ -27,7 +27,8 @@ export function resolveScriptDataType(input) {
 export function validateScriptDataTypes(input, expected) {
   if (input.length != expected.length) return false
   for (var i = 0; i < expected.length; i++) {
-    if (!(resolveScriptDataType(input[i]) & expected[i])) {
+    const type = resolveScriptDataType(input[i])
+    if (!(type & expected[i])) {
       return false
     }
   }

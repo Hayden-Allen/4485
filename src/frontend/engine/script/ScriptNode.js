@@ -96,6 +96,7 @@ export class ScriptNode extends Component {
         internal: this.internalValues,
         input: inputCache,
         node: this,
+        scene: entity.scene,
       }) || []
 
     // store output values

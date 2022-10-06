@@ -56,6 +56,9 @@ export class ScriptNodeProxy extends UIElement {
     this.portHeight = 0
     this.maxPortCount = 0
     this.hoveredPort = -1
+    this.maxInputWidth = 0
+    this.maxInternalWidth = 0
+    this.maxOutputWidth = 0
     this.init(window)
   }
   computeNodeWidth(window) {
@@ -68,29 +71,29 @@ export class ScriptNodeProxy extends UIElement {
 
     // compute node width
     const { inputPorts, outputPorts, internalPorts } = this.node.data
-    let inWidth = 0,
-      internalWidth = 0,
-      outWidth = 0
+    this.maxInputWidth = 0
+    this.maxInternalWidth = 0
+    this.maxOutputWidth = 0
     for (
       var i = 0;
       i < Math.max(inputPorts.length, outputPorts.length, internalPorts.length);
       i++
     ) {
       if (i < inputPorts.length)
-        inWidth = Math.max(
-          inWidth,
+        this.maxInputWidth = Math.max(
+          this.maxInputWidth,
           window.textMetrics(inputPorts[i].name, FONT_FAMILY, PORT_FONT_SIZE)
             .width + PORT_NAME_PADDING_X
         )
       if (i < outputPorts.length)
-        outWidth = Math.max(
-          outWidth,
+        this.maxOutputWidth = Math.max(
+          this.maxOutputWidth,
           window.textMetrics(outputPorts[i].name, FONT_FAMILY, PORT_FONT_SIZE)
             .width + PORT_NAME_PADDING_X
         )
       if (i < internalPorts.length) {
-        internalWidth = Math.max(
-          internalWidth,
+        this.maxInternalWidth = Math.max(
+          this.maxInternalWidth,
           window.textMetrics(
             `${internalPorts[i].name}: ${this.getInternalValueDisplayStr(i)}`,
             FONT_FAMILY,
@@ -100,8 +103,10 @@ export class ScriptNodeProxy extends UIElement {
       }
     }
     this.w =
-      Math.max(inWidth + internalWidth + outWidth, Math.ceil(text.width)) +
-      WIDTH_PADDING
+      Math.max(
+        this.maxInputWidth + this.maxInternalWidth + this.maxOutputWidth,
+        Math.ceil(text.width)
+      ) + WIDTH_PADDING
   }
   init(window) {
     // compute name height
@@ -239,7 +244,7 @@ export class ScriptNodeProxy extends UIElement {
       const correctedInternalValue = this.getInternalValueDisplayStr(i)
 
       const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
-      const x = tx + PORT_NAME_PADDING_X
+      const x = tx + PORT_NAME_PADDING_X + this.maxInputWidth
       const width = window.textMetrics(
         `${port.name}: ${correctedInternalValue}`,
         FONT_FAMILY,

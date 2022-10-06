@@ -52,6 +52,14 @@ export class SceneEntity extends Component {
 
     this.pos = pos
     this.createPhysicsProxy()
+
+    // set when added to scene (Scene.js)
+    this.scene = undefined
+    this.sceneZ = undefined
+  }
+  bindToScene(scene, z) {
+    this.scene = scene
+    this.sceneZ = z
   }
   createPhysicsProxy() {
     this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
@@ -66,6 +74,7 @@ export class SceneEntity extends Component {
       }
     )
     this.physicsProxy._owner = this
+    // console.log(this.physicsProxy)
     /**
      * @HATODO for platformers?
      */
@@ -107,8 +116,14 @@ export class DynamicSceneEntity extends SceneEntity {
   }
   setVelocityX(x) {
     Body.setVelocity(this.physicsProxy, {
-      x: x,
+      x,
       y: this.physicsProxy.velocity.y,
+    })
+  }
+  setVelocityY(y) {
+    Body.setVelocity(this.physicsProxy, {
+      x: this.physicsProxy.velocity.x,
+      y,
     })
   }
 }
@@ -126,21 +141,16 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     super(gameWindow, pos, frameTime, urls, options)
     this.states = states
     this.currentState = currentState
-    this.firstRun = true
   }
   runBehavior(event, ...data) {
     /**
      * @HATODO optimize this (cache actual current state, not just name)
      */
-    const state = this.states.get(this.currentState)
-    if (this.firstRun) {
-      state.run(this, 'OnSwitch')
-      this.firstRun = false
-    }
-    state.run(this, event, ...data)
+    this.states.get(this.currentState).run(this, event, ...data)
   }
   setState(state) {
     if (state !== this.currentState) {
+      this.states.get(this.currentState).reset()
       this.currentState = state
       this.firstRun = true
     }

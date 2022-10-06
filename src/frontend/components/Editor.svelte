@@ -85,6 +85,30 @@
       ),
       0
     )
+    game.addStaticSceneEntity(
+      new SceneEntity(
+        gameWindow,
+        new Vec2(-700, -150),
+        0,
+        [
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        ],
+        { vertices, indices, scale: 1 }
+      ),
+      0
+    )
+    game.addStaticSceneEntity(
+      new SceneEntity(
+        gameWindow,
+        new Vec2(-500, -150),
+        0,
+        [
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        ],
+        { vertices, indices, scale: 1 }
+      ),
+      0
+    )
 
     player = new ControlledSceneEntity(
       gameWindow,
@@ -101,21 +125,38 @@
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    game.addDynamicSceneEntity(
-      new DynamicSceneEntity(
+    game.addControlledSceneEntity(
+      new ControlledSceneEntity(
         gameWindow,
-        new Vec2(-100, 0),
+        new Vec2(-600, 0),
         0,
         ['https://art.pixilart.com/840bcbc293e372f.png'],
+        new Map([['default', new Behavior()]]),
+        'default',
         { scale: 25 }
       ),
       1
     )
 
+    // game.addDynamicSceneEntity(
+    //   new DynamicSceneEntity(
+    //     gameWindow,
+    //     new Vec2(-100, 0),
+    //     0,
+    //     ['https://art.pixilart.com/840bcbc293e372f.png'],
+    //     { scale: 25 }
+    //   ),
+    //   1
+    // )
+
     editorLayer = new EditorLayer(game, (e) => {
-      selectedState = undefined
       selectedEntity = e
-      if (!selectedEntity) graphEditorScript = undefined
+      if (!selectedEntity) {
+        graphEditorScript = undefined
+        selectedState = undefined
+      } else {
+        selectedState = selectedEntity.states.get(selectedEntity.currentState)
+      }
     })
     gameWindow.pushLayer(editorLayer)
 
@@ -247,7 +288,9 @@
           <StatesPanel
             states={selectedEntity.states}
             {selectedState}
-            onSelectState={(name, state) => (selectedState = state)}
+            onSelectState={(name, state) => {
+              selectedState = state
+            }}
             onRenameState={(name, state) => {
               let newName = window.prompt('Enter new state name:')
               if (!newName) return
@@ -272,16 +315,6 @@
                 if (!window.confirm(`State '${name}' exists. Overwrite?`))
                   return
               selectedEntity.states.set(name, new Behavior())
-              selectedEntity.states = selectedEntity.states
-            }}
-            onAddScript={() => {
-              let name = window.prompt('Enter new state name:')
-              if (!name) return
-              name = name.trim()
-
-              selectedEntity.states
-                .get(selectedEntity.currentState)
-                .scripts.push(createEmptyScript(name))
               selectedEntity.states = selectedEntity.states
             }}
           />

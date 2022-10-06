@@ -7,6 +7,7 @@ import {
 } from './ScriptNodeTemplate.js'
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
+import { global } from '%engine/Global.js'
 
 export const NODE_CATEGORY_COLORS = {
   all: {
@@ -227,6 +228,86 @@ class ScriptNodeTemplateBank {
       [['a*b', 'number']],
       ([a, b]) => [{ value: a * b }]
     )
+    this.create(
+      'math',
+      'Min',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [['min', 'number']],
+      ([a, b]) => [{ value: Math.min(a, b) }]
+    )
+    this.create(
+      'math',
+      'Max',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [['max', 'number']],
+      ([a, b]) => [{ value: Math.max(a, b) }]
+    )
+    this.create(
+      'math',
+      'Clamp',
+      [
+        ['x', 'number'],
+        ['min', 'number'],
+        ['max', 'number'],
+      ],
+      [['clamped', 'number']],
+      ([x, min, max]) => [{ value: global.clamp(x, min, max) }]
+    )
+    this.create(
+      'math',
+      'Negative',
+      [['x', 'number']],
+      [['-x', 'number']],
+      ([x]) => [{ value: -x }]
+    )
+    this.create(
+      'math',
+      'Equals',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const equal = a == b
+        return [
+          { value: equal, active: equal },
+          { value: !equal, active: !equal },
+          { value: ~~equal },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'EqualsConst',
+      [['a', 'number']],
+      [['b', 'number']],
+      [0],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a], { internal }) => {
+        const equal = a == internal[0]
+        return [
+          { value: equal, active: equal },
+          { value: !equal, active: !equal },
+          { value: ~~equal },
+        ]
+      }
+    )
+
     // vector
     /**
      * @HATODO debug only
@@ -268,6 +349,26 @@ class ScriptNodeTemplateBank {
     )
     this.create(
       'math',
+      'ClampVec2',
+      [
+        ['v', 'object'],
+        ['min', 'number'],
+        ['max', 'number'],
+      ],
+      [['v', 'object']],
+      ([v, min, max]) => {
+        const l2 = v.lengthSquared()
+        if (l2 < min * min) {
+          v.normalize().scaleEqual(min)
+        } else if (l2 > max * max) {
+          v.normalize().scaleEqual(max)
+        }
+
+        return [{ value: v }]
+      }
+    )
+    this.create(
+      'math',
       'Normalize',
       [['v', 'object']],
       [['n', 'object']],
@@ -275,7 +376,7 @@ class ScriptNodeTemplateBank {
     )
     this.create(
       'math',
-      'Vec2Equal',
+      'Vec2Equals',
       [
         ['v1', 'object'],
         ['v2', 'object'],
@@ -308,6 +409,87 @@ class ScriptNodeTemplateBank {
     )
   }
   createLogic() {
+    this.create(
+      'logic',
+      'AND',
+      [
+        ['a', 'any'],
+        ['b', 'any'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const and = a && b
+        return [
+          { value: and, active: and },
+          { value: !and, active: !and },
+          { value: ~~and },
+        ]
+      }
+    )
+    this.create(
+      'logic',
+      'OR',
+      [
+        ['a', 'any'],
+        ['b', 'any'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const or = a || b
+        return [
+          { value: or, active: or },
+          { value: !or, active: !or },
+          { value: ~~or },
+        ]
+      }
+    )
+    this.create(
+      'logic',
+      'XOR',
+      [
+        ['a', 'any'],
+        ['b', 'any'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const xor = a ^ b
+        return [
+          { value: xor, active: xor },
+          { value: !xor, active: !xor },
+          { value: ~~xor },
+        ]
+      }
+    )
+    this.create(
+      'logic',
+      'NOT',
+      [['a', 'any']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a]) => {
+        const not = !a
+        return [
+          { value: not, active: not },
+          { value: !not, active: !not },
+          { value: ~~not },
+        ]
+      }
+    )
     this.create(
       'logic',
       'Mux2',
@@ -358,6 +540,20 @@ class ScriptNodeTemplateBank {
     )
     this.create(
       'entity',
+      'SetEntityVelocityY',
+      [
+        ['entity', 'object'],
+        ['y', 'number'],
+      ],
+      [],
+      ([entity, y]) => {
+        if (entity.setVelocity) {
+          entity.setVelocityY(y)
+        }
+      }
+    )
+    this.create(
+      'entity',
       'ApplyEntityForce',
       [
         ['entity', 'object'],
@@ -373,7 +569,10 @@ class ScriptNodeTemplateBank {
       'GetEntityVelocity',
       [['entity', 'object']],
       [['v', 'object']],
-      ([entity]) => [{ value: entity.physicsProxy.velocity }]
+      ([entity]) => {
+        const { x, y } = entity.physicsProxy.velocity
+        return [{ value: new Vec2(x, y) }]
+      }
     )
     this.create(
       'entity',
@@ -397,6 +596,15 @@ class ScriptNodeTemplateBank {
       [],
       ([entity, state]) => {
         entity.setState(state)
+      }
+    )
+    this.create(
+      'entity',
+      'DestroyEntity',
+      [['entity', 'object']],
+      [],
+      ([entity], { scene }) => {
+        scene.removeControlledEntity(entity)
       }
     )
   }

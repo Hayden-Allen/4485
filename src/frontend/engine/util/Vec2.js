@@ -51,6 +51,7 @@ export class Vec2 {
   }
   normalize() {
     this.scaleEqual(1 / this.magnitude())
+    return this
   }
   dot(other) {
     return this.x * other.x + this.y * other.y

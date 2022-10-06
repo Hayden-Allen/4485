@@ -12,7 +12,6 @@
   export let onDeleteState = undefined
   export let onEditScript = undefined
   export let onAddState = undefined
-  export let onAddScript = undefined
 
   let items = undefined
 
@@ -85,7 +84,6 @@
           scripts={item.state.scripts}
           onRearrangeScripts={(scripts) => (item.state.scripts = scripts)}
           {onEditScript}
-          {onAddScript}
           onDeleteScript={(script) => {
             const newScripts = [...item.state.scripts]
             const i = newScripts.indexOf(script)

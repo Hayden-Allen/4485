@@ -1,9 +1,11 @@
 <script>
   export let currentValue = undefined
   export let onApply = undefined
+  export let onFocus = undefined,
+    onBlur = undefined
 
   function validate() {
-    return !isNaN(parseInt(currentValue))
+    return !isNaN(parseFloat(currentValue))
   }
 
   function validateAndApply() {
@@ -14,7 +16,7 @@
 
   $: {
     if (currentValue !== '') {
-      const x = Math.round(currentValue)
+      const x = parseFloat(currentValue)
       if (!isNaN(x)) {
         currentValue = x
       }
@@ -24,11 +26,18 @@
 
 <input
   on:change={validateAndApply}
+  on:keydown={(event) => {
+    if (event.key === 'Enter') {
+      validateAndApply()
+    }
+  }}
+  on:focus={onFocus}
+  on:blur={onBlur}
   type="number"
-  step="1"
+  step="0.01"
   bind:value={currentValue}
   placeholder={currentValue}
-  class="p-2 w-full h-full min-w-0 bg-inherit text-inherit"
+  class="p-2 w-full h-full min-w-0 border-0 outline-none bg-inherit text-inherit"
 />
 
 <style>

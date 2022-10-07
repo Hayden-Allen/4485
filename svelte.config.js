@@ -24,7 +24,6 @@ const config = {
       '%system': 'src/frontend/engine/system',
       '%util': 'src/frontend/engine/util',
       '%window': 'src/frontend/engine/window',
-      '%behaviors': 'src/frontend/engine/behaviors',
     },
     files: {
       routes: 'src/frontend/routes',

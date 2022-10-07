@@ -2,6 +2,7 @@
 
 <script>
   import { onMount } from 'svelte'
+  import { global } from '%engine/Global.js'
   import EditorLayout from 'components/popup/layouts/EditorLayout.svelte'
 
   export let x = null,
@@ -22,7 +23,7 @@
   function handleKeyDown(event) {
     event.preventDefault()
     event.stopPropagation()
-    currentValue = event.key
+    currentValue = event.key.length === 1 ? event.key.toUpperCase() : event.key
     onDestroyPopup()
   }
 
@@ -44,7 +45,7 @@
     bind:this={inputEl}
     on:keydown={handleKeyDown}
     value=""
-    placeholder={currentValue}
+    placeholder={global.keyToDisplayStr(currentValue)}
     class="grow-1 shrink-1 p-2 w-full min-w-0 border-0 outline-none bg-inherit text-inherit"
     style={`--placeholder-color: ${placeholderColor};`}
   />

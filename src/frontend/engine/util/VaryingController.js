@@ -1,4 +1,4 @@
-import { System } from './System.js'
+import { System } from '../system/System.js'
 
 export class VaryingController extends System {
   constructor() {

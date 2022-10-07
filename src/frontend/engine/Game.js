@@ -25,8 +25,8 @@ export class Game {
   removeDynamicSceneEntity(component) {
     this.currentScene.removeDynamicEntity(component)
   }
-  removeControlledSceneEntity(component, z) {
-    this.currentScene.removeControlledEntity(component, z)
+  removeControlledSceneEntity(component) {
+    this.currentScene.removeControlledEntity(component, component.sceneZ)
   }
   draw(window) {
     this.currentScene.layers.forEach((layer) => layer.draw(window))

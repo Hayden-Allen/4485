@@ -17,6 +17,11 @@ export class Renderer {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   }
   draw(renderable, camera, shaderProgram) {
+    /**
+     * @HATODO temporary hack (until camera is moved into EditorLayer)
+     */
+    if (!camera) return
+
     let gl = this.gl
 
     let mvp = mat4.create()

@@ -13,6 +13,7 @@
   export let errorsList = undefined
   export let graphIsEmpty = false
   export let onBackClicked = undefined
+  export let states = undefined
 
   let scriptWindow = undefined,
     scriptCanvas = undefined,
@@ -28,7 +29,8 @@
     scriptLayer = new ScriptLayer(
       scriptInputLayer,
       scriptControlsLayer,
-      undefined
+      undefined,
+      states
     )
     scriptWindow.pushLayer(scriptControlsLayer)
     scriptWindow.pushLayer(scriptLayer)

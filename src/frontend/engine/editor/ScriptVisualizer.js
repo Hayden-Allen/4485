@@ -1,6 +1,6 @@
 import { ScriptNodeProxy } from './ScriptNodeProxy.js'
 import { ScriptEdgeProxy } from './ScriptEdgeProxy.js'
-import { Varying } from '%component/Varying.js'
+import { Varying } from '%util/Varying.js'
 
 const PADDING_X = 100,
   PADDING_Y = 50
@@ -29,6 +29,11 @@ export const PORT_COLOR = {
     name: '#f59e0b',
     dot: '#d97706',
     edge: '#b45309',
+    editor: {
+      background: '#713f12',
+      foreground: '#fefce8',
+      placeholder: '#fef08a',
+    },
   },
 
   object: {
@@ -68,6 +73,9 @@ export const PORT_COLOR = {
     edge: '#9ca3af',
   },
 }
+
+const GRID_SIZE = 100,
+  GRID_CELL_SIZE = 100
 export class ScriptVisualizer {
   constructor(window, graph) {
     this.graph = graph
@@ -86,12 +94,8 @@ export class ScriptVisualizer {
       reset: true,
     })
   }
-  setGraph(graph) {
-    this.graph = graph
-    this.recompile()
-  }
   recompile() {
-    this.graph.compile()
+    this.graph.forceCompile()
     this.generateProxies()
   }
   generateProxies() {
@@ -140,7 +144,28 @@ export class ScriptVisualizer {
       }
     })
   }
+  drawGrid(window) {
+    for (let y = -GRID_SIZE / 2; y <= GRID_SIZE / 2; y++) {
+      window.drawLine(
+        (-GRID_SIZE / 2) * GRID_CELL_SIZE,
+        y * GRID_CELL_SIZE,
+        (GRID_SIZE / 2) * GRID_CELL_SIZE,
+        y * GRID_CELL_SIZE,
+        '#333'
+      )
+    }
+    for (let x = -GRID_SIZE / 2; x <= GRID_SIZE / 2; x++) {
+      window.drawLine(
+        x * GRID_CELL_SIZE,
+        (-GRID_SIZE / 2) * GRID_CELL_SIZE,
+        x * GRID_CELL_SIZE,
+        (GRID_SIZE / 2) * GRID_CELL_SIZE,
+        '#333'
+      )
+    }
+  }
   draw(window, zoom) {
+    this.drawGrid(window)
     if (!this.graph || this.graph.isEmpty()) return
 
     this.edgeProxies.forEach((proxy) => proxy.draw(this, window))

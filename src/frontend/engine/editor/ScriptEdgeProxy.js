@@ -2,7 +2,11 @@ import { PORT_COLOR } from './ScriptVisualizer.js'
 import { UIElement } from './UIElement.js'
 import { global } from '%engine/Global.js'
 
-export const COLORS = { activationEdge: '#facc15', hovered: '#d4d4d4' }
+export const COLORS = {
+  activationEdge: '#facc15',
+  activationEdgeBlob: '#fef08a',
+  hovered: '#d4d4d4',
+}
 const LINE_WIDTH = [2, 5]
 const BLOB_WIDTH = [5, 10]
 export class ScriptEdgeProxy extends UIElement {
@@ -12,6 +16,27 @@ export class ScriptEdgeProxy extends UIElement {
     this.startPort = startPort
     this.endProxy = endProxy
     this.endPort = endPort
+  }
+  getPortColors(blobStart) {
+    let startColor = this.colors.activationEdge
+    let endColor = this.colors.activationEdge
+    let startType = undefined,
+      endType = undefined
+    if (this.startPort !== -1) {
+      startType = this.startProxy.node.data.outputPorts[this.startPort].typename
+      startColor = PORT_COLOR[startType].edge
+    }
+    if (this.endPort !== -1) {
+      endType = this.endProxy.node.data.inputPorts[this.endPort].typename
+      endColor = PORT_COLOR[endType].edge
+    }
+
+    let blobColor = global.colorMix(
+      endType ? PORT_COLOR[endType].name : this.colors.activationEdgeBlob,
+      startType ? PORT_COLOR[startType].name : this.colors.activationEdgeBlob,
+      blobStart
+    )
+    return { startColor, endColor, blobColor }
   }
   draw(visualizer, window) {
     const startCoords = this.getStartCoords()
@@ -30,24 +55,7 @@ export class ScriptEdgeProxy extends UIElement {
     const blobX = blobMid * endCoords.x + (1 - blobMid) * startCoords.x
     const blobY = blobMid * endCoords.y + (1 - blobMid) * startCoords.y
 
-    let startColor = this.colors.activationEdge
-    let endColor = this.colors.activationEdge
-    let blobColor = this.colors.activationEdge
-    // if this isn't an activation edge, get port colors
-    if (
-      !(this.endPort === -1 || !this.startProxy.node.data.outputPorts.length)
-    ) {
-      const startType =
-        this.startProxy.node.data.outputPorts[this.startPort].typename
-      const endType = this.endProxy.node.data.inputPorts[this.endPort].typename
-      startColor = PORT_COLOR[startType].edge
-      endColor = PORT_COLOR[endType].edge
-      blobColor = global.colorMix(
-        PORT_COLOR[endType].name,
-        PORT_COLOR[startType].name,
-        blobStart
-      )
-    }
+    const { startColor, endColor, blobColor } = this.getPortColors(blobStart)
 
     // draw the line using a gradient between the two port's colors
     let color = window.ctx.createLinearGradient(sx, sy, ex, ey)

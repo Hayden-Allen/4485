@@ -43,6 +43,7 @@ export class ScriptNode extends Component {
     this.active = false
     this.internalValues = internalValues
     this.isExport = isExport
+    this.isSource = false
   }
   serialize() {
     const obj = {
@@ -95,6 +96,7 @@ export class ScriptNode extends Component {
         internal: this.internalValues,
         input: inputCache,
         node: this,
+        scene: entity.scene,
       }) || []
 
     // store output values
@@ -104,14 +106,14 @@ export class ScriptNode extends Component {
     const outboundEdges = this.graph.getEdges(this).out
     for (var i = 0; i < outboundEdges.length; i++) {
       const edge = outboundEdges[i]
-      // `edge` is an activation edge
-      if (edge.outputIndex === -1) {
+      // `edge` is a pure activation edge
+      if (edge.inputIndex === -1 && edge.outputIndex === -1) {
         edge.inputNode.active = true
       } else {
-        const { activate } = results[edge.outputIndex]
-        // a value of true means explicitly activate all child nodes
-        // no value (undefined) means activate all child nodes ONLY if this node runs (which it just did)
-        if (activate || activate === undefined) {
+        const { active } = results[edge.outputIndex]
+        // activate child nodes if the result of running this node says so
+        if (active || (!this.isSource && active === undefined)) {
+          // console.log(this.debugName, active)
           edge.inputNode.active = true
         }
       }

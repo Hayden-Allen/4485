@@ -2,8 +2,8 @@
   import { onMount } from 'svelte'
   import Viewport from 'components/Viewport.svelte'
   import Splitter from 'components/Splitter.svelte'
-  import BehaviorsPanel from 'components/BehaviorsPanel.svelte'
-  import BehaviorPropertiesGroup from 'components/BehaviorPropertiesGroup.svelte'
+  import ScriptTemplatesPanel from 'components/ScriptTemplatesPanel.svelte'
+  import StatesPanel from 'components/StatesPanel.svelte'
   import ScriptGraphEditor from 'components/ScriptGraphEditor.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
@@ -17,17 +17,20 @@
   import { Window3D } from '%window/Window3D.js'
   import { EditorLayer } from '%editor/EditorLayer.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
+  import { Behavior } from '%script/Behavior.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
 
   let gameWindow = undefined,
     player = undefined,
-    playerScript = undefined,
-    playerScriptErrors = [],
-    playerScriptEmpty = true
+    graphEditorScriptErrors = [],
+    graphEditorScriptEmpty = true,
+    editorLayer = undefined,
+    selectedEntity = undefined,
+    selectedState = undefined
 
-  let showGraphEditor = false
+  let graphEditorScript = undefined
 
   onMount(() => {
     global.init()
@@ -43,7 +46,7 @@
       indices = [],
       i = 0
     for (var y = 0; y < 50; y += size) {
-      for (var x = 0; x < 50; x += size) {
+      for (var x = 0; x < 500; x += size) {
         const sx = x / 10,
           sy = y / 10
         const s = 1
@@ -73,9 +76,36 @@
     game.addStaticSceneEntity(
       new SceneEntity(
         gameWindow,
-        new Vec2(0, 0),
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        new Vec2(-700, -300),
+        0,
+        [
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        ],
         { vertices, indices, scale: 25 }
+      ),
+      0
+    )
+    game.addStaticSceneEntity(
+      new SceneEntity(
+        gameWindow,
+        new Vec2(-700, -150),
+        0,
+        [
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        ],
+        { vertices, indices, scale: 1 }
+      ),
+      0
+    )
+    game.addStaticSceneEntity(
+      new SceneEntity(
+        gameWindow,
+        new Vec2(-500, -150),
+        0,
+        [
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+        ],
+        { vertices, indices, scale: 1 }
       ),
       0
     )
@@ -83,34 +113,56 @@
     player = new ControlledSceneEntity(
       gameWindow,
       new Vec2(0, 0),
-      'https://art.pixilart.com/840bcbc293e372f.png',
-      undefined,
+      500,
+      [
+        'https://art.pixilart.com/840bcbc293e372f.png',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+      ],
+      new Map([['Default', new Behavior()]]),
+      'Default',
       { scale: 25 }
     )
     // add player at z-index 1
     game.addControlledSceneEntity(player, 1)
 
-    game.addDynamicSceneEntity(
-      new DynamicSceneEntity(
+    game.addControlledSceneEntity(
+      new ControlledSceneEntity(
         gameWindow,
-        new Vec2(-100, 0),
-        'https://art.pixilart.com/840bcbc293e372f.png',
+        new Vec2(-600, 0),
+        0,
+        ['https://art.pixilart.com/840bcbc293e372f.png'],
+        new Map([['Default', new Behavior()]]),
+        'Default',
         { scale: 25 }
       ),
       1
     )
 
-    gameWindow.pushLayer(new EditorLayer(game))
+    // game.addDynamicSceneEntity(
+    //   new DynamicSceneEntity(
+    //     gameWindow,
+    //     new Vec2(-100, 0),
+    //     0,
+    //     ['https://art.pixilart.com/840bcbc293e372f.png'],
+    //     { scale: 25 }
+    //   ),
+    //   1
+    // )
+
+    editorLayer = new EditorLayer(game, (e) => {
+      selectedEntity = e
+      if (!selectedEntity) {
+        graphEditorScript = undefined
+        selectedState = undefined
+      } else {
+        selectedState = selectedEntity.states.get(selectedEntity.currentState)
+      }
+    })
+    gameWindow.pushLayer(editorLayer)
 
     global.context.windows.push(gameWindow)
     global.context.run()
   })
-
-  $: {
-    if (player) {
-      player.setScript(playerScript)
-    }
-  }
 
   /*
    * Handles
@@ -134,6 +186,21 @@
     midBottomBasis = (1 - midSplit) * 100
     bottomLeftBasis = bottomSplit * 100
     bottomRightBasis = (1 - bottomSplit) * 100
+  }
+
+  function createEmptyScript(name) {
+    return new ScriptGraph(
+      name,
+      gameWindow.inputCache,
+      (s) => {
+        graphEditorScriptErrors = [...graphEditorScriptErrors, s]
+        graphEditorScriptEmpty = false
+      },
+      (empty) => {
+        graphEditorScriptErrors = []
+        graphEditorScriptEmpty = empty
+      }
+    )
   }
 </script>
 
@@ -191,21 +258,12 @@
       class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomLeftBasis}%;`}
     >
-      <BehaviorsPanel
-        onUseBehavior={(info) => {
-          playerScript = new ScriptGraph(
-            'PlayerScript',
-            gameWindow.inputCache,
-            (s) => {
-              playerScriptErrors = [...playerScriptErrors, s]
-              playerScriptEmpty = false
-            },
-            (empty) => {
-              playerScriptErrors = []
-              playerScriptEmpty = empty
-            }
-          )
-          playerScript.deserialize(info.script)
+      <ScriptTemplatesPanel
+        onUseScript={(info) => {
+          let script = createEmptyScript('default')
+          script.deserialize(info.script)
+          selectedState.scripts = [...selectedState.scripts, script]
+          selectedEntity.states = selectedEntity.states
         }}
       />
     </div>
@@ -214,22 +272,51 @@
       class="relative grow shrink overflow-hidden bg-neutral-900"
       style={`flex-basis: ${bottomRightBasis}%;`}
     >
-      {#if showGraphEditor}
+      {#if graphEditorScript}
         <ScriptGraphEditor
           context={global.context}
-          script={playerScript}
-          errorsList={playerScriptErrors}
-          graphIsEmpty={playerScriptEmpty}
-          onBackClicked={() => (showGraphEditor = false)}
+          script={graphEditorScript}
+          errorsList={graphEditorScriptErrors}
+          graphIsEmpty={graphEditorScriptEmpty}
+          onBackClicked={() => (graphEditorScript = undefined)}
+          states={selectedEntity.states}
         />
-      {:else if playerScript}
+      {:else if selectedEntity}
         <div
           class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
         >
-          <BehaviorPropertiesGroup
-            script={playerScript}
-            onEditScript={() => (showGraphEditor = true)}
-            onDelete={() => (playerScript = undefined)}
+          <StatesPanel
+            states={selectedEntity.states}
+            {selectedState}
+            onSelectState={(name, state) => {
+              selectedState = state
+            }}
+            onRenameState={(name, state) => {
+              let newName = window.prompt('Enter new state name:')
+              if (!newName) return
+              newName = newName.trim()
+
+              selectedEntity.states.delete(name)
+              selectedEntity.states.set(newName, state)
+              selectedEntity.currentState = newName
+              selectedEntity.states = selectedEntity.states
+            }}
+            onDeleteState={(name, state) => {
+              selectedEntity.states.delete(name)
+              selectedEntity.states = selectedEntity.states
+            }}
+            onEditScript={(script) => (graphEditorScript = script)}
+            onAddState={() => {
+              let name = window.prompt('Enter new state name:')
+              if (!name) return
+              name = name.trim()
+
+              if (selectedEntity.states.has(name))
+                if (!window.confirm(`State '${name}' exists. Overwrite?`))
+                  return
+              selectedEntity.states.set(name, new Behavior())
+              selectedEntity.states = selectedEntity.states
+            }}
           />
         </div>
       {/if}

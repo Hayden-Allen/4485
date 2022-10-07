@@ -5,6 +5,25 @@ import { ScriptEdge, ScriptNodeEdgeList } from './ScriptEdge.js'
 const EVENT_NODE_NAMES = new Set()
 EVENT_NODE_NAMES.add('OnTick')
 EVENT_NODE_NAMES.add('OnCollide')
+EVENT_NODE_NAMES.add('OnSwitch')
+
+class ExportNodeProxy {
+  constructor(node) {
+    this.node = node
+    this.name = node.internalValues[0]
+    this.value = node.internalValues[1]
+    this.valueType = node.data.internalPorts[1].typename
+    this.editorType = node.data.internalPorts[1].editorTypename
+  }
+  setName(name) {
+    this.name = name
+    this.node.internalValues[0] = name
+  }
+  setValue(value) {
+    this.value = value
+    this.node.internalValues[1] = value
+  }
+}
 
 export class ScriptGraph extends Component {
   constructor(name, inputCache, pushErrorCallback, clearErrorsCallback) {
@@ -12,6 +31,11 @@ export class ScriptGraph extends Component {
     this.inputCache = inputCache
     this.pushErrorCallback = pushErrorCallback
     this.clearErrorsCallback = clearErrorsCallback
+    /**
+     * @HATODO move this somewhere else??
+     */
+    this.collapsed = false
+    this.firstRun = true
     this.reset()
   }
   isEmpty() {
@@ -30,6 +54,7 @@ export class ScriptGraph extends Component {
     this.edges = new Map()
     this.cachedCompile = undefined
     this.canErr = true
+    this.firstRun = true
   }
   serialize() {
     let nodes = []
@@ -188,6 +213,10 @@ export class ScriptGraph extends Component {
       if (edges[i].inputIndex === inputIndex) return true
     return false
   }
+  forceCompile() {
+    this.cachedCompile = undefined
+    return this.compile()
+  }
   compile() {
     if (this.cachedCompile) return this.cachedCompile
     // reset error status
@@ -205,11 +234,13 @@ export class ScriptGraph extends Component {
         this.eventNodes.set(node.debugName, node)
         buildNodes.push(node)
       } else if (!this.getEdges(node).in.length) {
+        node.isSource = true
         this.sourceNodes.push(node)
         buildNodes.push(node)
+      } else {
+        node.isSource = false
       }
-
-      if (node.isExport) this.exportNodes.push(node)
+      if (node.isExport) this.exportNodes.push(new ExportNodeProxy(node))
     })
 
     // determine execution order using topological sort
@@ -247,9 +278,17 @@ export class ScriptGraph extends Component {
     // only runs if necessary
     this.compile()
 
+    // check if we need to run OnSwitch
+    if (this.firstRun) {
+      this.firstRun = false
+      this.run(entity, 'OnSwitch')
+    }
+
     let startNode = this.eventNodes.get(eventName)
     // this graph doesn't respond to the given event
     if (!startNode) return
+
+    // console.log(`Run '${this.debugName}.${eventName}`)
 
     this.nodes.forEach((node) => (node.active = false))
     // activate given event node and set its outputs

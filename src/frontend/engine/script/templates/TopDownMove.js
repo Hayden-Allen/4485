@@ -1,5 +1,5 @@
 export default {
-  name: 'Move',
+  name: 'TopDownMove',
   nodes: [
     {
       type: 'OnTick',
@@ -59,7 +59,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyRight', 'd'],
+      internalValues: ['keyRight', 'D'],
     },
     {
       type: 'VarKeyPressed',
@@ -67,7 +67,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyLeft', 'a'],
+      internalValues: ['keyLeft', 'A'],
     },
     {
       type: 'VarKeyPressed',
@@ -75,7 +75,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyDown', 's'],
+      internalValues: ['keyDown', 'S'],
     },
     {
       type: 'VarKeyPressed',
@@ -83,7 +83,7 @@ export default {
     },
     {
       type: 'ExportKey',
-      internalValues: ['keyUp', 'w'],
+      internalValues: ['keyUp', 'W'],
     },
   ],
   edges: [
@@ -150,13 +150,13 @@ export default {
       in: [
         {
           outputIndex: 2,
-          inputIndex: 0,
+          inputIndex: 1,
           outputNode: 17,
           inputNode: 2,
         },
         {
           outputIndex: 2,
-          inputIndex: 1,
+          inputIndex: 0,
           outputNode: 19,
           inputNode: 2,
         },
@@ -439,7 +439,7 @@ export default {
       out: [
         {
           outputIndex: 2,
-          inputIndex: 0,
+          inputIndex: 1,
           outputNode: 17,
           inputNode: 2,
         },
@@ -474,7 +474,7 @@ export default {
       out: [
         {
           outputIndex: 2,
-          inputIndex: 1,
+          inputIndex: 0,
           outputNode: 19,
           inputNode: 2,
         },

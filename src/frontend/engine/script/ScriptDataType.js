@@ -1,6 +1,7 @@
 export const scriptDataType = {
   int: 0x1,
   float: 0x2,
+  number: 0x2 | 0x1,
   array: 0x4,
   object: 0x8,
   bool: 0x10,
@@ -26,7 +27,8 @@ export function resolveScriptDataType(input) {
 export function validateScriptDataTypes(input, expected) {
   if (input.length != expected.length) return false
   for (var i = 0; i < expected.length; i++) {
-    if (!(resolveScriptDataType(input[i]) & expected[i])) {
+    const type = resolveScriptDataType(input[i])
+    if (!(type & expected[i])) {
       return false
     }
   }

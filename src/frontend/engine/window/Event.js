@@ -43,21 +43,21 @@ export class MouseScrollEvent extends MouseVectorEvent {
     super(e, e.deltaX, e.deltaY)
   }
 }
-class MouseButtonEvent extends InputEvent {
-  constructor(e, pressed) {
-    super(e)
+class MouseButtonEvent extends MouseVectorEvent {
+  constructor(e, x, y, pressed) {
+    super(e, x, y)
     this.button = e.button
     this.pressed = pressed
   }
 }
 export class MouseUpEvent extends MouseButtonEvent {
-  constructor(e) {
-    super(e, false)
+  constructor(e, x, y) {
+    super(e, x, y, false)
   }
 }
 export class MouseDownEvent extends MouseButtonEvent {
-  constructor(e) {
-    super(e, true)
+  constructor(e, x, y) {
+    super(e, x, y, true)
   }
 }
 

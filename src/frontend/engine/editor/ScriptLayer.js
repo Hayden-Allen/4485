@@ -7,32 +7,34 @@ import KeyPortEditor from 'components/popup/editors/KeyEditor.svelte'
 import IntPortEditor from 'components/popup/editors/IntEditor.svelte'
 import BoolPortEditor from 'components/popup/editors/BoolEditor.svelte'
 import FloatPortEditor from 'components/popup/editors/FloatEditor.svelte'
+import StatePortEditor from 'components/popup/editors/StateEditor.svelte'
 import StringPortEditor from 'components/popup/editors/StringEditor.svelte'
 import { PORT_COLOR } from './ScriptVisualizer.js'
 import { ScriptEdgeProxy } from './ScriptEdgeProxy'
 
 export class ScriptLayer extends Layer {
-  constructor(input, controls, playerScript) {
+  constructor(input, controls, script, selectedEntityStates) {
     super('ScriptLayer')
     this.input = input
     this.controls = controls
+    this.script = script
+    this.selectedEntityStates = selectedEntityStates
     this.capturedLeftClick = false
     this.graphvis = undefined
-    this.playerScript = playerScript
     this.selected = undefined
     this.selectedX = 0
     this.selectedY = 0
     this.hovered = undefined
   }
   setScript(script) {
-    this.playerScript = script
+    this.script = script
     if (this.graphvis) {
-      this.graphvis.setGraph(this.playerScript)
+      this.graphvis.graph = this.script
     }
   }
   onAttach() {
     // need this.window to be valid, so can't call in constructor
-    this.graphvis = new ScriptVisualizer(this.window, this.playerScript)
+    this.graphvis = new ScriptVisualizer(this.window, this.script)
     this.graphvis.arrange()
   }
   onMouseScroll() {
@@ -404,17 +406,48 @@ export class ScriptLayer extends Layer {
     const self = this
     return this.createPopup(AddNodeMenu, ({ mouseX, mouseY, canvas }) => {
       const canvasBounds = canvas.getBoundingClientRect()
+      const width = 400,
+        height = 320
+      const x = global.clamp(
+        canvasBounds.left + mouseX / window.devicePixelRatio,
+        canvasBounds.left,
+        canvasBounds.right - width
+      )
+      const y = global.clamp(
+        canvasBounds.top + mouseY / window.devicePixelRatio,
+        canvasBounds.top,
+        canvasBounds.bottom - height
+      )
       return {
-        x: canvasBounds.left + mouseX / window.devicePixelRatio,
-        y: canvasBounds.top + mouseY / window.devicePixelRatio,
+        x,
+        y,
+        width: width / window.devicePixelRatio,
+        height: height / window.devicePixelRatio,
         borderAlphaVarying: self.graphvis.outlineAlpha,
-        checkCanReposition: (x, y) => {
-          return (
+        computeReposition: (x, y) => {
+          if (
             x > canvasBounds.left &&
             x < canvasBounds.right &&
             y > canvasBounds.top &&
             y < canvasBounds.bottom
-          )
+          ) {
+            const newX = global.clamp(
+              x,
+              canvasBounds.left,
+              canvasBounds.right - width
+            )
+            const newY = global.clamp(
+              y,
+              canvasBounds.top,
+              canvasBounds.bottom - height
+            )
+            self.input.mouseX =
+              (x - canvasBounds.left) * window.devicePixelRatio
+            self.input.mouseY = (y - canvasBounds.top) * window.devicePixelRatio
+            return { x: newX, y: newY }
+          } else {
+            return null
+          }
         },
         onAddNode: (name) => {
           const node = self.graphvis.graph.createNode(name)
@@ -442,14 +475,17 @@ export class ScriptLayer extends Layer {
       string: StringPortEditor,
       bool: BoolPortEditor,
       float: FloatPortEditor,
+      number: FloatPortEditor,
+      state: StatePortEditor,
     }
+    const type = typenameToEditor[port.port.editorTypename]
     const nodeProps = { proxy, port }
     return [
-      typenameToEditor[port.port.editorTypename],
-      (options) => this.getPortEditorProps({ ...options, ...nodeProps }),
+      type,
+      (options) => this.getPortEditorProps(type, { ...options, ...nodeProps }),
     ]
   }
-  getPortEditorProps(options) {
+  getPortEditorProps(type, options) {
     const { x: wx, y: wy } = options.proxy.getInternalPortCoords(
       options.port.index,
       this.window
@@ -457,7 +493,14 @@ export class ScriptLayer extends Layer {
     const [sx, sy] = this.transformCoords(wx, wy)
     const canvasBounds = options.canvas.getBoundingClientRect()
     const self = this
+
+    let extra = {}
+    if (type === StatePortEditor) {
+      extra = { states: this.selectedEntityStates }
+    }
+
     return {
+      ...extra,
       x: canvasBounds.left + sx / window.devicePixelRatio,
       y: canvasBounds.top + sy / window.devicePixelRatio,
       bgColor: PORT_COLOR[options.port.port.typename].editor.background,
@@ -470,6 +513,11 @@ export class ScriptLayer extends Layer {
           options.proxy.node.internalValues[options.port.index] =
             popup.currentValue
           options.proxy.computeNodeWidth(self.window)
+          /**
+           * @HATODO don't necessarily need to do this
+           * just need to rebuild exportNodes in the graph (in case values changed)
+           */
+          self.graphvis.recompile()
         }
         options.proxy.deselect()
       },

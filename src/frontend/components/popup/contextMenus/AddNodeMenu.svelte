@@ -2,6 +2,7 @@
 
 <script>
   import { onMount } from 'svelte'
+  import { global } from '%engine/Global.js'
   import {
     NODE_CATEGORY_COLORS,
     scriptNodeTemplateBank,
@@ -11,7 +12,9 @@
 
   export let x = undefined,
     y = undefined
-  export let checkCanReposition = undefined
+  export let width = undefined,
+    height = undefined
+  export let computeReposition = undefined
   export let onDestroyPopup = undefined
 
   export let onAddNode = undefined
@@ -73,7 +76,7 @@
         ...value,
       })
     }
-    categories.sort((a, b) => (a.name > b.name ? 1 : -1))
+    global.alphabetSort(categories)
   }
 
   onMount(() => {
@@ -92,11 +95,11 @@
 <ContextMenuLayout
   {x}
   {y}
-  {checkCanReposition}
+  {computeReposition}
   {onDestroyPopup}
   {borderAlphaVarying}
-  width="400px"
-  height="320px"
+  width={`${width}px`}
+  height={`${height}px`}
 >
   <div
     class="flex flex-col w-full h-full overflow-hidden"

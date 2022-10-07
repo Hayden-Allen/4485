@@ -56,6 +56,9 @@ export class ScriptNodeProxy extends UIElement {
     this.portHeight = 0
     this.maxPortCount = 0
     this.hoveredPort = -1
+    this.maxInputWidth = 0
+    this.maxInternalWidth = 0
+    this.maxOutputWidth = 0
     this.init(window)
   }
   computeNodeWidth(window) {
@@ -68,39 +71,42 @@ export class ScriptNodeProxy extends UIElement {
 
     // compute node width
     const { inputPorts, outputPorts, internalPorts } = this.node.data
-    let inWidth = 0,
-      internalWidth = 0,
-      outWidth = 0
+    this.maxInputWidth = 0
+    this.maxInternalWidth = 0
+    this.maxOutputWidth = 0
     for (
       var i = 0;
       i < Math.max(inputPorts.length, outputPorts.length, internalPorts.length);
       i++
     ) {
       if (i < inputPorts.length)
-        inWidth = Math.max(
-          inWidth,
+        this.maxInputWidth = Math.max(
+          this.maxInputWidth,
           window.textMetrics(inputPorts[i].name, FONT_FAMILY, PORT_FONT_SIZE)
             .width + PORT_NAME_PADDING_X
         )
       if (i < outputPorts.length)
-        outWidth = Math.max(
-          outWidth,
+        this.maxOutputWidth = Math.max(
+          this.maxOutputWidth,
           window.textMetrics(outputPorts[i].name, FONT_FAMILY, PORT_FONT_SIZE)
             .width + PORT_NAME_PADDING_X
         )
-      if (i < internalPorts.length)
-        internalWidth = Math.max(
-          internalWidth,
+      if (i < internalPorts.length) {
+        this.maxInternalWidth = Math.max(
+          this.maxInternalWidth,
           window.textMetrics(
-            `${internalPorts[i].name}: ${this.node.internalValues[i]}`,
+            `${internalPorts[i].name}: ${this.getInternalValueDisplayStr(i)}`,
             FONT_FAMILY,
             PORT_FONT_SIZE
           ).width + PORT_NAME_PADDING_X
         )
+      }
     }
     this.w =
-      Math.max(inWidth + internalWidth + outWidth, Math.ceil(text.width)) +
-      WIDTH_PADDING
+      Math.max(
+        this.maxInputWidth + this.maxInternalWidth + this.maxOutputWidth,
+        Math.ceil(text.width)
+      ) + WIDTH_PADDING
   }
   init(window) {
     // compute name height
@@ -235,10 +241,12 @@ export class ScriptNodeProxy extends UIElement {
       // )
     })
     this.node.data.internalPorts.forEach((port, i) => {
+      const correctedInternalValue = this.getInternalValueDisplayStr(i)
+
       const portY = this.getPortBaseY() + i * this.portHeight + PORT_DOT_OFFSET
-      const x = tx + PORT_NAME_PADDING_X
+      const x = tx + PORT_NAME_PADDING_X + this.maxInputWidth
       const width = window.textMetrics(
-        `${port.name}: ${this.node.internalValues[i]}`,
+        `${port.name}: ${correctedInternalValue}`,
         FONT_FAMILY,
         PORT_FONT_SIZE
       ).width
@@ -259,7 +267,7 @@ export class ScriptNodeProxy extends UIElement {
         selected ? visualizer.outlineAlpha.getValue() : 1
       )
       window.drawVerticalCenteredText(
-        `${port.name}: ${this.node.internalValues[i]}`,
+        `${port.name}: ${correctedInternalValue}`,
         x,
         portY,
         FONT_FAMILY,
@@ -273,7 +281,7 @@ export class ScriptNodeProxy extends UIElement {
           window.textMetrics(`${port.name}: `, FONT_FAMILY, PORT_FONT_SIZE)
             .width
         const valueWidth = window.textMetrics(
-          `${this.node.internalValues[i]}`,
+          correctedInternalValue,
           FONT_FAMILY,
           PORT_FONT_SIZE
         ).width
@@ -288,6 +296,11 @@ export class ScriptNodeProxy extends UIElement {
         )
       }
     })
+  }
+  getInternalValueDisplayStr(portIndex) {
+    return this.node.data.internalPorts[portIndex].editorTypename === 'key'
+      ? global.keyToDisplayStr(this.node.internalValues[portIndex])
+      : this.node.internalValues[portIndex]
   }
   getPortBaseY() {
     return this.y + this.nameHeight + this.portHeight / 2
@@ -392,7 +405,7 @@ export class ScriptNodeProxy extends UIElement {
       y,
       data.internalPorts,
       () => this.x + PORT_NAME_PADDING_X,
-      (port, i) => `${port.name}: ${this.node.internalValues[i]}`,
+      (port, i) => `${port.name}: ${this.getInternalValueDisplayStr(i)}`,
       false,
       true
     )

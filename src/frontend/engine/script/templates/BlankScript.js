@@ -1,5 +1,5 @@
 export default {
-  name: '+BlankScript',
+  name: 'BlankScript',
   nodes: [],
   edges: [],
 }

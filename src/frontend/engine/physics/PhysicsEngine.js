@@ -1,5 +1,5 @@
 import matter from 'matter-js'
-const { Engine, Bodies, Composite, Events } = matter
+const { Engine, Bodies, Composite, Events, Runner } = matter
 import { Vec2 } from '%util/Vec2.js'
 
 export class PhysicsEngine {
@@ -23,9 +23,11 @@ export class PhysicsEngine {
           pair.bodyB._owner.runBehavior('OnCollide', normalB, pair.bodyA._owner)
       })
     })
+
+    // Runner.run(this.engine)
   }
-  update(deltaTime) {
-    Engine.update(this.engine, deltaTime)
+  update(deltaTime, deltaCorrection) {
+    Engine.update(this.engine, deltaTime, deltaCorrection)
   }
   createRect(pos, dim, options = {}) {
     // disable rotation

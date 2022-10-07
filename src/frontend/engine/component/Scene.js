@@ -62,6 +62,7 @@ export class Scene extends Component {
     if (component.states) {
       this.removeDynamicEntity(component)
       this.controlledComponents.delete(component.id)
+      component.destroy()
     }
   }
 }

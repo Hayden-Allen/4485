@@ -92,6 +92,9 @@ export class SceneEntity extends Component {
     global.physicsEngine.deleteRect(this.physicsProxy)
     this.createPhysicsProxy()
   }
+  destroy() {
+    global.physicsEngine.deleteRect(this.physicsProxy)
+  }
 }
 
 export class DynamicSceneEntity extends SceneEntity {
@@ -110,6 +113,7 @@ export class DynamicSceneEntity extends SceneEntity {
   }
   applyForce(f) {
     Body.applyForce(this.physicsProxy, this.physicsProxy.position, f)
+    // console.log(f, this.physicsProxy.positionImpulse)
   }
   setVelocity(v) {
     Body.setVelocity(this.physicsProxy, { x: v.x, y: v.y })

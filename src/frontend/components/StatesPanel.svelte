@@ -1,4 +1,5 @@
 <script>
+  import { global } from '%engine/Global.js'
   import ScriptPropertiesPanel from 'components/ScriptPropertiesPanel.svelte'
   import ChevronRight from 'icons/20/mini/chevron-right.svelte'
   import Pencil from 'icons/20/mini/pencil.svelte'
@@ -23,7 +24,7 @@
         state: value,
       })
     }
-    items.sort((a, b) => (a.name > b.name ? 1 : -1))
+    global.alphabetSort(items)
   }
 
   $: {
@@ -81,6 +82,8 @@
       </button>
       {#if !item.state.collapsed}
         <ScriptPropertiesPanel
+          parentStateSelected={item.state === selectedState}
+          {states}
           scripts={item.state.scripts}
           onRearrangeScripts={(scripts) => (item.state.scripts = scripts)}
           {onEditScript}

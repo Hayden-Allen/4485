@@ -2,6 +2,7 @@
 
 <script>
   import { onMount } from 'svelte'
+  import { global } from '%engine/Global.js'
   import EditorLayout from 'components/popup/layouts/EditorLayout.svelte'
 
   export let x = null,
@@ -25,16 +26,26 @@
         state: value,
       })
     }
-    items.sort((a, b) => (a.name > b.name ? 1 : -1))
+    global.alphabetSort(items)
+  }
+
+  function isValidStateName(state) {
+    return states.has(state)
   }
 
   onMount(() => {
     inputEl.focus()
-    currentValue = items[0].name
   })
 
   $: {
     updateItems(states)
+    if (!isValidStateName(currentValue)) {
+      if (items.length > 0) {
+        currentValue = items[0].name
+      } else {
+        currentValue = ''
+      }
+    }
   }
 </script>
 

@@ -1,25 +1,35 @@
 <script>
   import {
+    blankScriptTemplate,
     scriptTemplateBank,
     scriptTemplateIndex,
   } from '%script/templates/ScriptTemplateBank.js'
   import MagnifyingGlass from 'icons/20/mini/magnifying-glass.svelte'
-  import ArrowRight from 'icons/20/mini/arrow-right.svelte'
+  import Plus from 'icons/20/mini/plus.svelte'
 
   export let onUseScript = undefined
 
   let searchQuery = ''
   let candidates = null
-  let selectedTemplate = null
+  let selectedTemplate = null,
+    hoveredTemplate = null
 
   function handleSelectTemplate(template) {
     selectedTemplate = template
   }
 
+  function handleHoverTemplate(template) {
+    hoveredTemplate = template
+  }
+
+  function handleUnhoverTemplate() {
+    hoveredTemplate = null
+  }
+
   $: {
     const q = searchQuery.trim()
     if (q.length >= 3) {
-      candidates = []
+      candidates = [blankScriptTemplate]
       for (const result of scriptTemplateIndex.search(q)) {
         candidates.push(scriptTemplateBank[parseInt(result.ref)])
       }
@@ -31,7 +41,7 @@
         }
       }
     } else {
-      candidates = scriptTemplateBank
+      candidates = [blankScriptTemplate, ...scriptTemplateBank]
       if (selectedTemplate === null) {
         selectedTemplate = candidates[0]
       }
@@ -57,12 +67,14 @@
 
   <div class="grow-1 shrink-1 flex flex-row w-full h-full overflow-hidden">
     <div
-      class="grow-0 shrink-0 flex flex-col w-64 h-full border-r border-solid border-neutral-700"
+      class="grow-0 shrink-0 flex flex-col w-full max-w-[256px] h-full border-r border-solid border-neutral-700 overflow-x-hidden overflow-y-auto"
     >
       {#each candidates as template, i}
         <button
+          on:mouseenter={() => handleHoverTemplate(template)}
+          on:mouseleave={handleUnhoverTemplate}
           on:click={() => handleSelectTemplate(template)}
-          class={`flex flex-row items-center p-2 cursor-pointer hover:bg-neutral-700 focus:bg-neutral-700 outline-0 text-left ${
+          class={`grow-0 shrink-0 flex flex-row items-center justify-center p-2 cursor-pointer hover:bg-neutral-800 focus:bg-neutral-700 transition-all outline-0 text-left h-12 ${
             template === selectedTemplate ? 'bg-neutral-700' : ''
           } ${
             i < candidates.length - 1
@@ -70,7 +82,19 @@
               : ''
           }`}
         >
-          {template.name}
+          <div
+            class="grow-1 shrink-1 w-full overflow-hidden whitespace-nowrap text-ellipsis"
+          >
+            {template.name}
+          </div>
+          {#if hoveredTemplate === template}
+            <button
+              on:click={() => onUseScript(template)}
+              class="flex grow-0 shrink-0 p-1 items-center justify-center rounded-md bg-emerald-700 hover:bg-emerald-600 transition-all"
+            >
+              <div class="w-5 h-5"><Plus /></div>
+            </button>
+          {/if}
         </button>
       {/each}
     </div>
@@ -78,32 +102,13 @@
       class="grow-1 shrink-1 flex flex-col w-full h-full p-4 overflow-hidden"
     >
       {#if selectedTemplate}
-        <div class="grow-0 shrink-0 flex flex-row w-full overflow-hidden mb-2">
-          <div
-            class="grow-1 shrink-1 w-full font-bold text-2xl overflow-hidden whitespace-nowrap text-ellipsis"
-          >
-            {selectedTemplate.name}
-          </div>
-          <button
-            on:click={() => onUseScript(selectedTemplate)}
-            class="grow-0 shrink-0 ml-4 relative rounded-full bg-sky-600 hover:bg-sky-700 transition-all font-bold w-52 h-10"
-          >
-            <div
-              class="absolute w-full"
-              style="top: 50%; left: 50%; transform: translate(-50%, -50%);"
-            >
-              Use This Script
-            </div>
-            <div
-              class="absolute w-5 h-5"
-              style="top: 50%; right: 0; transform: translate(-16px, -50%);"
-            >
-              <ArrowRight />
-            </div>
-          </button>
+        <div
+          class="grow-1 shrink-1 w-full font-bold text-2xl overflow-hidden whitespace-nowrap text-ellipsis"
+        >
+          {selectedTemplate.name}
         </div>
         <div
-          class="grow-1 shrink-1 w-full h-full overflow-hidden text-ellipsis"
+          class="grow-1 shrink-1 w-full h-full overflow-hidden text-ellipsis mt-4"
         >
           {selectedTemplate.description}
         </div>

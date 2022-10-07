@@ -2,6 +2,7 @@
 
 <script>
   import { onMount } from 'svelte'
+  import { global } from '%engine/Global.js'
   import {
     NODE_CATEGORY_COLORS,
     scriptNodeTemplateBank,
@@ -75,7 +76,7 @@
         ...value,
       })
     }
-    categories.sort((a, b) => (a.name > b.name ? 1 : -1))
+    global.alphabetSort(categories)
   }
 
   onMount(() => {

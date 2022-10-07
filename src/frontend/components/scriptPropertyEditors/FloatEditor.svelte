@@ -26,6 +26,11 @@
 
 <input
   on:change={validateAndApply}
+  on:keydown={(event) => {
+    if (event.key === 'Enter') {
+      validateAndApply()
+    }
+  }}
   on:focus={onFocus}
   on:blur={onBlur}
   type="number"

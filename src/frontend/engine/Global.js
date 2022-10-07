@@ -86,4 +86,9 @@ export var global = {
       return key
     }
   },
+  alphabetSort: (arr) => {
+    return arr.sort((a, b) =>
+      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+    )
+  },
 }

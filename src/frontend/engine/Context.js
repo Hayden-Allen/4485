@@ -24,7 +24,7 @@ export class Context {
     // this is a failsafe; because this runs in the browser, switching to a different tab allows the user to make the delta time arbitraily large, which obviously breaks stuff
     // so skip this frame if more than half a second has passed since the last frame
     // this is also necessary to prevent physics from breaking
-    if (deltaTime > 30) return
+    if (deltaTime > 100) return
 
     global.varyingController.update(deltaTime)
     if (!this.paused) {

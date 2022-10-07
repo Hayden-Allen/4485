@@ -1,12 +1,15 @@
 <script>
   import { PORT_COLOR } from '%editor/ScriptVisualizer.js'
+  import { global } from '%engine/Global.js'
   import IntEditor from 'components/scriptPropertyEditors/IntEditor.svelte'
   import FloatEditor from 'components/scriptPropertyEditors/FloatEditor.svelte'
   import KeyEditor from 'components/scriptPropertyEditors/KeyEditor.svelte'
+  import StateEditor from 'components/scriptPropertyEditors/StateEditor.svelte'
   import ChevronRight from 'icons/20/mini/chevron-right.svelte'
   import Pencil from 'icons/20/mini/pencil.svelte'
   import Trash from 'icons/20/mini/trash.svelte'
 
+  export let states = undefined
   export let script = undefined
   export let onEditScript = undefined
   export let onDelete = undefined
@@ -20,7 +23,7 @@
   $: {
     if (script) {
       sortedExportNodes = [...script.exportNodes]
-      sortedExportNodes.sort((a, b) => (a.name > b.name ? 1 : -1))
+      global.alphabetSort(sortedExportNodes)
     } else {
       sortedExportNodes = []
     }
@@ -34,14 +37,18 @@
     <div
       class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
     >
-      <button
-        on:click={onToggleCollapsed}
-        class={`grow-0 shrink-0 w-5 h-5 mr-2 hover:bg-neutral-500 hover:text-neutral-100 rounded-full transition-all duration-75 ${
-          collapsed ? '' : 'rotate-90'
-        }`}
-      >
-        <ChevronRight />
-      </button>
+      {#if sortedExportNodes.length > 0}
+        <button
+          on:click={onToggleCollapsed}
+          class={`grow-0 shrink-0 w-5 h-5 mr-2 hover:bg-neutral-500 hover:text-neutral-100 rounded-full transition-all duration-75 ${
+            collapsed ? '' : 'rotate-90'
+          }`}
+        >
+          <ChevronRight />
+        </button>
+      {:else}
+        <div class="grow-0 shrink-0 w-5 h-5 mr-2" />
+      {/if}
       <div class="grow-0 shrink-0 overflow-hidden font-normal mr-1">
         Script:
       </div>
@@ -104,6 +111,14 @@
               />
             {:else if exportNode.editorType === 'key'}
               <KeyEditor
+                currentValue={exportNode.value}
+                onApply={(value) => exportNode.setValue(value)}
+                onFocus={() => (focusedNode = exportNode)}
+                onBlur={() => (focusedNode = undefined)}
+              />
+            {:else if exportNode.editorType === 'state'}
+              <StateEditor
+                {states}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}

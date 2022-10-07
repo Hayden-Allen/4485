@@ -1,5 +1,6 @@
 import lunr from 'lunr'
-import BlankScript from '%script/templates/+BlankScript.js'
+import { global } from '%engine/Global.js'
+import BlankScript from '%script/templates/BlankScript.js'
 import TopDownMove from '%script/templates/TopDownMove.js'
 import PlatformerMove from '%script/templates/PlatformerMove.js'
 import PlatformerMove2 from '%script/templates/PlatformerMove2.js'
@@ -24,8 +25,12 @@ class ScriptTemplateInfo {
   }
 }
 
-export const scriptTemplateBank = [
-  new ScriptTemplateInfo('Create a custom script from scratch', BlankScript),
+export const blankScriptTemplate = new ScriptTemplateInfo(
+  'Create a custom script from scratch',
+  BlankScript
+)
+
+export const scriptTemplateBank = global.alphabetSort([
   new ScriptTemplateInfo(
     'Changes to a new state when a key is pressed',
     ChangeStateOnKey
@@ -47,7 +52,7 @@ export const scriptTemplateBank = [
     'Changes to given state when a wall is hit',
     ChangeStateOnHitWall
   ),
-].sort((a, b) => (a.name > b.name ? 1 : -1))
+])
 
 export const scriptTemplateIndex = lunr(function () {
   this.field('name')

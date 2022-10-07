@@ -118,8 +118,8 @@
         'https://art.pixilart.com/840bcbc293e372f.png',
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
       ],
-      new Map([['default', new Behavior()]]),
-      'default',
+      new Map([['Default', new Behavior()]]),
+      'Default',
       { scale: 25 }
     )
     // add player at z-index 1
@@ -131,8 +131,8 @@
         new Vec2(-600, 0),
         0,
         ['https://art.pixilart.com/840bcbc293e372f.png'],
-        new Map([['default', new Behavior()]]),
-        'default',
+        new Map([['Default', new Behavior()]]),
+        'Default',
         { scale: 25 }
       ),
       1

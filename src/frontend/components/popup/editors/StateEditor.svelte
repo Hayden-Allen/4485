@@ -33,13 +33,17 @@
     return states.has(state)
   }
 
+  export function validate() {
+    return isValidStateName(currentValue)
+  }
+
   onMount(() => {
     inputEl.focus()
   })
 
   $: {
     updateItems(states)
-    if (!isValidStateName(currentValue)) {
+    if (!validate()) {
       if (items.length > 0) {
         currentValue = items[0].name
       } else {

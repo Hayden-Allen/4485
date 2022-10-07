@@ -12,6 +12,7 @@
   export let onDeleteScript = undefined
   export let isLast = false
 
+  let enforceMinHeight = false
   let dndItems = undefined
   let hovered = false
 
@@ -31,6 +32,7 @@
         script,
       })
     }
+    enforceMinHeight = dndItems.length === 0
   }
 
   $: {
@@ -39,12 +41,18 @@
 </script>
 
 <div
-  use:dndzone={{ items: dndItems, flipDurationMs: 100 }}
+  use:dndzone={{
+    items: dndItems,
+    dragDisabled: dndItems.length === 0,
+    flipDurationMs: 100,
+  }}
   on:consider={handleConsider}
   on:finalize={handleFinalize}
   on:mouseenter={() => (hovered = true)}
   on:mouseleave={() => (hovered = false)}
-  class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto -z-9999"
+  class={`flex flex-col w-full h-full overflow-x-hidden overflow-y-auto -z-9999 ${
+    enforceMinHeight ? 'min-h-[192px]' : ''
+  }`}
 >
   {#if dndItems.length > 0}
     {#each dndItems as item, i (item.id)}
@@ -66,9 +74,9 @@
         />
       </div>
     {/each}
-  {:else}
+  {:else if enforceMinHeight}
     <div
-      class={`grow-0 shrink-0 w-full h-48 overflow-hidden p-4 ${
+      class={`grow-0 shrink-0 w-full h-full overflow-hidden p-4 ${
         parentStateSelected ? 'bg-[#1a1a1a]' : 'bg-neutral-900'
       }`}
     >

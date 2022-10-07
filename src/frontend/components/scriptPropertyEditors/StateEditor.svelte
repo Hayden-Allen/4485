@@ -37,8 +37,8 @@
     }
   }
 
-  onMount(() => {
-    inputEl.focus()
+  $: {
+    updateItems(states)
     if (!isValidStateName(currentValue)) {
       if (items.length > 0) {
         currentValue = items[0].name
@@ -47,18 +47,18 @@
       }
       validateAndApply()
     }
-  })
-
-  $: {
-    updateItems(states)
   }
 </script>
 
 <select
   bind:this={inputEl}
-  on:change={validateAndApply}
-  on:keydown={(event) => {
-    if (event.key === 'Enter') {
+  on:change={(e) => {
+    currentValue = e.target.value
+    validateAndApply()
+  }}
+  on:keydown={(e) => {
+    if (e.key === 'Enter') {
+      currentValue = e.target.value
       validateAndApply()
     }
   }}

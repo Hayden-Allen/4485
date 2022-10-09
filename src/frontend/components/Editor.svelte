@@ -5,25 +5,18 @@
   import ScriptTemplatesPanel from 'components/ScriptTemplatesPanel.svelte'
   import StatesPanel from 'components/StatesPanel.svelte'
   import ScriptGraphEditor from 'components/ScriptGraphEditor.svelte'
-  import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
-  import {
-    SceneEntity,
-    ControlledSceneEntity,
-    DynamicSceneEntity,
-  } from '%component/SceneEntity.js'
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
   import { Window3D } from '%window/Window3D.js'
   import { EditorLayer } from '%editor/EditorLayer.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
-  import { Behavior } from '%script/Behavior.js'
+  import { State } from '%script/State.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
 
   let gameWindow = undefined,
-    player = undefined,
     graphEditorScriptErrors = [],
     graphEditorScriptEmpty = true,
     editorLayer = undefined,
@@ -35,7 +28,7 @@
   onMount(() => {
     global.init()
 
-    var game = new Game(global.context)
+    var game = global.context.game
 
     gameWindow = new Window3D(gameCanvas, uiCanvas, [0, 0, 1, 1])
 
@@ -74,43 +67,40 @@
       }
     }
     game.addStaticSceneEntity(
-      new SceneEntity(
-        gameWindow,
-        new Vec2(-700, -300),
-        0,
-        [
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-        ],
-        { vertices, indices, scale: 25 }
-      ),
-      0
+      0,
+      gameWindow,
+      new Vec2(-700, -300),
+      0,
+      [
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+      ],
+      { vertices, indices, scale: 25 }
     )
     game.addStaticSceneEntity(
-      new SceneEntity(
-        gameWindow,
-        new Vec2(-700, -150),
-        0,
-        [
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-        ],
-        { vertices, indices, scale: 1 }
-      ),
-      0
-    )
-    game.addStaticSceneEntity(
-      new SceneEntity(
-        gameWindow,
-        new Vec2(-500, -150),
-        0,
-        [
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-        ],
-        { vertices, indices, scale: 1 }
-      ),
-      0
+      0,
+      gameWindow,
+      new Vec2(-700, -150),
+      0,
+      [
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+      ],
+      { vertices, indices, scale: 1 }
     )
 
-    player = new ControlledSceneEntity(
+    game.addStaticSceneEntity(
+      0,
+      gameWindow,
+      new Vec2(-500, -150),
+      0,
+      [
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+      ],
+      { vertices, indices, scale: 1 }
+    )
+
+    // add player at z-index 1
+    game.addControlledSceneEntity(
+      1,
       gameWindow,
       new Vec2(0, 0),
       500,
@@ -118,24 +108,20 @@
         'https://art.pixilart.com/840bcbc293e372f.png',
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
       ],
-      new Map([['Default', new Behavior()]]),
+      new Map([['Default', new State()]]),
       'Default',
       { scale: 25 }
     )
-    // add player at z-index 1
-    game.addControlledSceneEntity(player, 1)
 
     game.addControlledSceneEntity(
-      new ControlledSceneEntity(
-        gameWindow,
-        new Vec2(-600, 0),
-        0,
-        ['https://art.pixilart.com/840bcbc293e372f.png'],
-        new Map([['Default', new Behavior()]]),
-        'Default',
-        { scale: 25 }
-      ),
-      1
+      1,
+      gameWindow,
+      new Vec2(-600, 0),
+      0,
+      ['https://art.pixilart.com/840bcbc293e372f.png'],
+      new Map([['Default', new State()]]),
+      'Default',
+      { scale: 25 }
     )
 
     // game.addDynamicSceneEntity(
@@ -155,7 +141,7 @@
         graphEditorScript = undefined
         selectedState = undefined
       } else {
-        selectedState = selectedEntity.states.get(selectedEntity.currentState)
+        selectedState = selectedEntity.currentState
       }
     })
     gameWindow.pushLayer(editorLayer)
@@ -298,7 +284,7 @@
 
               selectedEntity.states.delete(name)
               selectedEntity.states.set(newName, state)
-              selectedEntity.currentState = newName
+              selectedEntity.setState(newName)
               selectedEntity.states = selectedEntity.states
             }}
             onDeleteState={(name, state) => {
@@ -314,7 +300,9 @@
               if (selectedEntity.states.has(name))
                 if (!window.confirm(`State '${name}' exists. Overwrite?`))
                   return
-              selectedEntity.states.set(name, new Behavior())
+              const newState = new State(name)
+              selectedEntity.states.set(name, newState)
+              selectedState = newState
               selectedEntity.states = selectedEntity.states
             }}
           />

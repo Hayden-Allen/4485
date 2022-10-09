@@ -274,14 +274,14 @@ export class ScriptGraph extends Component {
     // add to order
     order.unshift(node)
   }
-  run(entity, eventName, ...eventData) {
+  run(eventName, context) {
     // only runs if necessary
     this.compile()
 
     // check if we need to run OnSwitch
     if (this.firstRun) {
       this.firstRun = false
-      this.run(entity, 'OnSwitch')
+      this.run('OnSwitch', context)
     }
 
     let startNode = this.eventNodes.get(eventName)
@@ -293,7 +293,7 @@ export class ScriptGraph extends Component {
     this.nodes.forEach((node) => (node.active = false))
     // activate given event node and set its outputs
     startNode.active = true
-    startNode.outputs = eventData
+    startNode.outputs = context.data || []
     // activate all non-event source nodes
     this.sourceNodes.forEach((node) => (node.active = true))
 
@@ -311,7 +311,7 @@ export class ScriptGraph extends Component {
           inputs[edge.inputIndex] = edge.outputNode.outputs[edge.outputIndex]
       })
 
-      node.run(inputs, entity, this.inputCache)
+      node.run(inputs, { ...context, inputCache: this.inputCache })
     })
 
     // errors generated on subsequent runs will be the same, so disable them to avoid spam

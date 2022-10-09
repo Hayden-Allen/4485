@@ -1,7 +1,6 @@
 import { Component } from './Component.js'
 import { Vec2 } from '%util/Vec2.js'
 import { Renderable } from '%graphics/Renderable.js'
-import { global } from '%engine/Global.js'
 import matter from 'matter-js'
 const { Body } = matter
 
@@ -23,11 +22,12 @@ class SceneEntityOptions {
 
 // base class for everything that exists in the scene
 export class SceneEntity extends Component {
-  constructor(gameWindow, pos, frameTime, urls, options = {}) {
+  constructor(game, gameWindow, pos, frameTime, urls, options = {}) {
     super('SceneEntity')
     this.ops = new SceneEntityOptions(options)
     const vertexData = this.ops.vertices,
       indexData = this.ops.indices
+
     this.renderable = new Renderable(
       gameWindow.gl,
       pos,
@@ -51,6 +51,7 @@ export class SceneEntity extends Component {
     }
 
     this.pos = pos
+    this.game = game
     this.createPhysicsProxy()
 
     // set when added to scene (Scene.js)
@@ -65,7 +66,7 @@ export class SceneEntity extends Component {
     this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
       this.ops.scale
     )
-    this.physicsProxy = global.physicsEngine.createRect(
+    this.physicsProxy = this.game.physicsEngine.createRect(
       this.pos.plus(this.dim.scale(0.5)),
       this.dim,
       {
@@ -89,17 +90,20 @@ export class SceneEntity extends Component {
 
     this.ops.scale = scale
     this.renderable.setScale(scale)
-    global.physicsEngine.deleteRect(this.physicsProxy)
+    this.game.physicsEngine.deleteRect(this.physicsProxy)
     this.createPhysicsProxy()
   }
   destroy() {
-    global.physicsEngine.deleteRect(this.physicsProxy)
+    this.game.physicsEngine.deleteRect(this.physicsProxy)
   }
 }
 
 export class DynamicSceneEntity extends SceneEntity {
-  constructor(gameWindow, pos, frameTime, urls, options = {}) {
-    super(gameWindow, pos, frameTime, urls, { isStatic: false, ...options })
+  constructor(game, gameWindow, pos, frameTime, urls, options = {}) {
+    super(game, gameWindow, pos, frameTime, urls, {
+      isStatic: false,
+      ...options,
+    })
     const v = options.vel || new Vec2(0, 0)
     Body.setVelocity(this.physicsProxy, { x: v.x, y: v.y })
   }
@@ -134,29 +138,30 @@ export class DynamicSceneEntity extends SceneEntity {
 
 export class ControlledSceneEntity extends DynamicSceneEntity {
   constructor(
+    game,
     gameWindow,
     pos,
     frameTime,
     urls,
     states,
-    currentState,
+    currentStateName,
     options = {}
   ) {
-    super(gameWindow, pos, frameTime, urls, options)
+    super(game, gameWindow, pos, frameTime, urls, options)
     this.states = states
-    this.currentState = currentState
+    this.currentState = this.states.get(currentStateName)
   }
-  runBehavior(event, ...data) {
+  runScripts(event, context) {
     /**
      * @HATODO optimize this (cache actual current state, not just name)
      */
-    this.states.get(this.currentState).run(this, event, ...data)
+    this.currentState.run(event, { ...context, entity: this })
   }
-  setState(state) {
-    if (state !== this.currentState) {
-      this.states.get(this.currentState).reset()
-      this.currentState = state
-      this.firstRun = true
+  setState(stateName) {
+    if (this.currentState.name !== stateName) {
+      this.currentState = this.states.get(stateName)
+      // set firstRun=true for all scripts in new state
+      this.currentState.reset()
     }
   }
 }

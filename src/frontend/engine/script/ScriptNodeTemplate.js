@@ -2,7 +2,7 @@ import { scriptDataType, validateScriptDataTypes } from './ScriptDataType.js'
 import { ScriptNode, ScriptNodeData, ScriptNodePort } from './ScriptNode.js'
 
 export class ScriptNodeTemplate extends ScriptNodeData {
-  constructor(category, name, inputPorts, outputPorts, fn, isExport) {
+  constructor(category, name, inputPorts, outputPorts, fn, isExport = false) {
     super(inputPorts, [], outputPorts, fn)
     this.category = category
     this.name = name
@@ -49,7 +49,7 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
     defaultValues,
     outputPorts,
     fn,
-    isExport
+    isExport = false
   ) {
     super(category, name, inputPorts, outputPorts, fn, isExport)
     this.internalPorts = internalPorts
@@ -63,7 +63,7 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
     internalValues = internalValues || [...this.defaultValues]
     if (!validateScriptDataTypes(internalValues, this.internalTypes)) {
       console.error('Invalid inputs')
-      console.log(internalValues, this.internalTypes)
+      console.log(internalValues, this.internalPorts, this.internalTypes)
       return
     }
 
@@ -85,17 +85,9 @@ export class InternalScriptNodeTemplate extends ScriptNodeTemplate {
 }
 
 export class ConstantScriptNodeTemplate extends InternalScriptNodeTemplate {
-  constructor(category, name, ports, defaultValues, isExport) {
-    super(
-      category,
-      name,
-      [],
-      ports,
-      defaultValues,
-      ports,
-      (_, { internal }) =>
-        internal.map((value) => ({ value, activate: false })),
-      isExport
+  constructor(category, name, ports, defaultValues) {
+    super(category, name, [], ports, defaultValues, ports, (_, { internal }) =>
+      internal.map((value) => ({ value, activate: false }))
     )
   }
 }

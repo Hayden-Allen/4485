@@ -1,10 +1,9 @@
 import { Context } from '%engine/Context.js'
 import { VaryingController } from '%util/VaryingController.js'
-import { PhysicsEngine } from '%physics/PhysicsEngine.js'
 
 export var global = {
+  context: undefined,
   varyingController: undefined,
-  physicsEngine: undefined,
   fps: 60,
   mouseX: 0,
   mouseY: 0,
@@ -23,7 +22,6 @@ export var global = {
 
   init: () => {
     global.context = new Context()
-    global.physicsEngine = new PhysicsEngine(-5)
     global.varyingController = new VaryingController()
     global.context.addSystem(global.varyingController)
     window.oncontextmenu = (e) => {

@@ -84,7 +84,7 @@ export class ScriptNode extends Component {
     this.attachBase(inputNode, inputIndex)
     this.graph.addEdge(this, outputIndex, inputNode, inputIndex)
   }
-  run(inputs, entity, inputCache) {
+  run(inputs, context) {
     if (!validateScriptDataTypes(inputs, this.inputTypes.types)) {
       this.graph.pushError(`Invalid input to '${this.debugName}'`)
       return
@@ -92,11 +92,12 @@ export class ScriptNode extends Component {
 
     const results =
       this.data.fn(inputs, {
-        entity,
+        entity: context.entity,
+        scene: context.entity.scene,
+        input: context.inputCache,
+        camera: context.camera,
         internal: this.internalValues,
-        input: inputCache,
         node: this,
-        scene: entity.scene,
       }) || []
 
     // store output values

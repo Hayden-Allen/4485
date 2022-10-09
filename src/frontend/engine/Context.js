@@ -1,10 +1,12 @@
 import { global } from './Global.js'
+import { Game } from './Game.js'
 
 export class Context {
   constructor() {
     this.systems = new Map()
     this.windows = []
     this.paused = false
+    this.game = new Game(this)
 
     window.addEventListener('resize', () => this.propagateResizeEvent())
     window.addEventListener('keydown', (e) => {
@@ -29,7 +31,7 @@ export class Context {
     global.varyingController.update(deltaTime)
     if (!this.paused) {
       // update physics
-      global.physicsEngine.update(deltaTime, deltaCorrection)
+      this.game.physicsEngine.update(deltaTime, deltaCorrection)
       // run engine logic
       this.systems.forEach((system) => system.update(deltaTime))
     }

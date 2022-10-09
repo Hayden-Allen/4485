@@ -3,7 +3,8 @@ const { Engine, Bodies, Composite, Events, Runner } = matter
 import { Vec2 } from '%util/Vec2.js'
 
 export class PhysicsEngine {
-  constructor(gravityScale) {
+  constructor(game, gravityScale) {
+    this.game = game
     this.engine = Engine.create()
     this.engine.gravity.scale *= gravityScale
 
@@ -18,9 +19,15 @@ export class PhysicsEngine {
         const normalA = normalB.scale(-1)
 
         if (pair.bodyA._owner.states)
-          pair.bodyA._owner.runBehavior('OnCollide', normalA, pair.bodyB._owner)
+          pair.bodyA._owner.runScripts('OnCollide', {
+            camera: game.currentScene.camera,
+            data: [normalA, pair.bodyB._owner],
+          })
         if (pair.bodyB._owner.states)
-          pair.bodyB._owner.runBehavior('OnCollide', normalB, pair.bodyA._owner)
+          pair.bodyB._owner.runScripts('OnCollide', {
+            camera: game.currentScene.camera,
+            data: [normalB, pair.bodyA._owner],
+          })
       })
     })
 

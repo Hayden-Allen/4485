@@ -108,5 +108,7 @@ export class Window {
     this.propagateEvent('onAppTick', new AppTickEvent(deltaTime))
     // draw everything
     this.propagateEvent('onRender', new RenderEvent(this))
+    // reset cached scroll wheel state
+    this.inputCache.mouseScroll.x = this.inputCache.mouseScroll.y = 0
   }
 }

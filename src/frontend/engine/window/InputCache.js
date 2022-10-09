@@ -30,7 +30,7 @@ export class InputCache {
       this.mouseButton = -1
     })
     this.element.addEventListener('wheel', (e) => {
-      this.mouseScroll = new Vec2(e.deltaX, e.deltaY)
+      this.mouseScroll = new Vec2(Math.sign(e.deltaX), Math.sign(e.deltaY))
     })
   }
   isKeyPressed(key) {

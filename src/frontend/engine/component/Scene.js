@@ -1,11 +1,20 @@
 import { Component } from './Component.js'
 import { SceneLayer } from './SceneLayer.js'
+import { global } from '%engine/Global.js'
+import { Camera } from '%graphics/Camera.js'
 
 export class Scene extends Component {
   constructor() {
     super('Scene')
     this.layers = []
     this.controlledComponents = new Map()
+    this.camera = new Camera(
+      [0, 0, 0],
+      -global.canvas.targetWidth / 2,
+      global.canvas.targetWidth / 2,
+      -global.canvas.targetHeight / 2,
+      global.canvas.targetHeight / 2
+    )
   }
   addComponent() {
     this.logError('Use addStaticComponent() and addDynamicComponent() instead')

@@ -53,7 +53,7 @@ class ScriptNodeTemplateBank {
       ([name, type, editorType]) => new ScriptNodePort(name, type, editorType)
     )
   }
-  create(category, name, inputs, outputs, fn, isExport = false) {
+  create(category, name, inputs, outputs, fn) {
     this.bank.set(
       name,
       new ScriptNodeTemplate(
@@ -61,8 +61,7 @@ class ScriptNodeTemplateBank {
         name,
         this.mapPorts(inputs),
         this.mapPorts(outputs),
-        fn,
-        isExport
+        fn
       )
     )
   }
@@ -79,8 +78,7 @@ class ScriptNodeTemplateBank {
     internals,
     defaultValues,
     outputs,
-    fn,
-    isExport = false
+    fn
   ) {
     this.bank.set(
       name,
@@ -91,28 +89,26 @@ class ScriptNodeTemplateBank {
         this.mapPorts(internals),
         defaultValues,
         this.mapPorts(outputs),
-        fn,
-        isExport
+        fn
       )
     )
   }
-  createConstant(category, name, ports, defaultValues, isExport = false) {
+  createConstant(category, name, ports, defaultValues) {
     this.bank.set(
       name,
       new ConstantScriptNodeTemplate(
         category,
         name,
         this.mapPorts(ports),
-        defaultValues,
-        isExport
+        defaultValues
       )
     )
   }
   createExport(
     category,
     name,
-    value,
     valueName,
+    value,
     valueType,
     {
       additionalPorts = [],
@@ -125,8 +121,8 @@ class ScriptNodeTemplateBank {
       new ExportNodeTemplate(
         category,
         name,
-        value,
         valueName,
+        value,
         valueType,
         valueEditorType,
         this.mapPorts(additionalPorts),
@@ -203,10 +199,18 @@ class ScriptNodeTemplateBank {
         ]
       }
     )
+    this.create(
+      'input',
+      'MouseScroll',
+      [],
+      [['v', 'object']],
+      (_, { input }) => [{ value: input.mouseScroll }]
+    )
   }
   createMath() {
     // const
     this.createConstant('math', 'ConstInt', [['int', 'int']], [0])
+    this.createConstant('math', 'ConstFloat', [['float', 'float']], [0])
     // function
     this.create(
       'math',
@@ -607,6 +611,31 @@ class ScriptNodeTemplateBank {
         scene.removeControlledEntity(entity)
       }
     )
+    this.create(
+      'entity',
+      'GetEntityPosition',
+      [['entity', 'object']],
+      [['pos', 'object']],
+      ([entity]) => [{ value: entity.pos }]
+    )
+    this.create(
+      'entity',
+      'SetCameraPosition',
+      [['pos', 'object']],
+      [],
+      ([pos], { camera }) => {
+        camera.setPosition(pos)
+      }
+    )
+    this.create(
+      'entity',
+      'SetCameraZoom',
+      [['zoom', 'number']],
+      [],
+      ([zoom], { camera }) => {
+        camera.setZoom(zoom)
+      }
+    )
   }
   createExports() {
     this.createExport('math', 'ExportInt', 'value', 0, 'int')
@@ -618,19 +647,9 @@ class ScriptNodeTemplateBank {
       additionalValues: [0, 10],
     })
     this.createExport('math', 'ExportFloat', 'value', 0, 'float')
-    this.createInternal(
-      'input',
-      'ExportKey',
-      [],
-      [
-        ['name', 'string'],
-        ['key', 'string', 'key'],
-      ],
-      ['export', 'A'],
-      [['key', 'string']],
-      (_, { internal }) => [{ value: internal[1] }],
-      true
-    )
+    this.createExport('input', 'ExportKey', 'key', 'A', 'string', {
+      valueEditorType: 'key',
+    })
 
     this.createExport('entity', 'ExportState', 'state', '---', 'string', {
       valueEditorType: 'state',

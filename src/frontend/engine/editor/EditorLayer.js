@@ -2,6 +2,7 @@ import { Layer } from '%window/Layer.js'
 import { Varying } from '%util/Varying.js'
 import * as vec4 from '%glMatrix/vec4.js'
 import { global } from '%engine/Global.js'
+import { Camera } from '%graphics/Camera.js'
 
 export class EditorLayer extends Layer {
   constructor(game, setSelectedEntity) {
@@ -14,6 +15,14 @@ export class EditorLayer extends Layer {
     this.showDebug = true
     this.fps = 0
     this.setSelectedEntity = setSelectedEntity
+
+    this.camera = new Camera(
+      [0, 0, 0],
+      -global.canvas.targetWidth / 2,
+      global.canvas.targetWidth / 2,
+      -global.canvas.targetHeight / 2,
+      global.canvas.targetHeight / 2
+    )
   }
   onAppTick(e) {
     if (!global.context.paused) this.fps = 1000 / e.deltaTime
@@ -34,12 +43,14 @@ export class EditorLayer extends Layer {
   onRender(e) {
     e.window.clear()
     this.game.draw(e.window)
-    this.game.currentScene.controlledComponents.forEach((e) => {
-      this.window.strokeRect(
-        e.pos.x - e.dim.x / 2,
-        e.pos.y + e.dim.y / 2,
-        e.dim.x,
-        e.dim.y,
+    // this.game.drawFromPerspective(e.window, this.camera)
+    this.game.currentScene.controlledComponents.forEach((c) => {
+      e.window.strokeRect(
+        this.camera,
+        c.pos.x - c.dim.x / 2,
+        c.pos.y + c.dim.y / 2,
+        c.dim.x,
+        c.dim.y,
         '#f0f',
         5
       )
@@ -69,7 +80,7 @@ export class EditorLayer extends Layer {
     const mouseX = (2 * e.x) / this.window.canvas.width - 1
     const mouseY = 1 - (2 * e.y) / this.window.canvas.height
     let tc = vec4.create()
-    vec4.transformMat4(tc, [mouseX, mouseY, 0, 1], this.window.camera.inverse())
+    vec4.transformMat4(tc, [mouseX, mouseY, 0, 1], this.camera.inverse())
     const worldMouseX = tc[0]
     const worldMouseY = tc[1]
 

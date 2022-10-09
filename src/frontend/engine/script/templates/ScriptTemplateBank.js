@@ -16,6 +16,8 @@ import HitWall from '%script/templates/HitWall.js'
 import BounceWall from '%script/templates/BounceWall.js'
 import GoombaMove from '%script/templates/GoombaMove.js'
 import ChangeStateOnHitWall from '%script/templates/ChangeStateOnHitWall.js'
+import CameraFollow from '%script/templates/CameraFollow.js'
+import OnMouseScrollY from '%script/templates/OnMouseScrollY.js'
 
 class ScriptTemplateInfo {
   constructor(description, script) {
@@ -51,6 +53,11 @@ export const scriptTemplateBank = global.alphabetSort([
   new ScriptTemplateInfo(
     'Changes to given state when a wall is hit',
     ChangeStateOnHitWall
+  ),
+  new ScriptTemplateInfo('Makes the camera follow this entity', CameraFollow),
+  new ScriptTemplateInfo(
+    'Runs when the mouse wheel is scrolled up or down',
+    OnMouseScrollY
   ),
 ])
 

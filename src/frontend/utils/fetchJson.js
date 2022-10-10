@@ -30,7 +30,6 @@ export async function fetchGames(url) {
 
   if (response.ok) {
     const json = await response.json()
-    console.log("Game return success")
     return json
   }
 

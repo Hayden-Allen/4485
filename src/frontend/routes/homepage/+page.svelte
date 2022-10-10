@@ -1,6 +1,7 @@
 <script>
   import { fetchGames } from 'frontend/utils/fetchJson'
   import Card from '../../components/GameCard.svelte'
+  import Navbar from '../../components/NavBar.svelte'
 
   var games = []
 
@@ -9,11 +10,11 @@
       method: 'GET',
     })
     games = responseJson
-    console.log('Displaying games inside webpage')
     console.log(games)
   }
 </script>
 
+<Navbar />
 {#each games as { id, name, description }}
   <Card>
     <img

@@ -35,12 +35,9 @@ export async function GET() {
   const games = await getGames()
 
   // Returing json response of games
-  return new Response(
-    JSON.stringify(games),
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  )
+  return new Response(JSON.stringify(games), {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
 }

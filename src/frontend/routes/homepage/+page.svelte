@@ -31,7 +31,7 @@
     class="Card-button"
     on:click={storeClickedGameInfo(name, description, id)}
   >
-    <Card>
+    <Card class="card">
       <img
         class="thumbnail"
         text-align="center"
@@ -55,4 +55,5 @@
     border: none;
     background: none;
   }
+  
 </style>

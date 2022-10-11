@@ -42,6 +42,9 @@
 
 <div
   use:dndzone={{
+    type: 'ScriptPropertiesPanel',
+    dropFromOthersDisabled: true,
+    dropTargetStyle: '',
     items: dndItems,
     dragDisabled: dndItems.length === 0,
     flipDurationMs: 100,

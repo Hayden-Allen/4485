@@ -44,8 +44,6 @@
 >
   <input
     bind:this={inputEl}
-    type="number"
-    step="0.01"
     on:keydown={(event) => {
       if (event.key === 'Enter') {
         onDestroyPopup()

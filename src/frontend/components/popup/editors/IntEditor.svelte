@@ -21,7 +21,7 @@
 
   $: {
     if (currentValue !== '') {
-      const x = Math.round(currentValue)
+      const x = parseInt(currentValue)
       if (!isNaN(x)) {
         currentValue = x
       }
@@ -44,8 +44,6 @@
 >
   <input
     bind:this={inputEl}
-    type="number"
-    step="1"
     on:keydown={(event) => {
       if (event.key === 'Enter') {
         onDestroyPopup()

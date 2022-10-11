@@ -30,10 +30,18 @@ export class Context {
 
     global.varyingController.update(deltaTime)
     if (!this.paused) {
-      // update physics
-      this.game.physicsEngine.update(deltaTime, deltaCorrection)
       // run engine logic
       this.systems.forEach((system) => system.update(deltaTime))
+      // force->velocity & force = 0
+      // this.game.physicsEngine.updateVelocities(deltaTime, deltaCorrection)
+      // clamp velocity
+      this.game.currentScene.controlledComponents.forEach((component) => {
+        component.runScripts('OnPostTick', {
+          camera: this.game.currentScene.camera,
+        })
+      })
+      // update physics
+      this.game.physicsEngine.update(deltaTime, deltaCorrection)
     }
     // draw everything
     this.windows.forEach((window) => window.update(deltaTime))

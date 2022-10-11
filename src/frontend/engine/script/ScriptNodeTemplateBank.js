@@ -154,6 +154,7 @@ class ScriptNodeTemplateBank {
   }
   createEvents() {
     this.createEvent('event', 'OnTick', [])
+    this.createEvent('event', 'OnPostTick', [])
     this.createEvent('event', 'OnCollide', [
       ['normal', 'object'],
       ['entity', 'object'],
@@ -539,6 +540,7 @@ class ScriptNodeTemplateBank {
       ([entity, x]) => {
         if (entity.setVelocity) {
           entity.setVelocityX(x)
+          // console.log(entity.physicsProxy.velocity)
         }
       }
     )
@@ -574,7 +576,7 @@ class ScriptNodeTemplateBank {
       [['entity', 'object']],
       [['v', 'object']],
       ([entity]) => {
-        const { x, y } = entity.physicsProxy.velocity
+        const { x, y } = entity.getVelocity()
         return [{ value: new Vec2(x, y) }]
       }
     )

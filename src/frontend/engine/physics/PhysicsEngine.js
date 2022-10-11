@@ -1,5 +1,5 @@
 import matter from 'matter-js'
-const { Engine, Bodies, Composite, Events, Runner } = matter
+const { Engine, Bodies, Body, Composite, Events, Runner } = matter
 import { Vec2 } from '%util/Vec2.js'
 
 export class PhysicsEngine {

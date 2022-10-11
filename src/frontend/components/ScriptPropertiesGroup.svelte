@@ -5,6 +5,8 @@
   import FloatEditor from 'components/scriptPropertyEditors/FloatEditor.svelte'
   import KeyEditor from 'components/scriptPropertyEditors/KeyEditor.svelte'
   import StateEditor from 'components/scriptPropertyEditors/StateEditor.svelte'
+  import BoolEditor from 'components/scriptPropertyEditors/BoolEditor.svelte'
+  import StringEditor from 'components/scriptPropertyEditors/StringEditor.svelte'
   import ChevronRight from 'icons/20/mini/chevron-right.svelte'
   import Pencil from 'icons/20/mini/pencil.svelte'
   import Trash from 'icons/20/mini/trash.svelte'
@@ -97,6 +99,7 @@
           <div class="grow-1 shrink-1 w-full overflow-hidden">
             {#if exportNode.editorType === 'int'}
               <IntEditor
+                initialValue={exportNode.value}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}
@@ -104,6 +107,7 @@
               />
             {:else if exportNode.editorType === 'float'}
               <FloatEditor
+                initialValue={exportNode.value}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}
@@ -111,6 +115,7 @@
               />
             {:else if exportNode.editorType === 'key'}
               <KeyEditor
+                initialValue={exportNode.value}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}
@@ -119,6 +124,23 @@
             {:else if exportNode.editorType === 'state'}
               <StateEditor
                 {states}
+                initialValue={exportNode.value}
+                currentValue={exportNode.value}
+                onApply={(value) => exportNode.setValue(value)}
+                onFocus={() => (focusedNode = exportNode)}
+                onBlur={() => (focusedNode = undefined)}
+              />
+            {:else if exportNode.editorType === 'string'}
+              <StringEditor
+                initialValue={exportNode.value}
+                currentValue={exportNode.value}
+                onApply={(value) => exportNode.setValue(value)}
+                onFocus={() => (focusedNode = exportNode)}
+                onBlur={() => (focusedNode = undefined)}
+              />
+            {:else if exportNode.editorType === 'bool'}
+              <BoolEditor
+                initialValue={exportNode.value}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}

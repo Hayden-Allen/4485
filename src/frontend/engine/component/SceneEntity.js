@@ -1,6 +1,7 @@
 import { Component } from './Component.js'
 import { Vec2 } from '%util/Vec2.js'
 import { Renderable } from '%graphics/Renderable.js'
+import { global } from '%engine/Global.js'
 import matter from 'matter-js'
 const { Body } = matter
 
@@ -96,6 +97,9 @@ export class SceneEntity extends Component {
   destroy() {
     this.game.physicsEngine.deleteRect(this.physicsProxy)
   }
+  setMass(mass) {
+    Body.setMass(this.physicsProxy, mass)
+  }
 }
 
 export class DynamicSceneEntity extends SceneEntity {
@@ -117,22 +121,36 @@ export class DynamicSceneEntity extends SceneEntity {
   }
   applyForce(f) {
     Body.applyForce(this.physicsProxy, this.physicsProxy.position, f)
-    // console.log(f, this.physicsProxy.positionImpulse)
   }
   setVelocity(v) {
-    Body.setVelocity(this.physicsProxy, { x: v.x, y: v.y })
+    // Body.setVelocity(this.physicsProxy, { x: v.x, y: v.y })
+    this.setVelocityX(v.x)
+    this.setVelocityY(v.y)
   }
   setVelocityX(x) {
-    Body.setVelocity(this.physicsProxy, {
-      x,
-      y: this.physicsProxy.velocity.y,
-    })
+    const px = this.physicsProxy.force.x
+    this.physicsProxy.force.x =
+      ((x - this.physicsProxy.velocity.x) * this.physicsProxy.mass) /
+      (global.time.delta * global.time.delta)
+    // console.log(px, this.physicsProxy.force.x)
+    // Body.setVelocity(this.physicsProxy, {
+    //   x,
+    //   y: this.physicsProxy.velocity.y,
+    // })
   }
   setVelocityY(y) {
-    Body.setVelocity(this.physicsProxy, {
-      x: this.physicsProxy.velocity.x,
-      y,
-    })
+    this.physicsProxy.force.y =
+      (y * this.physicsProxy.mass) / (global.time.delta * global.time.delta)
+    // Body.setVelocity(this.physicsProxy, {
+    //   x: this.physicsProxy.velocity.x,
+    //   y,
+    // })
+  }
+  getVelocity() {
+    const dt2 = global.time.delta * global.time.delta
+    const x = (this.physicsProxy.force.x / this.physicsProxy.mass) * dt2
+    const y = (this.physicsProxy.force.y / this.physicsProxy.mass) * dt2
+    return new Vec2(x, y)
   }
 }
 

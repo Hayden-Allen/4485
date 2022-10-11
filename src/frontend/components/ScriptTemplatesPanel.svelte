@@ -74,8 +74,10 @@
           on:mouseenter={() => handleHoverTemplate(template)}
           on:mouseleave={handleUnhoverTemplate}
           on:click={() => handleSelectTemplate(template)}
-          class={`grow-0 shrink-0 flex flex-row items-center justify-center p-2 cursor-pointer hover:bg-neutral-800 focus:bg-neutral-700 transition-all outline-0 text-left h-12 ${
-            template === selectedTemplate ? 'bg-neutral-700' : ''
+          class={`grow-0 shrink-0 flex flex-row items-center justify-center p-2 cursor-pointer focus:bg-neutral-700 transition-all outline-0 text-left h-12 ${
+            template === selectedTemplate
+              ? 'bg-neutral-700'
+              : 'hover:bg-neutral-800'
           } ${
             i < candidates.length - 1
               ? 'border-b border-solid border-neutral-700'

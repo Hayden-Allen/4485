@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import Viewport from 'components/Viewport.svelte'
   import Splitter from 'components/Splitter.svelte'
+  import AssetsPanel from 'components/AssetsPanel.svelte'
   import ScriptTemplatesPanel from 'components/ScriptTemplatesPanel.svelte'
   import StatesPanel from 'components/StatesPanel.svelte'
   import ScriptGraphEditor from 'components/ScriptGraphEditor.svelte'
@@ -201,7 +202,7 @@
       class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${topLeftBasis}%;`}
     >
-      <!-- Prefabs -->
+      <AssetsPanel />
     </div>
     <Splitter bind:split={topSplit} minSplit={0.1} maxSplit={0.9} />
     <div
@@ -273,6 +274,7 @@
         >
           <StatesPanel
             states={selectedEntity.states}
+            {selectedEntity}
             {selectedState}
             onSelectState={(name, state) => {
               selectedState = state

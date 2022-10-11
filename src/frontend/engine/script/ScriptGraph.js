@@ -4,6 +4,7 @@ import { ScriptEdge, ScriptNodeEdgeList } from './ScriptEdge.js'
 
 const EVENT_NODE_NAMES = new Set()
 EVENT_NODE_NAMES.add('OnTick')
+EVENT_NODE_NAMES.add('OnPostTick')
 EVENT_NODE_NAMES.add('OnCollide')
 EVENT_NODE_NAMES.add('OnSwitch')
 

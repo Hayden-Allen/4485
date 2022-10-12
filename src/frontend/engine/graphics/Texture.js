@@ -76,6 +76,12 @@ export class Texture {
         images.push(img)
       }
     })
+
+    /**
+     * @HATODO move this ??
+     * needed by StatesPanelItemAnimation.svelte
+     */
+    this.urls = urls
   }
   createEmptyTexture(gl, w, h, d) {
     gl.texImage3D(

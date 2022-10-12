@@ -2,6 +2,7 @@ import { Component } from './Component.js'
 import { Vec2 } from '%util/Vec2.js'
 import { Renderable } from '%graphics/Renderable.js'
 import { global } from '%engine/Global.js'
+import { Texture } from '%graphics/Texture.js'
 import matter from 'matter-js'
 const { Body } = matter
 
@@ -22,8 +23,8 @@ class SceneEntityOptions {
 }
 
 // base class for everything that exists in the scene
-export class SceneEntity extends Component {
-  constructor(game, gameWindow, pos, frameTime, urls, options = {}) {
+class SceneEntity extends Component {
+  constructor(game, gameWindow, pos, options = {}) {
     super('SceneEntity')
     this.ops = new SceneEntityOptions(options)
     const vertexData = this.ops.vertices,
@@ -35,8 +36,6 @@ export class SceneEntity extends Component {
       gameWindow.shaderProgram,
       vertexData,
       indexData,
-      frameTime,
-      urls,
       { scale: this.ops.scale }
     )
 
@@ -100,11 +99,22 @@ export class SceneEntity extends Component {
   setMass(mass) {
     Body.setMass(this.physicsProxy, mass)
   }
+  getCurrentTexture() {}
+}
+
+export class StaticSceneEntity extends SceneEntity {
+  constructor(game, gameWindow, pos, frameTime, urls, options = {}) {
+    super(game, gameWindow, pos, options)
+    this.texture = new Texture(gameWindow.gl, frameTime, urls)
+  }
+  getCurrentTexture() {
+    return this.texture
+  }
 }
 
 export class DynamicSceneEntity extends SceneEntity {
-  constructor(game, gameWindow, pos, frameTime, urls, options = {}) {
-    super(game, gameWindow, pos, frameTime, urls, {
+  constructor(game, gameWindow, pos, options = {}) {
+    super(game, gameWindow, pos, {
       isStatic: false,
       ...options,
     })
@@ -155,17 +165,8 @@ export class DynamicSceneEntity extends SceneEntity {
 }
 
 export class ControlledSceneEntity extends DynamicSceneEntity {
-  constructor(
-    game,
-    gameWindow,
-    pos,
-    frameTime,
-    urls,
-    states,
-    currentStateName,
-    options = {}
-  ) {
-    super(game, gameWindow, pos, frameTime, urls, options)
+  constructor(game, gameWindow, pos, states, currentStateName, options = {}) {
+    super(game, gameWindow, pos, options)
     this.states = states
     this.currentState = this.states.get(currentStateName)
   }
@@ -181,5 +182,8 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
       // set firstRun=true for all scripts in new state
       this.currentState.reset()
     }
+  }
+  getCurrentTexture() {
+    return this.currentState.textures[4]
   }
 }

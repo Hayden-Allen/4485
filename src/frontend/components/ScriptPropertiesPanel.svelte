@@ -42,18 +42,18 @@
 
 <div
   use:dndzone={{
-    type: 'ScriptPropertiesPanel',
-    dropFromOthersDisabled: true,
+    type: 'Script',
+    dragDisabled: dndItems.length === 0,
+    morphDisabled: true,
     dropTargetStyle: '',
     items: dndItems,
-    dragDisabled: dndItems.length === 0,
     flipDurationMs: 100,
   }}
   on:consider={handleConsider}
   on:finalize={handleFinalize}
   on:mouseenter={() => (hovered = true)}
   on:mouseleave={() => (hovered = false)}
-  class={`flex flex-col w-full h-full overflow-x-hidden overflow-y-auto -z-9999 ${
+  class={`flex flex-col w-full h-full overflow-x-hidden overflow-y-auto ${
     enforceMinHeight ? 'min-h-[192px]' : ''
   }`}
 >

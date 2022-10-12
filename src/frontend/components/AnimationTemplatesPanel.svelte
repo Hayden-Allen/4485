@@ -1,4 +1,5 @@
 <script>
+  import { onMount, onDestroy } from 'svelte'
   import { v4 as uuidv4 } from 'uuid'
   import {
     dndzone,
@@ -14,8 +15,7 @@
   let searchQuery = ''
   let candidates = [],
     dragItems = []
-  let selectedTemplate = undefined,
-    hoveredTemplate = undefined
+  let selectedTemplate = undefined
   let shouldIgnoreDndEvents = false
 
   function handleDndConsider(e) {
@@ -50,6 +50,8 @@
       return {
         id: uuidv4(),
         candidate,
+        _timer: Date.now(),
+        _frame: 0,
       }
     })
   }
@@ -76,6 +78,39 @@
     }
     updateDragItems(candidates)
   }
+
+  let animationFrame = undefined
+  function animate() {
+    if (animationFrame) {
+      animationFrame = window.requestAnimationFrame(animate)
+    }
+    const now = Date.now()
+    let updated = false
+    for (const item of dragItems) {
+      if (
+        item.candidate.frameTime > 0 &&
+        now - item._timer > item.candidate.frameTime
+      ) {
+        item._frame = (item._frame + 1) % item.candidate.urls.length
+        item._timer = now
+        updated = true
+      }
+    }
+    if (updated) {
+      dragItems = dragItems
+    }
+  }
+  onMount(() => {
+    if (typeof window !== 'undefined') {
+      animationFrame = window.requestAnimationFrame(animate)
+    }
+  })
+  onDestroy(() => {
+    if (typeof window !== 'undefined') {
+      window.cancelAnimationFrame(animationFrame)
+      animationFrame = undefined
+    }
+  })
 </script>
 
 <div class="grow-1 shrink-1 w-full h-full overflow-hidden flex flex-col">
@@ -90,16 +125,18 @@
     <div
       class="absolute w-8 h-10 flex items-center justify-center text-neutral-500 pointer-events-none"
     >
-      <MagnifyingGlass />
+      <div class="w-5 h-5"><MagnifyingGlass /></div>
     </div>
   </div>
 
   <div
     class="grow-1 shrink-1 grid grid-flow-col auto-cols-max auto-rows-max p-4 gap-4 w-full h-full overflow-x-hidden overflow-y-auto"
     use:dndzone={{
-      type: 'AnimationTemplatesPanel',
-      items: dragItems,
+      type: 'Animation',
+      dropFromOthersDisabled: true,
+      morphDisabled: true,
       dropTargetStyle: '',
+      items: dragItems,
     }}
     on:consider={handleDndConsider}
     on:finalize={handleDndFinalize}
@@ -109,11 +146,11 @@
         class="flex flex-col items-center justify-center grow-0 shrink-0 px-4 py-2 hover:bg-neutral-800 focus:bg-neutral-700 transition-all rounded-md"
       >
         <div
-          class="w-16 h-16 grow-0 shrink-0 overflow-hidden flex flex-row items-center justify-center border border-solid border-neutral-700"
+          class="w-16 h-16 grow-0 shrink-0 overflow-hidden flex flex-row items-center justify-center bg-neutral-800 border border-solid border-neutral-700"
         >
           <img
             class="max-w-full max-h-full"
-            src={item.candidate.urls[0]}
+            src={item.candidate.urls[item._frame]}
             alt=""
           />
         </div>

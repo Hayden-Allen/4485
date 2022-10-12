@@ -104,12 +104,28 @@
       1,
       gameWindow,
       new Vec2(0, 0),
-      500,
-      [
-        'https://art.pixilart.com/840bcbc293e372f.png',
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-      ],
-      new Map([['Default', new State()]]),
+      new Map([
+        [
+          'Default',
+          new State('Default', [], gameWindow.gl, [
+            null,
+            null,
+            null,
+            null,
+            {
+              frameTime: 500,
+              urls: [
+                'https://art.pixilart.com/840bcbc293e372f.png',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+              ],
+            },
+            null,
+            null,
+            null,
+            null,
+          ]),
+        ],
+      ]),
       'Default',
       { scale: 25 }
     )
@@ -118,9 +134,25 @@
       1,
       gameWindow,
       new Vec2(-600, 0),
-      0,
-      ['https://art.pixilart.com/840bcbc293e372f.png'],
-      new Map([['Default', new State()]]),
+      new Map([
+        [
+          'Default',
+          new State('Default', [], gameWindow.gl, [
+            null,
+            null,
+            null,
+            null,
+            {
+              frameTime: 0,
+              urls: ['https://art.pixilart.com/840bcbc293e372f.png'],
+            },
+            null,
+            null,
+            null,
+            null,
+          ]),
+        ],
+      ]),
       'Default',
       { scale: 25 }
     )
@@ -302,7 +334,17 @@
               if (selectedEntity.states.has(name))
                 if (!window.confirm(`State '${name}' exists. Overwrite?`))
                   return
-              const newState = new State(name)
+              const newState = new State(name, [], gameWindow.gl, [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+              ])
               selectedEntity.states.set(name, newState)
               selectedState = newState
               selectedEntity.states = selectedEntity.states

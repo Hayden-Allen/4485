@@ -61,7 +61,7 @@
     <div
       class="absolute w-8 h-10 flex items-center justify-center text-neutral-500 pointer-events-none"
     >
-      <MagnifyingGlass />
+      <div class="w-5 h-5"><MagnifyingGlass /></div>
     </div>
   </div>
 

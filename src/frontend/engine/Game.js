@@ -1,7 +1,7 @@
 import { SceneManager } from '%system/SceneManager.js'
 import { PhysicsEngine } from '%physics/PhysicsEngine.js'
 import {
-  SceneEntity,
+  StaticSceneEntity,
   DynamicSceneEntity,
   ControlledSceneEntity,
 } from '%component/SceneEntity.js'
@@ -19,13 +19,13 @@ export class Game {
   }
   addStaticSceneEntity(z, gameWindow, pos, frameTime, urls, options = {}) {
     this.currentScene.addStaticEntity(
-      new SceneEntity(this, gameWindow, pos, frameTime, urls, options),
+      new StaticSceneEntity(this, gameWindow, pos, frameTime, urls, options),
       z
     )
   }
-  addDynamicSceneEntity(z, gameWindow, pos, frameTime, urls, options = {}) {
+  addDynamicSceneEntity(z, gameWindow, pos, options = {}) {
     this.currentScene.addDynamicEntity(
-      new DynamicSceneEntity(this, gameWindow, pos, frameTime, urls, options),
+      new DynamicSceneEntity(this, gameWindow, pos, options),
       z
     )
   }
@@ -33,8 +33,6 @@ export class Game {
     z,
     gameWindow,
     pos,
-    frameTime,
-    urls,
     states,
     currentStateName,
     options = {}
@@ -44,8 +42,6 @@ export class Game {
         this,
         gameWindow,
         pos,
-        frameTime,
-        urls,
         states,
         currentStateName,
         options

@@ -73,8 +73,8 @@ export class Window3D extends Window {
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     super.propagateResizeEvent()
   }
-  draw(renderable, camera) {
-    this.renderer.draw(renderable, camera, this.shaderProgram)
+  draw(entity, camera) {
+    this.renderer.draw(entity, camera, this.shaderProgram)
   }
   update(deltaTime) {
     super.update(deltaTime)

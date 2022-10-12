@@ -1,17 +1,7 @@
 import * as mat4 from '%glMatrix/mat4.js'
-import { Texture } from './Texture.js'
 
 export class Renderable {
-  constructor(
-    gl,
-    pos,
-    program,
-    vertices,
-    indices,
-    frameTime,
-    urls,
-    { scale = 1 } = {}
-  ) {
+  constructor(gl, pos, program, vertices, indices, { scale = 1 } = {}) {
     this.vertexArray = undefined
     this.vertexBuffer = undefined
     this.indexBuffer = undefined
@@ -20,7 +10,6 @@ export class Renderable {
     this.transform = mat4.create()
     this.scale = scale
     this.setTransform(pos)
-    this.texture = new Texture(gl, frameTime, urls)
   }
   setTransform(pos) {
     mat4.fromTranslation(this.transform, [pos.x, pos.y, 0])
@@ -54,10 +43,20 @@ export class Renderable {
       gl.STATIC_DRAW
     )
   }
-  bind(gl, shaderProgram) {
+  bind(gl, shaderProgram, texture) {
     gl.bindVertexArray(this.vertexArray)
-    this.texture.bind(gl, 0)
+    texture.bind(gl, 0)
     shaderProgram.uniform1i(gl, 'u_texture', 0)
-    shaderProgram.uniform1i(gl, 'u_frame', this.texture.frame)
+    shaderProgram.uniform1i(gl, 'u_frame', texture.frame)
+  }
+  draw(gl, shaderProgram, texture) {
+    this.bind(gl, shaderProgram, texture)
+    gl.drawElements(
+      gl.TRIANGLES,
+      this.elementCount,
+      // Uint16Array
+      gl.UNSIGNED_SHORT,
+      0
+    )
   }
 }

@@ -1,7 +1,15 @@
+import { global } from '%engine/Global.js'
+
 export class Vec2 {
   constructor(x, y) {
     this.x = x
     this.y = y
+  }
+  equals(other) {
+    return (
+      Math.abs(this.x - other.x) <= global.epsilon &&
+      Math.abs(this.y - other.y) <= global.epsilon
+    )
   }
   plus(other) {
     return new Vec2(this.x + other.x, this.y + other.y)
@@ -43,6 +51,7 @@ export class Vec2 {
   }
   normalize() {
     this.scaleEqual(1 / this.magnitude())
+    return this
   }
   dot(other) {
     return this.x * other.x + this.y * other.y

@@ -1,9 +1,9 @@
-import { Component } from './Component.js'
 import { global } from '%engine/Global.js'
+import { v4 as uuidv4 } from 'uuid'
 
-export class Varying extends Component {
+export class Varying {
   constructor(start, end, repeatCount, { step, fn, reset } = {}) {
-    super()
+    this.id = uuidv4()
     this.value = start
     this.start = start
     this.end = end

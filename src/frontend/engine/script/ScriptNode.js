@@ -1,5 +1,4 @@
 import { validateScriptDataTypes } from './ScriptDataType.js'
-import { ScriptNodeData } from './ScriptNodeData.js'
 import { Component } from '%component/Component.js'
 import { ScriptDataTypeList } from './ScriptDataType.js'
 
@@ -10,40 +9,51 @@ export class ScriptNodePort {
     this.editorTypename = editorTypename || typename
   }
 }
+export class ScriptNodeData {
+  constructor(inputPorts, internalPorts, outputPorts, fn) {
+    this.inputPorts = inputPorts
+    this.internalPorts = internalPorts
+    this.outputPorts = outputPorts
+    this.fn = fn
+  }
+}
 
 export class ScriptNode extends Component {
   constructor(
-    type,
-    debugName,
+    category,
+    templateName,
     graph,
     inputPorts,
     outputPorts,
     fn,
-    { internalPorts = [], internalValues = [] } = {}
+    { internalPorts = [], internalValues = [], isExport = false } = {}
   ) {
-    super(debugName)
+    super(templateName)
     /**
-     * @HATODO this shouldn't be here, only needed in proxy
+     * @HATODO only needed in proxy
      */
-    this.type = type
+    this.category = category
+
     this.graph = graph
-    this.graph.addNode(this)
     this.data = new ScriptNodeData(inputPorts, internalPorts, outputPorts, fn)
     this.inputTypes = new ScriptDataTypeList(
       inputPorts.map((port) => port.typename)
     )
-    this.outputTypes = new ScriptDataTypeList(
-      outputPorts.map((port) => port.typename)
-    )
-    // cached outputs from last run
     this.outputs = []
-    // whether or not this node should be evaluated during current graph execution
     this.active = false
-    // internal constants
     this.internalValues = internalValues
+    this.isExport = isExport
+    this.isSource = false
+  }
+  serialize() {
+    const obj = {
+      type: this.debugName,
+      internalValues: this.internalValues,
+    }
+    return obj
   }
   checkIndex(types, index) {
-    // -1 signals that an edge carries activation, but not value
+    // -1 is an activation edge
     if (index < -1 || index > types.length) {
       this.logError(`Invalid index ${index}`)
       return false
@@ -56,45 +66,25 @@ export class ScriptNode extends Component {
   checkOutputIndex(index) {
     return this.checkIndex(this.outputTypes, index)
   }
-  // outputNode.outputs[outputIndex] => this.inputs[inputIndex]
-  attachAsInput(outputNode, outputIndex, inputIndex) {
-    if (!this.graph.isSameComponent(outputNode.graph)) {
-      this.logError(`Cannot attach two ScriptNodes from different Graphs`)
-      return
-    }
-    // remove existing edge first
-    const existing = this.graph.hasInputEdge(this, inputIndex)
+  attachBase(inputNode, inputIndex) {
+    const existing = this.graph.hasInputEdgeAt(inputNode, inputIndex)
     if (existing)
       this.graph.removeEdge(
         existing.outputNode,
         existing.outputIndex,
-        this,
-        inputIndex
+        existing.inputNode,
+        existing.inputIndex
       )
+  }
+  attachAsInput(outputNode, outputIndex, inputIndex) {
+    this.attachBase(this, inputIndex)
     this.graph.addEdge(outputNode, outputIndex, this, inputIndex)
   }
-  // this.outputs[outputIndex] => inputNode.inputs[inputIndex]
   attachAsOutput(outputIndex, inputNode, inputIndex) {
-    if (!this.graph.isSameComponent(inputNode.graph)) {
-      this.logError(`Cannot attach two ScriptNodes from different Graphs`)
-      return
-    }
-    // remove existing edge first
-    const existing = this.graph.hasInputEdge(inputNode, inputIndex)
-    if (existing)
-      this.graph.removeEdge(
-        existing.outputNode,
-        existing.outputIndex,
-        inputNode,
-        inputIndex
-      )
+    this.attachBase(inputNode, inputIndex)
     this.graph.addEdge(this, outputIndex, inputNode, inputIndex)
   }
-  run(inputs, entity, inputCache) {
-    if (!this.active) return
-
-    // console.log(inputs)
-    // console.log(this.data.inputTypes.types)
+  run(inputs, context) {
     if (!validateScriptDataTypes(inputs, this.inputTypes.types)) {
       this.graph.pushError(`Invalid input to '${this.debugName}'`)
       return
@@ -102,25 +92,31 @@ export class ScriptNode extends Component {
 
     const results =
       this.data.fn(inputs, {
-        entity,
+        entity: context.entity,
+        scene: context.entity.scene,
+        input: context.inputCache,
+        camera: context.camera,
         internal: this.internalValues,
-        input: inputCache,
+        node: this,
       }) || []
+
+    // store output values
+    // each entry in results also has activation info
     this.outputs = results.map((result) => result.value)
     // propagate activation
-    let outboundEdges = this.graph.edges.get(this.id).out
-    // eslint-disable-next-line no-redeclare
+    const outboundEdges = this.graph.getEdges(this).out
     for (var i = 0; i < outboundEdges.length; i++) {
-      // get an outbound edge and the output associated with that edge
       const edge = outboundEdges[i]
-      if (edge.outputIndex === -1) {
-        // this is an activation edge
+      // `edge` is a pure activation edge
+      if (edge.inputIndex === -1 && edge.outputIndex === -1) {
         edge.inputNode.active = true
       } else {
-        const result = results[edge.outputIndex]
-        // if the associated output is explicitly active OR not set, activate the edge's other node
-        if (result.activate || result.activate === undefined)
+        const { active } = results[edge.outputIndex]
+        // activate child nodes if the result of running this node says so
+        if (active || (!this.isSource && active === undefined)) {
+          // console.log(this.debugName, active)
           edge.inputNode.active = true
+        }
       }
     }
   }

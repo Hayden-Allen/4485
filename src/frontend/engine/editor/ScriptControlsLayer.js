@@ -2,9 +2,9 @@ import { Layer } from '%window/Layer.js'
 import { global } from '%engine/Global.js'
 import * as mat3 from '%glMatrix/mat3.js'
 
-export class ScriptGraphControlsLayer extends Layer {
+export class ScriptControlsLayer extends Layer {
   constructor(input) {
-    super('ScriptGraphLayerControls')
+    super('ScriptLayerControls')
     this.input = input
     this.zoom = 1
     this.maxZoom = 2

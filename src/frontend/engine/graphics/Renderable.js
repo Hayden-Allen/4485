@@ -1,10 +1,7 @@
 import * as mat4 from '%glMatrix/mat4.js'
-import { Texture } from './Texture.js'
-
-let textureCache = new Map()
 
 export class Renderable {
-  constructor(gl, pos, program, vertices, indices, url, { scale = 1 } = {}) {
+  constructor(gl, pos, program, vertices, indices, { scale = 1 } = {}) {
     this.vertexArray = undefined
     this.vertexBuffer = undefined
     this.indexBuffer = undefined
@@ -13,16 +10,14 @@ export class Renderable {
     this.transform = mat4.create()
     this.scale = scale
     this.setTransform(pos)
-
-    if (textureCache.has(url)) this.texture = textureCache.get(url)
-    else {
-      this.texture = new Texture(gl, url)
-      textureCache.set(url, this.texture)
-    }
   }
   setTransform(pos) {
     mat4.fromTranslation(this.transform, [pos.x, pos.y, 0])
-    mat4.scale(this.transform, this.transform, [this.scale, this.scale, 1])
+    this.setScale(this.scale)
+  }
+  setScale(scale) {
+    this.scale = scale
+    this.transform[0] = this.transform[5] = this.scale
   }
   init(gl, program, vertices, indices) {
     this.vertexArray = gl.createVertexArray()
@@ -48,9 +43,20 @@ export class Renderable {
       gl.STATIC_DRAW
     )
   }
-  bind(gl, shaderProgram) {
+  bind(gl, shaderProgram, texture) {
     gl.bindVertexArray(this.vertexArray)
-    this.texture.bind(gl, 0)
+    texture.bind(gl, 0)
     shaderProgram.uniform1i(gl, 'u_texture', 0)
+    shaderProgram.uniform1i(gl, 'u_frame', texture.frame)
+  }
+  draw(gl, shaderProgram, texture) {
+    this.bind(gl, shaderProgram, texture)
+    gl.drawElements(
+      gl.TRIANGLES,
+      this.elementCount,
+      // Uint16Array
+      gl.UNSIGNED_SHORT,
+      0
+    )
   }
 }

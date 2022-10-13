@@ -1,11 +1,20 @@
 import { Component } from './Component.js'
 import { SceneLayer } from './SceneLayer.js'
+import { global } from '%engine/Global.js'
+import { Camera } from '%graphics/Camera.js'
 
 export class Scene extends Component {
   constructor() {
     super('Scene')
     this.layers = []
     this.controlledComponents = new Map()
+    this.camera = new Camera(
+      [0, 0, 0],
+      -global.canvas.targetWidth / 2,
+      global.canvas.targetWidth / 2,
+      -global.canvas.targetHeight / 2,
+      global.canvas.targetHeight / 2
+    )
   }
   addComponent() {
     this.logError('Use addStaticComponent() and addDynamicComponent() instead')
@@ -23,16 +32,15 @@ export class Scene extends Component {
   }
   // TODO limit z in some way?
   addStaticEntity(component, z) {
+    component.bindToScene(this, z)
     this.addBase('static', component, z)
   }
   addDynamicEntity(component, z) {
+    component.bindToScene(this, z)
     this.addBase('dynamic', component, z)
   }
   addControlledEntity(component, z) {
-    if (!component.controllers || !component.controllers.length)
-      this.logWarning(
-        `Controlled component ${component.getLogName()} does not have any controllers`
-      )
+    component.bindToScene(this, z)
     this.addDynamicEntity(component, z)
     this.controlledComponents.set(component.id, component)
   }
@@ -60,7 +68,10 @@ export class Scene extends Component {
     this.removeBase('dynamic', component)
   }
   removeControlledEntity(component) {
-    this.removeDynamicComponent(component)
-    this.controlledComponents.delete(component.id)
+    if (component.states) {
+      this.removeDynamicEntity(component)
+      this.controlledComponents.delete(component.id)
+      component.destroy()
+    }
   }
 }

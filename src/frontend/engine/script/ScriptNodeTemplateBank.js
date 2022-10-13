@@ -3,9 +3,38 @@ import {
   InternalScriptNodeTemplate,
   ScriptNodeTemplate,
   ConstantScriptNodeTemplate,
+  ExportNodeTemplate,
 } from './ScriptNodeTemplate.js'
 import { ScriptNodePort } from './ScriptNode.js'
 import { Vec2 } from '%util/Vec2.js'
+import { global } from '%engine/Global.js'
+
+export const NODE_CATEGORY_COLORS = {
+  all: {
+    bgColor: '#d4d4d4',
+    borderColor: '#737373',
+  },
+  logic: {
+    bgColor: '#0ea5e9',
+    borderColor: '#0369a1',
+  },
+  event: {
+    bgColor: '#eab308',
+    borderColor: '#a16207',
+  },
+  input: {
+    bgColor: '#eab308',
+    borderColor: '#a16207',
+  },
+  math: {
+    bgColor: '#f59e0b',
+    borderColor: '#b45309',
+  },
+  entity: {
+    bgColor: '#22c55e',
+    borderColor: '#15803d',
+  },
+}
 
 class ScriptNodeTemplateBank {
   constructor() {
@@ -24,11 +53,11 @@ class ScriptNodeTemplateBank {
       ([name, type, editorType]) => new ScriptNodePort(name, type, editorType)
     )
   }
-  create(type, name, inputs, outputs, fn) {
+  create(category, name, inputs, outputs, fn) {
     this.bank.set(
       name,
       new ScriptNodeTemplate(
-        type,
+        category,
         name,
         this.mapPorts(inputs),
         this.mapPorts(outputs),
@@ -36,26 +65,69 @@ class ScriptNodeTemplateBank {
       )
     )
   }
-  createEvent(type, name) {
-    this.bank.set(name, new EventScriptNodeTemplate(type, name))
+  createEvent(category, name, outputs) {
+    this.bank.set(
+      name,
+      new EventScriptNodeTemplate(category, name, this.mapPorts(outputs))
+    )
   }
-  createInternal(type, name, inputs, internals, outputs, fn) {
+  createInternal(
+    category,
+    name,
+    inputs,
+    internals,
+    defaultValues,
+    outputs,
+    fn
+  ) {
     this.bank.set(
       name,
       new InternalScriptNodeTemplate(
-        type,
+        category,
         name,
         this.mapPorts(inputs),
         this.mapPorts(internals),
+        defaultValues,
         this.mapPorts(outputs),
         fn
       )
     )
   }
-  createConstant(type, name, ports) {
+  createConstant(category, name, ports, defaultValues) {
     this.bank.set(
       name,
-      new ConstantScriptNodeTemplate(type, name, this.mapPorts(ports))
+      new ConstantScriptNodeTemplate(
+        category,
+        name,
+        this.mapPorts(ports),
+        defaultValues
+      )
+    )
+  }
+  createExport(
+    category,
+    name,
+    valueName,
+    value,
+    valueType,
+    {
+      additionalPorts = [],
+      additionalValues = [],
+      valueEditorType = valueType,
+    } = {}
+  ) {
+    this.bank.set(
+      name,
+      new ExportNodeTemplate(
+        category,
+        name,
+        valueName,
+        value,
+        valueType,
+        valueEditorType,
+        this.mapPorts(additionalPorts),
+        additionalValues
+      )
     )
   }
   init() {
@@ -64,9 +136,30 @@ class ScriptNodeTemplateBank {
     this.createInput()
     this.createLogic()
     this.createMath()
+    this.createExports()
+    /**
+     * @HATODO remove
+     */
+    this.createInternal(
+      'logic',
+      '__debug',
+      [],
+      [['msg', 'string']],
+      ['debug'],
+      [],
+      (_, { internal, entity }) => {
+        entity.logInfo(internal[0])
+      }
+    )
   }
   createEvents() {
-    this.createEvent('event', 'OnTick')
+    this.createEvent('event', 'OnTick', [])
+    this.createEvent('event', 'OnPostTick', [])
+    this.createEvent('event', 'OnCollide', [
+      ['normal', 'object'],
+      ['entity', 'object'],
+    ])
+    this.createEvent('event', 'OnSwitch', [])
   }
   createInput() {
     this.createInternal(
@@ -74,6 +167,7 @@ class ScriptNodeTemplateBank {
       'KeyPressed',
       [],
       [['key', 'string', 'key']],
+      ['A'],
       [
         ['T', 'bool'],
         ['F', 'bool'],
@@ -88,10 +182,36 @@ class ScriptNodeTemplateBank {
         ]
       }
     )
+    this.create(
+      'input',
+      'VarKeyPressed',
+      [['key', 'string']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([key], { input }) => {
+        const pressed = input.isKeyPressed(key)
+        return [
+          { value: pressed, active: pressed },
+          { value: !pressed, active: !pressed },
+          { value: ~~pressed },
+        ]
+      }
+    )
+    this.create(
+      'input',
+      'MouseScroll',
+      [],
+      [['v', 'object']],
+      (_, { input }) => [{ value: input.mouseScroll }]
+    )
   }
   createMath() {
     // const
-    this.createConstant('math', 'ConstInt', [['int', 'int']])
+    this.createConstant('math', 'ConstInt', [['int', 'int']], [0])
+    this.createConstant('math', 'ConstFloat', [['float', 'float']], [0])
     // function
     this.create(
       'math',
@@ -103,7 +223,103 @@ class ScriptNodeTemplateBank {
       [['a-b', 'number']],
       ([a, b]) => [{ value: a - b }]
     )
+    this.create(
+      'math',
+      'Multiply',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [['a*b', 'number']],
+      ([a, b]) => [{ value: a * b }]
+    )
+    this.create(
+      'math',
+      'Min',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [['min', 'number']],
+      ([a, b]) => [{ value: Math.min(a, b) }]
+    )
+    this.create(
+      'math',
+      'Max',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [['max', 'number']],
+      ([a, b]) => [{ value: Math.max(a, b) }]
+    )
+    this.create(
+      'math',
+      'Clamp',
+      [
+        ['x', 'number'],
+        ['min', 'number'],
+        ['max', 'number'],
+      ],
+      [['clamped', 'number']],
+      ([x, min, max]) => [{ value: global.clamp(x, min, max) }]
+    )
+    this.create(
+      'math',
+      'Negative',
+      [['x', 'number']],
+      [['-x', 'number']],
+      ([x]) => [{ value: -x }]
+    )
+    this.create(
+      'math',
+      'Equals',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const equal = a == b
+        return [
+          { value: equal, active: equal },
+          { value: !equal, active: !equal },
+          { value: ~~equal },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'EqualsConst',
+      [['a', 'number']],
+      [['b', 'number']],
+      [0],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a], { internal }) => {
+        const equal = a == internal[0]
+        return [
+          { value: equal, active: equal },
+          { value: !equal, active: !equal },
+          { value: ~~equal },
+        ]
+      }
+    )
+
     // vector
+    /**
+     * @HATODO debug only
+     */
+    this.create('math', 'PrintVec2', [['v', 'object']], [], ([v]) => {
+      console.log(v)
+    })
     this.create(
       'math',
       'Vec2',
@@ -112,7 +328,19 @@ class ScriptNodeTemplateBank {
         ['y', 'number'],
       ],
       [['v', 'object']],
-      ([x, y]) => [{ value: new Vec2(x, y) }]
+      ([x, y]) => {
+        return [{ value: new Vec2(x, y) }]
+      }
+    )
+    this.create(
+      'math',
+      'Vec2Components',
+      [['v', 'object']],
+      [
+        ['x', 'number'],
+        ['y', 'number'],
+      ],
+      ([v]) => [{ value: v.x }, { value: v.y }]
     )
     this.create(
       'math',
@@ -126,13 +354,147 @@ class ScriptNodeTemplateBank {
     )
     this.create(
       'math',
+      'ClampVec2',
+      [
+        ['v', 'object'],
+        ['min', 'number'],
+        ['max', 'number'],
+      ],
+      [['v', 'object']],
+      ([v, min, max]) => {
+        const l2 = v.lengthSquared()
+        if (l2 < min * min) {
+          v.normalize().scaleEqual(min)
+        } else if (l2 > max * max) {
+          v.normalize().scaleEqual(max)
+        }
+
+        return [{ value: v }]
+      }
+    )
+    this.create(
+      'math',
       'Normalize',
       [['v', 'object']],
       [['n', 'object']],
       ([v]) => [{ value: v.norm() }]
     )
+    this.create(
+      'math',
+      'Vec2Equals',
+      [
+        ['v1', 'object'],
+        ['v2', 'object'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([v1, v2]) => {
+        const equal = v1.equals(v2)
+        return [
+          { value: equal, active: equal },
+          { value: !equal, active: !equal },
+          { value: ~~equal },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'ConstVec2',
+      [],
+      [
+        ['x', 'number'],
+        ['y', 'number'],
+      ],
+      [0, 0],
+      [['v', 'object']],
+      (_, { internal }) => [{ value: new Vec2(internal[0], internal[1]) }]
+    )
   }
   createLogic() {
+    this.create(
+      'logic',
+      'AND',
+      [
+        ['a', 'any'],
+        ['b', 'any'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const and = a && b
+        return [
+          { value: and, active: and },
+          { value: !and, active: !and },
+          { value: ~~and },
+        ]
+      }
+    )
+    this.create(
+      'logic',
+      'OR',
+      [
+        ['a', 'any'],
+        ['b', 'any'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const or = a || b
+        return [
+          { value: or, active: or },
+          { value: !or, active: !or },
+          { value: ~~or },
+        ]
+      }
+    )
+    this.create(
+      'logic',
+      'XOR',
+      [
+        ['a', 'any'],
+        ['b', 'any'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const xor = a ^ b
+        return [
+          { value: xor, active: xor },
+          { value: !xor, active: !xor },
+          { value: ~~xor },
+        ]
+      }
+    )
+    this.create(
+      'logic',
+      'NOT',
+      [['a', 'any']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a]) => {
+        const not = !a
+        return [
+          { value: not, active: not },
+          { value: !not, active: !not },
+          { value: ~~not },
+        ]
+      }
+    )
     this.create(
       'logic',
       'Mux2',
@@ -161,11 +523,139 @@ class ScriptNodeTemplateBank {
         ['v', 'object'],
       ],
       [],
-      // don't return anything
       ([entity, v]) => {
-        entity.setVelocity(v)
+        if (entity.setVelocity) {
+          entity.setVelocity(v)
+        }
       }
     )
+    this.create(
+      'entity',
+      'SetEntityVelocityX',
+      [
+        ['entity', 'object'],
+        ['x', 'number'],
+      ],
+      [],
+      ([entity, x]) => {
+        if (entity.setVelocity) {
+          entity.setVelocityX(x)
+          // console.log(entity.physicsProxy.velocity)
+        }
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityVelocityY',
+      [
+        ['entity', 'object'],
+        ['y', 'number'],
+      ],
+      [],
+      ([entity, y]) => {
+        if (entity.setVelocity) {
+          entity.setVelocityY(y)
+        }
+      }
+    )
+    this.create(
+      'entity',
+      'ApplyEntityForce',
+      [
+        ['entity', 'object'],
+        ['force', 'object'],
+      ],
+      [],
+      ([entity, force]) => {
+        entity.applyForce(force)
+      }
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocity',
+      [['entity', 'object']],
+      [['v', 'object']],
+      ([entity]) => {
+        const { x, y } = entity.getVelocity()
+        return [{ value: new Vec2(x, y) }]
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScale',
+      [
+        ['entity', 'object'],
+        ['scale', 'number'],
+      ],
+      [],
+      ([entity, s]) => {
+        entity.setScale(s)
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityState',
+      [
+        ['entity', 'object'],
+        ['state', 'string'],
+      ],
+      [],
+      ([entity, state]) => {
+        entity.setState(state)
+      }
+    )
+    this.create(
+      'entity',
+      'DestroyEntity',
+      [['entity', 'object']],
+      [],
+      ([entity], { scene }) => {
+        scene.removeControlledEntity(entity)
+      }
+    )
+    this.create(
+      'entity',
+      'GetEntityPosition',
+      [['entity', 'object']],
+      [['pos', 'object']],
+      ([entity]) => [{ value: entity.pos }]
+    )
+    this.create(
+      'entity',
+      'SetCameraPosition',
+      [['pos', 'object']],
+      [],
+      ([pos], { camera }) => {
+        camera.setPosition(pos)
+      }
+    )
+    this.create(
+      'entity',
+      'SetCameraZoom',
+      [['zoom', 'number']],
+      [],
+      ([zoom], { camera }) => {
+        camera.setZoom(zoom)
+      }
+    )
+  }
+  createExports() {
+    this.createExport('math', 'ExportInt', 'value', 0, 'int')
+    this.createExport('math', 'ExportIntRange', 'value', 0, 'int', {
+      additionalPorts: [
+        ['min', 'int'],
+        ['max', 'int'],
+      ],
+      additionalValues: [0, 10],
+    })
+    this.createExport('math', 'ExportFloat', 'value', 0, 'float')
+    this.createExport('input', 'ExportKey', 'key', 'A', 'string', {
+      valueEditorType: 'key',
+    })
+
+    this.createExport('entity', 'ExportState', 'state', '---', 'string', {
+      valueEditorType: 'state',
+    })
   }
 }
 

@@ -1,31 +1,39 @@
 import { Renderer } from '%graphics/Renderer.js'
 import { Window } from './Window.js'
 import { Window2D } from './Window2D.js'
-import { Camera } from '%graphics/Camera.js'
 import { ShaderProgram } from '%graphics/ShaderProgram.js'
-import * as mat4 from '%glMatrix/mat4.js'
 import * as vec4 from '%glMatrix/vec4.js'
 
-const VERTEX_SOURCE = `
-  attribute vec2 i_pos;
-  attribute vec2 i_tex;
+const VERTEX_SOURCE = `#version 300 es 
+  precision highp float;
+  precision highp int;
+  
+  layout(location = 0) in vec2 i_pos;
+  layout(location = 1) in vec2 i_tex;
 
   uniform mat4 u_mvp;
 
-  varying highp vec2 v_tex;
+  out vec2 v_tex;
 
   void main() {
     gl_Position = u_mvp * vec4(i_pos, -1, 1);
     v_tex = i_tex;
   }
 `
-const FRAGMENT_SOURCE = `
-  uniform sampler2D u_texture;
+const FRAGMENT_SOURCE = `#version 300 es
+  precision highp float;
+  precision highp int;
+  precision highp sampler2DArray;
 
-  varying highp vec2 v_tex;
+  uniform sampler2DArray u_texture;
+  uniform int u_frame;
+
+  in vec2 v_tex;
+
+  out vec4 o_color;
 
   void main() {
-    gl_FragColor = texture2D(u_texture, v_tex);
+    o_color = texture(u_texture, vec3(v_tex, u_frame));
   }
 `
 
@@ -35,14 +43,6 @@ export class Window3D extends Window {
     /**
      * @HATODO move into EditorLayer
      */
-    // this.camera = new Camera([-1, 0, 0], 45)
-    this.camera = new Camera(
-      [0, 0, 0],
-      0,
-      this.canvas.width,
-      0,
-      this.canvas.height
-    )
     this.shaderProgram = new ShaderProgram(
       this.gl,
       VERTEX_SOURCE,
@@ -52,7 +52,7 @@ export class Window3D extends Window {
     this.fpsElement = document.getElementById('fps')
     this.fpsSamples = new Array(100).fill(0)
     // debug draw
-    this.uiCanvas = new Window2D(uiCanvas)
+    this.uiCanvas = new Window2D(uiCanvas, undefined, { doScaling: false })
   }
   setCanvas(canvas) {
     super.setCanvas(canvas)
@@ -72,16 +72,9 @@ export class Window3D extends Window {
   propagateResizeEvent() {
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     super.propagateResizeEvent()
-    this.camera = new Camera(
-      [0, 0, 0],
-      -this.canvas.width / 2,
-      this.canvas.width / 2,
-      -this.canvas.height / 2,
-      this.canvas.height / 2
-    )
   }
-  draw(renderable) {
-    this.renderer.draw(renderable, this.camera, this.shaderProgram)
+  draw(entity, camera) {
+    this.renderer.draw(entity, camera, this.shaderProgram)
   }
   update(deltaTime) {
     super.update(deltaTime)
@@ -95,10 +88,9 @@ export class Window3D extends Window {
       minimumIntegerDigits: 3,
     })} fps`
   }
-  strokeRect(transform, x, y, w, h, color) {
+  strokeRect(camera, x, y, w, h, color, width) {
     // world->NDC matrix
-    let mvp = mat4.create()
-    mat4.mul(mvp, this.camera.matrix, transform)
+    let mvp = camera.matrix
     // position of top left corner
     let pos = vec4.fromValues(x, y, -1, 1)
     vec4.transformMat4(pos, pos, mvp)
@@ -114,7 +106,6 @@ export class Window3D extends Window {
       sh = (dim[1] * this.canvas.height) / 2
 
     // console.log(sx, sy, sw, sh)
-    this.uiCanvas.ctx.strokeStyle = color
-    this.uiCanvas.ctx.strokeRect(sx, sy, sw, sh)
+    this.uiCanvas.strokeRect(sx, sy, sw, sh, color, width)
   }
 }

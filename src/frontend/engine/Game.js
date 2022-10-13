@@ -1,7 +1,14 @@
 import { SceneManager } from '%system/SceneManager.js'
+import { PhysicsEngine } from '%physics/PhysicsEngine.js'
+import {
+  StaticSceneEntity,
+  DynamicSceneEntity,
+  ControlledSceneEntity,
+} from '%component/SceneEntity.js'
 
 export class Game {
   constructor(context) {
+    this.physicsEngine = new PhysicsEngine(this, -5)
     this.currentScene = undefined
     this.sceneManager = new SceneManager()
     context.addSystem(this.sceneManager)
@@ -10,14 +17,37 @@ export class Game {
     this.currentScene = scene
     this.sceneManager.addComponent(scene)
   }
-  addStaticSceneEntity(component, z) {
-    this.currentScene.addStaticEntity(component, z)
+  addStaticSceneEntity(z, gameWindow, pos, frameTime, urls, options = {}) {
+    this.currentScene.addStaticEntity(
+      new StaticSceneEntity(this, gameWindow, pos, frameTime, urls, options),
+      z
+    )
   }
-  addDynamicSceneEntity(component, z) {
-    this.currentScene.addDynamicEntity(component, z)
+  addDynamicSceneEntity(z, gameWindow, pos, options = {}) {
+    this.currentScene.addDynamicEntity(
+      new DynamicSceneEntity(this, gameWindow, pos, options),
+      z
+    )
   }
-  addControlledSceneEntity(component, z) {
-    this.currentScene.addControlledEntity(component, z)
+  addControlledSceneEntity(
+    z,
+    gameWindow,
+    pos,
+    states,
+    currentStateName,
+    options = {}
+  ) {
+    this.currentScene.addControlledEntity(
+      new ControlledSceneEntity(
+        this,
+        gameWindow,
+        pos,
+        states,
+        currentStateName,
+        options
+      ),
+      z
+    )
   }
   removeStaticSceneEntity(component) {
     this.currentScene.removeStaticEntity(component)
@@ -25,10 +55,13 @@ export class Game {
   removeDynamicSceneEntity(component) {
     this.currentScene.removeDynamicEntity(component)
   }
-  removeControlledSceneEntity(component, z) {
-    this.currentScene.removeControlledEntity(component, z)
+  removeControlledSceneEntity(component) {
+    this.currentScene.removeControlledEntity(component, component.sceneZ)
   }
   draw(window) {
-    this.currentScene.layers.forEach((layer) => layer.draw(window))
+    this.drawFromPerspective(window, this.currentScene.camera)
+  }
+  drawFromPerspective(window, camera) {
+    this.currentScene.layers.forEach((layer) => layer.draw(window, camera))
   }
 }

@@ -3,7 +3,7 @@
   import Viewport from './Viewport.svelte'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
-  import { SceneEntity, ControlledSceneEntity } from '%component/SceneEntity.js'
+  // import { SceneEntity, ControlledSceneEntity } from '%component/SceneEntity.js'
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
   import { Window } from '%window/Window.js'

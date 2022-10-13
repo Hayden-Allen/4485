@@ -1,10 +1,13 @@
-import { VaryingController } from '%system/VaryingController.js'
-import { PhysicsEngine } from '%physics/PhysicsEngine.js'
+import { Context } from '%engine/Context.js'
+import { VaryingController } from '%util/VaryingController.js'
 
 export var global = {
+  context: undefined,
   varyingController: undefined,
-  physicsEngine: undefined,
   fps: 60,
+  mouseX: 0,
+  mouseY: 0,
+  epsilon: 10e-5,
 
   canvas: {
     targetWidth: 1920,
@@ -14,15 +17,20 @@ export var global = {
     last: 0,
     now: 0,
     delta: 0,
+    lastDelta: 0,
   },
 
-  init: (context) => {
-    global.physicsEngine = new PhysicsEngine(0)
+  init: () => {
+    global.context = new Context()
     global.varyingController = new VaryingController()
-    context.addSystem(global.varyingController)
+    global.context.addSystem(global.varyingController)
     window.oncontextmenu = (e) => {
       e.preventDefault()
       e.stopPropagation()
+    }
+    window.onmousemove = (e) => {
+      global.mouseX = e.clientX
+      global.mouseY = e.clientY
     }
   },
   padZeroes: (s, n) => {
@@ -31,13 +39,14 @@ export var global = {
   },
   updateTime: () => {
     global.time.now = performance.now()
+    global.time.lastDelta = global.time.delta
     global.time.delta = global.time.now - global.time.last
     global.time.last = global.time.now
     return global.time.delta
   },
   beginFrame: () => {
     const deltaTime = global.updateTime()
-    return deltaTime
+    return { deltaTime, deltaCorrection: deltaTime / global.time.lastDelta }
   },
   clamp: (x, min, max) => {
     return Math.min(max, Math.max(x, min))
@@ -67,5 +76,17 @@ export var global = {
     const dx = x1 - x2,
       dy = y1 - y2
     return Math.sqrt(dx * dx + dy * dy)
+  },
+  keyToDisplayStr: (key) => {
+    if (key === ' ') {
+      return 'Space'
+    } else {
+      return key
+    }
+  },
+  alphabetSort: (arr) => {
+    return arr.sort((a, b) =>
+      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+    )
   },
 }

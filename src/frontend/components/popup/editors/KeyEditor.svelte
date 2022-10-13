@@ -1,6 +1,8 @@
 <svelte:options accessors />
 
 <script>
+  import { onMount } from 'svelte'
+  import { global } from '%engine/Global.js'
   import EditorLayout from 'components/popup/layouts/EditorLayout.svelte'
 
   export let x = null,
@@ -12,12 +14,22 @@
 
   export let currentValue = null
 
+  let inputEl = null
+
+  export function validate() {
+    return currentValue.length > 0
+  }
+
   function handleKeyDown(event) {
     event.preventDefault()
     event.stopPropagation()
-    currentValue = event.key
+    currentValue = event.key.length === 1 ? event.key.toUpperCase() : event.key
     onDestroyPopup()
   }
+
+  onMount(() => {
+    inputEl.focus()
+  })
 </script>
 
 <EditorLayout
@@ -30,10 +42,11 @@
   height="auto"
 >
   <input
+    bind:this={inputEl}
     on:keydown={handleKeyDown}
     value=""
-    placeholder={currentValue}
-    class="grow-1 shrink-1 p-2 w-full min-w-0 border-0 outline-0 bg-inherit text-inherit"
+    placeholder={global.keyToDisplayStr(currentValue)}
+    class="grow-1 shrink-1 p-2 w-full min-w-0 border-0 outline-none bg-inherit text-inherit"
     style={`--placeholder-color: ${placeholderColor};`}
   />
 </EditorLayout>

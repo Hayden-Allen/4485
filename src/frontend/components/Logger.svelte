@@ -4,6 +4,7 @@
   import CheckCircle from 'icons/24/solid/check-circle.svelte'
 
   export let errors = undefined
+  export let graphIsEmpty = undefined
 
   const BASE_CLASSES =
     'w-full flex flex-row items-center p-2 rounded-md drop-shadow-md'
@@ -47,7 +48,7 @@
       </div>
     {/each}
 
-    {#if errors.length === 0}
+    {#if !graphIsEmpty && errors.length === 0}
       <div
         class={`${BASE_CLASSES} bg-green-600 text-green-100`}
         style={`opacity: 0; animation: fade-out-toggle${fadeOutToggle} 2.5s;`}

@@ -1,9 +1,12 @@
 import { global } from './Global.js'
+import { Game } from './Game.js'
 
 export class Context {
   constructor() {
     this.systems = new Map()
     this.windows = []
+    this.paused = false
+    this.game = new Game(this)
 
     window.addEventListener('resize', () => this.propagateResizeEvent())
     window.addEventListener('keydown', (e) => {
@@ -19,13 +22,27 @@ export class Context {
   run() {
     requestAnimationFrame(this.run.bind(this))
 
-    const deltaTime = global.beginFrame()
+    const { deltaTime, deltaCorrection } = global.beginFrame()
     // this is a failsafe; because this runs in the browser, switching to a different tab allows the user to make the delta time arbitraily large, which obviously breaks stuff
     // so skip this frame if more than half a second has passed since the last frame
-    if (deltaTime > 500) return
+    // this is also necessary to prevent physics from breaking
+    if (deltaTime > 100) return
 
-    // run engine logic
-    this.systems.forEach((system) => system.update(deltaTime))
+    global.varyingController.update(deltaTime)
+    if (!this.paused) {
+      // run engine logic
+      this.systems.forEach((system) => system.update(deltaTime))
+      // force->velocity & force = 0
+      // this.game.physicsEngine.updateVelocities(deltaTime, deltaCorrection)
+      // clamp velocity
+      this.game.currentScene.controlledComponents.forEach((component) => {
+        component.runScripts('OnPostTick', {
+          camera: this.game.currentScene.camera,
+        })
+      })
+      // update physics
+      this.game.physicsEngine.update(deltaTime, deltaCorrection)
+    }
     // draw everything
     this.windows.forEach((window) => window.update(deltaTime))
   }
@@ -33,5 +50,11 @@ export class Context {
     if (this.systems.has(system.name))
       console.warn(`Overwriting system '${system.name}'`)
     this.systems.set(system.name, system)
+  }
+  removeWindow(window) {
+    const i = this.windows.indexOf(window)
+    if (i !== -1) {
+      this.windows.splice(i, 1)
+    }
   }
 }

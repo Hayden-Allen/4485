@@ -1,15 +1,28 @@
 import { Vec2 } from '%util/Vec2.js'
 import { Component } from '%component/Component.js'
 
-class InputEvent {
+class Event {
   constructor(e) {
+    this.domEvent = e
+  }
+}
+export class FocusEvent extends Event {
+  constructor(e, x, y) {
+    super(e)
+    this.x = x
+    this.y = y
+  }
+}
+
+class InputEvent extends Event {
+  constructor(e) {
+    super(e)
     this.altPressed = e.altKey
     this.ctrlPressed = e.ctrlKey
     this.metaPressed = e.metaKey
     this.shiftPressed = e.shiftKey
   }
 }
-
 class MouseVectorEvent extends InputEvent {
   constructor(e, x, y) {
     super(e)
@@ -30,21 +43,21 @@ export class MouseScrollEvent extends MouseVectorEvent {
     super(e, e.deltaX, e.deltaY)
   }
 }
-class MouseButtonEvent extends InputEvent {
-  constructor(e, pressed) {
-    super(e)
+class MouseButtonEvent extends MouseVectorEvent {
+  constructor(e, x, y, pressed) {
+    super(e, x, y)
     this.button = e.button
     this.pressed = pressed
   }
 }
 export class MouseUpEvent extends MouseButtonEvent {
-  constructor(e) {
-    super(e, false)
+  constructor(e, x, y) {
+    super(e, x, y, false)
   }
 }
 export class MouseDownEvent extends MouseButtonEvent {
-  constructor(e) {
-    super(e, true)
+  constructor(e, x, y) {
+    super(e, x, y, true)
   }
 }
 
@@ -133,4 +146,5 @@ export class EventHandler extends Component {
   onResize(e) {
     return false
   }
+  onFocus() {}
 }

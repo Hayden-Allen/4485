@@ -1,44 +1,131 @@
 import { Component } from '%component/Component.js'
 import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
-import { v4 as uuidv4 } from 'uuid'
+import { ScriptEdge, ScriptNodeEdgeList } from './ScriptEdge.js'
 
-class ScriptGraphEdge {
-  // data flows from outputNode.outputs[outputIndex] to inputNode.inputs[inputIndex]
-  constructor(outputNode, outputIndex, inputNode, inputIndex) {
-    this.id = uuidv4()
-    this.outputNode = outputNode
-    this.outputIndex = outputIndex
-    this.inputNode = inputNode
-    this.inputIndex = inputIndex
+const EVENT_NODE_NAMES = new Set()
+EVENT_NODE_NAMES.add('OnTick')
+EVENT_NODE_NAMES.add('OnPostTick')
+EVENT_NODE_NAMES.add('OnCollide')
+EVENT_NODE_NAMES.add('OnSwitch')
+
+class ExportNodeProxy {
+  constructor(node) {
+    this.node = node
+    this.name = node.internalValues[0]
+    this.value = node.internalValues[1]
+    this.valueType = node.data.internalPorts[1].typename
+    this.editorType = node.data.internalPorts[1].editorTypename
+  }
+  setName(name) {
+    this.name = name
+    this.node.internalValues[0] = name
+  }
+  setValue(value) {
+    this.value = value
+    this.node.internalValues[1] = value
   }
 }
-class ScriptNodeEdgeList {
-  constructor() {
-    this.in = []
-    this.out = []
-  }
-}
+
 export class ScriptGraph extends Component {
-  constructor(debugName, inputCache, pushError, clearErrors) {
-    super(debugName)
+  constructor(name, inputCache, pushErrorCallback, clearErrorsCallback) {
+    super(name)
     this.inputCache = inputCache
-    // map ScriptNode.id to ScriptNode
+    this.pushErrorCallback = pushErrorCallback
+    this.clearErrorsCallback = clearErrorsCallback
+    /**
+     * @HATODO move this somewhere else??
+     */
+    this.collapsed = false
+    this.firstRun = true
+    this.reset()
+  }
+  isEmpty() {
+    return !this.nodes.size
+  }
+  reset() {
+    // all nodes (map ScriptNode.id to ScriptNode)
     this.nodes = new Map()
-    // map ScriptNode.id to ScriptNodeEdgeList
+    // only event nodes (map ScriptNode.id to ScriptNode)
+    this.eventNodes = new Map()
+    // nodes that have no input edges
+    this.sourceNodes = []
+    // nodes whose internalValues are editable via the entity properties page
+    this.exportNodes = []
+    // all edges (map ScriptNode.id to ScriptNodeEdgeList)
     this.edges = new Map()
-    // nodes with no inputs
-    this.startNodes = []
     this.cachedCompile = undefined
-    this._pushError = pushError
-    this.clearErrors = clearErrors
     this.canErr = true
+    this.firstRun = true
   }
-  createNode(name, values) {
-    return scriptNodeTemplateBank.get(name).createNode(this, values)
+  serialize() {
+    let nodes = []
+    // ScriptNodeEdgeLists need to convert ScriptNode references to an index for serialization
+    let nodeIndex = new Map()
+    this.nodes.forEach((node) => {
+      nodeIndex.set(node.id, nodes.length)
+      nodes.push(node.serialize())
+    })
+
+    let edges = []
+    this.edges.forEach((edgeList) => edges.push(edgeList.serialize(nodeIndex)))
+
+    const obj = {
+      name: this.debugName,
+      nodes,
+      edges,
+    }
+    return obj
   }
+  deserialize(obj) {
+    obj = JSON.parse(JSON.stringify(obj))
+
+    this.reset()
+
+    this.debugName = obj.name
+    let nodeIndex = new Map()
+    for (const node of obj.nodes) {
+      // const newNode = scriptNodeTemplateBank
+      //   .get(node.type)
+      //   .create(this, node.internalValues)
+      const newNode = this.createNode(node.type, node.internalValues)
+
+      this.nodes.set(newNode.id, newNode)
+      nodeIndex.set(nodeIndex.size, newNode)
+    }
+
+    for (var i = 0; i < obj.edges.length; i++) {
+      const edgeList = obj.edges[i]
+      const node = nodeIndex.get(i)
+      let list = this.edges.get(node.id)
+
+      for (const edge of edgeList.in)
+        list.in.push(
+          new ScriptEdge(
+            nodeIndex.get(edge.outputNode),
+            edge.outputIndex,
+            nodeIndex.get(edge.inputNode),
+            edge.inputIndex
+          )
+        )
+      for (const edge of edgeList.out)
+        list.out.push(
+          new ScriptEdge(
+            nodeIndex.get(edge.outputNode),
+            edge.outputIndex,
+            nodeIndex.get(edge.inputNode),
+            edge.inputIndex
+          )
+        )
+
+      this.edges.set(node.id, list)
+    }
+
+    this.compile()
+  }
+  // for creating UI elements
   pushError(string) {
     if (this.canErr) {
-      this._pushError({
+      this.pushErrorCallback({
         level: 'error',
         message: string,
       })
@@ -46,51 +133,55 @@ export class ScriptGraph extends Component {
   }
   pushWarning(string) {
     if (this.canErr) {
-      this._pushError({
+      this.pushErrorCallback({
         level: 'warning',
         message: string,
       })
     }
   }
-  addNode(node) {
-    if (this.nodes.has(node.id)) {
-      this.logError(`${node.logMessageName()} already exists`)
-      return
-    }
-    // graph has changed, need to recompile
+  // internalValues only necessary when `name` specifies an InternalScriptNodeTemplate
+  createNode(name, internalValues) {
     this.cachedCompile = undefined
+
+    const node = scriptNodeTemplateBank
+      .get(name)
+      .createNode(this, internalValues)
     this.nodes.set(node.id, node)
     this.edges.set(node.id, new ScriptNodeEdgeList())
+
+    return node
+  }
+  removeNode(node) {
+    this.cachedCompile = undefined
+    // for each edge of this node, remove corresponding edge on connected node
+    this.getEdges(node).in.forEach((edge) => {
+      this.removeEdge(
+        edge.outputNode,
+        edge.outputIndex,
+        edge.inputNode,
+        edge.inputIndex
+      )
+    })
+    this.getEdges(node).out.forEach((edge) => {
+      this.removeEdge(
+        edge.outputNode,
+        edge.outputIndex,
+        edge.inputNode,
+        edge.inputIndex
+      )
+    })
+    // remove this node and its edges directly
+    this.nodes.delete(node.id)
+    this.edges.delete(node.id)
   }
   addEdge(outputNode, outputIndex, inputNode, inputIndex) {
-    if (
-      !outputNode.checkOutputIndex(outputIndex) ||
-      !inputNode.checkInputIndex(inputIndex)
-    ) {
-      this.logError(`Invalid input/output index`)
-      return
-    }
-
     this.cachedCompile = undefined
-
-    if (!this.edges.has(inputNode.id))
-      this.edges.set(inputNode.id, new ScriptNodeEdgeList())
-    if (!this.edges.has(outputNode.id))
-      this.edges.set(outputNode.id, new ScriptNodeEdgeList())
-
-    const edge = new ScriptGraphEdge(
-      outputNode,
-      outputIndex,
-      inputNode,
-      inputIndex
-    )
+    const edge = new ScriptEdge(outputNode, outputIndex, inputNode, inputIndex)
     this.edges.get(outputNode.id).out.push(edge)
     this.edges.get(inputNode.id).in.push(edge)
   }
   removeEdge(outputNode, outputIndex, inputNode, inputIndex) {
-    let outputEdges = this.getEdges(outputNode).out
-    let inputEdges = this.getEdges(inputNode).in
-    this.getEdges(outputNode).out = outputEdges.filter(
+    this.getEdges(outputNode).out = this.getEdges(outputNode).out.filter(
       (edge) =>
         !(
           edge.inputNode === inputNode &&
@@ -99,7 +190,7 @@ export class ScriptGraph extends Component {
           edge.outputIndex === outputIndex
         )
     )
-    this.getEdges(inputNode).in = inputEdges.filter(
+    this.getEdges(inputNode).in = this.getEdges(inputNode).in.filter(
       (edge) =>
         !(
           edge.inputNode === inputNode &&
@@ -114,90 +205,117 @@ export class ScriptGraph extends Component {
   }
   hasEdges(node) {
     if (!this.edges.has(node.id)) return false
-    const edges = this.edges.get(node.id)
+    const edges = this.getEdges(node)
     return edges.in.length || edges.out.length
   }
-  hasInputEdge(node, inputIndex) {
-    if (!this.hasEdges(node)) return false
-    return this.getEdges(node).in.filter(
-      (edge) => edge.inputIndex === inputIndex
-    )[0]
+  hasInputEdgeAt(node, inputIndex) {
+    const edges = this.getEdges(node).in
+    for (var i = 0; i < edges.length; i++)
+      if (edges[i].inputIndex === inputIndex) return true
+    return false
+  }
+  forceCompile() {
+    this.cachedCompile = undefined
+    return this.compile()
   }
   compile() {
-    this.clearErrors()
+    if (this.cachedCompile) return this.cachedCompile
+    // reset error status
+    this.clearErrorsCallback(this.isEmpty())
     this.canErr = true
-    // nodes that execution will start from (event nodes)
-    this.startNodes = []
-    // nodes that order-building will start from (any node with no input edges)
-    let sourceNodes = []
+    // reset node groups
+    this.eventNodes = new Map()
+    this.sourceNodes = []
+    this.exportNodes = []
+
+    // nodes from which order-building will start (any node with no inputs)
+    let buildNodes = []
     this.nodes.forEach((node) => {
-      if (node.debugName === 'OnTick') {
-        this.startNodes.push(node)
-        sourceNodes.push(node)
+      if (EVENT_NODE_NAMES.has(node.debugName)) {
+        this.eventNodes.set(node.debugName, node)
+        buildNodes.push(node)
       } else if (!this.getEdges(node).in.length) {
-        sourceNodes.push(node)
+        node.isSource = true
+        this.sourceNodes.push(node)
+        buildNodes.push(node)
+      } else {
+        node.isSource = false
       }
+      if (node.isExport) this.exportNodes.push(new ExportNodeProxy(node))
     })
 
+    // determine execution order using topological sort
     let visited = new Map()
-    // a valid order to traverse this DAG, as identified by a topological sort
     let order = []
-    sourceNodes.forEach((node) => this.dfs(node, visited, order))
+    buildNodes.forEach((node) => this.traverse(node, visited, order))
 
+    this.cachedCompile = order
     return order
   }
-  dfs(node, visited, order) {
-    if (visited.has(node.id)) return
+  // dfs
+  traverse(node, visited, order) {
+    if (visited.has(node.id)) {
+      if (visited.get(node.id) === 1) {
+        this.logError('Cycle detected')
+      }
+      return
+    }
 
-    // being visited
+    // status = being visited
     visited.set(node.id, 1)
 
     // visit children
-    let outboundEdges = this.edges.get(node.id).out
-    outboundEdges.forEach((edge) => this.dfs(edge.inputNode, visited, order))
+    let outboundEdges = this.getEdges(node).out
+    outboundEdges.forEach((edge) =>
+      this.traverse(edge.inputNode, visited, order)
+    )
 
-    // finished being visited
+    // status = fully visited
     visited.set(node.id, 2)
-    // add to topological sort results
+    // add to order
     order.unshift(node)
   }
-  run(entity) {
-    // graph has changed, need to recompile
-    if (!this.cachedCompile) this.cachedCompile = this.compile()
+  run(eventName, context) {
+    // only runs if necessary
+    this.compile()
 
-    // reset activation for all nodes
+    // check if we need to run OnSwitch
+    if (this.firstRun) {
+      this.firstRun = false
+      this.run('OnSwitch', context)
+    }
+
+    let startNode = this.eventNodes.get(eventName)
+    // this graph doesn't respond to the given event
+    if (!startNode) return
+
+    // console.log(`Run '${this.debugName}.${eventName}`)
+
     this.nodes.forEach((node) => (node.active = false))
-    // always run nodes with no inputs
-    // it must be guaranteed by the corresponding template that such nodes do not explicitly activate their children
-    // note that this is always the case for ConstantScriptNodeTemplates; see ScriptNodeTemplate.js
-    this.nodes.forEach((node) => {
-      if (!this.getEdges(node).in.length) node.active = true
-    })
-
-    let outputs = new Map()
+    // activate given event node and set its outputs
+    startNode.active = true
+    startNode.outputs = context.data || []
+    // activate all non-event source nodes
+    this.sourceNodes.forEach((node) => (node.active = true))
 
     this.cachedCompile.forEach((node) => {
       if (!node.active) return
-      // build input array
+
       let inputs = []
-      let edges = this.edges.get(node.id)
-      let inputEdges = edges.in
+      const edges = this.getEdges(node)
+      const inboundEdges = edges.in
 
-      // fill input array with cached output from previous nodes (guaranteed to be valid because of topological ordering)
-      if (inputEdges.length) {
-        inputEdges.forEach((edge) => {
-          if (edge.inputIndex != -1)
-            inputs[edge.inputIndex] = edge.outputNode.outputs[edge.outputIndex]
-        })
-      }
-      // run current node with appropriate inputs; this also propagates activation to connected nodes
-      node.run(inputs, entity, this.inputCache)
+      // fill input array with output from parent nodes
+      inboundEdges.forEach((edge) => {
+        // if current edge is not an activation edge, get its data
+        if (edge.inputIndex != -1)
+          inputs[edge.inputIndex] = edge.outputNode.outputs[edge.outputIndex]
+      })
 
-      // this is a terminating node, return its output
-      if (!edges.out.length) outputs.set(node.id, node.outputs)
+      node.run(inputs, { ...context, inputCache: this.inputCache })
     })
 
+    // errors generated on subsequent runs will be the same, so disable them to avoid spam
     this.canErr = false
-    return outputs
   }
 }

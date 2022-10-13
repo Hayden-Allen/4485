@@ -17,8 +17,8 @@ export class InputCache {
     this.element.addEventListener('pointermove', (e) => {
       const rect = this.element.getBoundingClientRect()
       this.mousePos = new Vec2(
-        e.clientX - Math.floor(rect.x),
-        e.clientY - Math.floor(rect.y)
+        (e.clientX - rect.x) * (e.target.width / rect.width),
+        (e.clientY - rect.y) * (e.target.height / rect.height)
       )
     })
     this.element.addEventListener('pointerdown', (e) => {
@@ -30,7 +30,7 @@ export class InputCache {
       this.mouseButton = -1
     })
     this.element.addEventListener('wheel', (e) => {
-      this.mouseScroll = new Vec2(e.deltaX, e.deltaY)
+      this.mouseScroll = new Vec2(Math.sign(e.deltaX), Math.sign(e.deltaY))
     })
   }
   isKeyPressed(key) {

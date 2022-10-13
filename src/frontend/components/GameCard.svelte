@@ -1,5 +1,7 @@
 <div class="card">
-  <slot />
+  <div class="card-content">
+    <slot />
+  </div>
 </div>
 
 <style>
@@ -13,6 +15,10 @@
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
     font-family: 'Brush Script MT', cursive;
     transition: transform 500ms ease;
+  }
+
+  .card-content {
+    padding: 10px;
   }
 
   .card:hover {

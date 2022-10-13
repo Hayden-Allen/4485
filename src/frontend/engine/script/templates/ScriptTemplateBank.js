@@ -18,6 +18,8 @@ import GoombaMove from '%script/templates/GoombaMove.js'
 import ChangeStateOnHitWall from '%script/templates/ChangeStateOnHitWall.js'
 import CameraFollow from '%script/templates/CameraFollow.js'
 import OnMouseScrollY from '%script/templates/OnMouseScrollY.js'
+import SetAnimationFromVelocityX from '%script/templates/SetAnimationFromVelocityX.js'
+import SetAnimationFromVelocityX2 from '%script/templates/SetAnimationFromVelocityX2.js'
 
 class ScriptTemplateInfo {
   constructor(description, script) {
@@ -58,6 +60,14 @@ export const scriptTemplateBank = global.alphabetSort([
   new ScriptTemplateInfo(
     'Runs when the mouse wheel is scrolled up or down',
     OnMouseScrollY
+  ),
+  new ScriptTemplateInfo(
+    'Sets animation based on x velocity',
+    SetAnimationFromVelocityX
+  ),
+  new ScriptTemplateInfo(
+    'Sets animation based on x velocity',
+    SetAnimationFromVelocityX2
   ),
 ])
 

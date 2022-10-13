@@ -403,7 +403,7 @@ export class ScriptNodeProxy extends UIElement {
       x,
       y,
       data.internalPorts,
-      () => this.x + PORT_NAME_PADDING_X,
+      () => this.x + PORT_NAME_PADDING_X + this.maxInputWidth,
       (port, i) => `${port.name}: ${this.getInternalValueDisplayStr(i)}`,
       false,
       true

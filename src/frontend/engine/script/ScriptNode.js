@@ -87,6 +87,7 @@ export class ScriptNode extends Component {
   run(inputs, context) {
     if (!validateScriptDataTypes(inputs, this.inputTypes.types)) {
       this.graph.pushError(`Invalid input to '${this.debugName}'`)
+      // console.log(inputs, this.inputTypes.types)
       return
     }
 
@@ -117,6 +118,7 @@ export class ScriptNode extends Component {
           // console.log(this.debugName, active)
           edge.inputNode.active = true
         }
+        if (active === false) edge.inputNode.active = false
       }
     }
   }

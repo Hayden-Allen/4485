@@ -154,7 +154,7 @@ class ScriptNodeTemplateBank {
   }
   createEvents() {
     this.createEvent('event', 'OnTick', [])
-    this.createEvent('event', 'OnPostTick', [])
+    this.createEvent('event', 'OnRender', [])
     this.createEvent('event', 'OnCollide', [
       ['normal', 'object'],
       ['entity', 'object'],
@@ -309,6 +309,169 @@ class ScriptNodeTemplateBank {
           { value: equal, active: equal },
           { value: !equal, active: !equal },
           { value: ~~equal },
+        ]
+      }
+    )
+
+    // comparison
+    this.create(
+      'math',
+      'Greater',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a > b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'GreaterEquals',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a >= b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'Less',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a < b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'LessConst',
+      [['a', 'number']],
+      [['b', 'number']],
+      [0],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a], { internal }) => {
+        const r = a < internal[0]
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'Less#',
+      [['a', 'number']],
+      [['b', 'number']],
+      [0],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a], { internal }) => {
+        const r = a < internal[0]
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'LessEquals',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a <= b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'IsZero',
+      [['a', 'number']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a]) => {
+        const r = Math.abs(a) <= global.epsilon
+        // console.log(a)
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'IsNonZero',
+      [['a', 'number']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a]) => {
+        const r = Math.abs(a) > global.epsilon
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
         ]
       }
     )
@@ -582,6 +745,48 @@ class ScriptNodeTemplateBank {
     )
     this.create(
       'entity',
+      'GetEntityVelocityX',
+      [['entity', 'object']],
+      [['x', 'number']],
+      ([entity]) => [{ value: entity.physicsProxy.velocity.x }]
+    )
+    this.create(
+      'entity',
+      'GetControlledEntityVelocityX',
+      [],
+      [['x', 'number']],
+      (_, { entity }) => [{ value: entity.physicsProxy.velocity.x }]
+    )
+    this.create(
+      'entity',
+      'ControlledVelX',
+      [],
+      [['x', 'number']],
+      (_, { entity }) => [{ value: entity.physicsProxy.velocity.x }]
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocityY',
+      [['entity', 'object']],
+      [['y', 'number']],
+      ([entity]) => [{ value: entity.physicsProxy.velocity.y }]
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocityXY',
+      [['entity', 'object']],
+      [
+        ['x', 'number'],
+        ['y', 'number'],
+      ],
+      ([entity]) => {
+        const { x, y } = entity.getVelocity()
+        console.log(x, y)
+        return [{ value: x }, { value: y }]
+      }
+    )
+    this.create(
+      'entity',
       'SetEntityScale',
       [
         ['entity', 'object'],
@@ -636,6 +841,70 @@ class ScriptNodeTemplateBank {
       [],
       ([zoom], { camera }) => {
         camera.setZoom(zoom)
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityAnimation',
+      [
+        ['entity', 'object'],
+        ['index', 'int'],
+      ],
+      [],
+      ([entity, index]) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(index)
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetEntityAnimationConst',
+      [['entity', 'object']],
+      [['index', 'int']],
+      [4],
+      [],
+      ([entity], { internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(internal[0])
+        }
+      }
+    )
+    this.create(
+      'entity',
+      'SetControlledEntityAnimation',
+      [['index', 'int']],
+      [],
+      ([index], { entity }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(index)
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetControlledEntityAnimationConst',
+      [],
+      [['index', 'int']],
+      [4],
+      [],
+      (_, { entity, internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(internal[0])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetControlledAnimation#',
+      [],
+      [['index', 'int']],
+      [4],
+      [],
+      (_, { entity, internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(internal[0])
+        }
       }
     )
   }

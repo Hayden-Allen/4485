@@ -156,12 +156,6 @@ export class DynamicSceneEntity extends SceneEntity {
     //   y,
     // })
   }
-  getVelocity() {
-    const dt2 = global.time.delta * global.time.delta
-    const x = (this.physicsProxy.force.x / this.physicsProxy.mass) * dt2
-    const y = (this.physicsProxy.force.y / this.physicsProxy.mass) * dt2
-    return new Vec2(x, y)
-  }
 }
 
 export class ControlledSceneEntity extends DynamicSceneEntity {
@@ -169,6 +163,7 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     super(game, gameWindow, pos, options)
     this.states = states
     this.currentState = this.states.get(currentStateName)
+    this.animationIndex = 4
   }
   runScripts(event, context) {
     /**
@@ -184,6 +179,13 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     }
   }
   getCurrentTexture() {
-    return this.currentState.textures[4]
+    return this.currentState.textures[this.animationIndex]
+  }
+  setAnimationIndex(i) {
+    if (i < 0 || i > 8) {
+      this.logError(`Invalid animation index ${i}`)
+      return
+    }
+    this.animationIndex = i
   }
 }

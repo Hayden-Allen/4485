@@ -507,7 +507,10 @@ export class ScriptLayer extends Layer {
       fgColor: PORT_COLOR[options.port.port.typename].editor.foreground,
       placeholderColor:
         PORT_COLOR[options.port.port.typename].editor.placeholder,
-      currentValue: options.proxy.node.internalValues[options.port.index],
+      currentValue:
+        type === IntPortEditor || type === FloatPortEditor
+          ? null
+          : options.proxy.node.internalValues[options.port.index],
       beforeDestroyPopup: (popup) => {
         if (!popup.validate || popup.validate()) {
           options.proxy.node.internalValues[options.port.index] =

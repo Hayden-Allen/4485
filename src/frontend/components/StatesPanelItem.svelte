@@ -61,69 +61,70 @@
   </button>
 
   <!-- Animations -->
-
-  <button
-    class={`pl-8 flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left bg-neutral-800`}
-  >
-    <div
-      class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
+  {#if !item.state.collapsed}
+    <button
+      class={`pl-8 flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left bg-neutral-800`}
     >
-      <button
-        on:click={() =>
-          (item.state.animationsCollapsed = !item.state.animationsCollapsed)}
-        class={`hover:bg-neutral-500 hover:text-neutral-100 rounded-full grow-0 shrink-0 w-5 h-5 mr-2 transition-all duration-75 ${
-          item.state.animationsCollapsed ? '' : 'rotate-90'
-        }`}
-      >
-        <ChevronRight />
-      </button>
       <div
-        class="w-full grow-1 shrink-1 overflow-hidden text-ellipsis whitespace-nowrap"
+        class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
       >
-        Animations
+        <button
+          on:click={() =>
+            (item.state.animationsCollapsed = !item.state.animationsCollapsed)}
+          class={`hover:bg-neutral-500 hover:text-neutral-100 rounded-full grow-0 shrink-0 w-5 h-5 mr-2 transition-all duration-75 ${
+            item.state.animationsCollapsed ? '' : 'rotate-90'
+          }`}
+        >
+          <ChevronRight />
+        </button>
+        <div
+          class="w-full grow-1 shrink-1 overflow-hidden text-ellipsis whitespace-nowrap"
+        >
+          Animations
+        </div>
       </div>
-    </div>
-    {#if !item.state.animationsCollapsed}
-      <button
-        class="grow-0 shrink-0 p-2 h-full hover:bg-neutral-500 hover:text-neutral-100"
-        on:click={(e) => {
-          e.stopPropagation()
-          if (item.state.animationsView === 'grid') {
-            item.state.animationsView = 'list'
-          } else {
-            item.state.animationsView = 'grid'
-          }
-        }}
-        ><div class="w-5 h-5">
-          {#if item.state.animationsView === 'grid'}
-            <ViewColumns />
-          {:else}
-            <TableCells />
-          {/if}
-        </div></button
-      >
-    {/if}
-  </button>
-
-  {#if !item.state.animationsCollapsed}
-    <div
-      class={`grow-0 shrink-0 items-center justify-center content-center justify-items-center grid gap-2 ${
-        item.state.animationsView === 'grid'
-          ? 'grid-rows-3 grid-cols-[repeat(3,_64px)] p-4'
-          : 'grid-rows-1 grid-cols-[repeat(9,_64px)] p-2'
-      } bg-neutral-900 border-b border-solid border-neutral-700`}
-    >
-      {#each item.state.textures as texture, i}
-        <StatesPanelItemAnimation
-          {texture}
-          textureIdx={i}
-          onSetTextureProps={(newTextureProps) => {
-            item.state.setTexture(i, newTextureProps)
-            item.state.textures = item.state.textures
+      {#if !item.state.animationsCollapsed}
+        <button
+          class="grow-0 shrink-0 p-2 h-full hover:bg-neutral-500 hover:text-neutral-100"
+          on:click={(e) => {
+            e.stopPropagation()
+            if (item.state.animationsView === 'grid') {
+              item.state.animationsView = 'list'
+            } else {
+              item.state.animationsView = 'grid'
+            }
           }}
-        />
-      {/each}
-    </div>
+          ><div class="w-5 h-5">
+            {#if item.state.animationsView === 'grid'}
+              <ViewColumns />
+            {:else}
+              <TableCells />
+            {/if}
+          </div></button
+        >
+      {/if}
+    </button>
+
+    {#if !item.state.animationsCollapsed}
+      <div
+        class={`grow-0 shrink-0 items-center justify-center content-center justify-items-center grid gap-2 ${
+          item.state.animationsView === 'grid'
+            ? 'grid-rows-3 grid-cols-[repeat(3,_64px)] p-4'
+            : 'grid-rows-1 grid-cols-[repeat(9,_64px)] p-2'
+        } bg-neutral-900 border-b border-solid border-neutral-700`}
+      >
+        {#each item.state.textures as texture, i}
+          <StatesPanelItemAnimation
+            {texture}
+            textureIdx={i}
+            onSetTextureProps={(newTextureProps) => {
+              item.state.setTexture(i, newTextureProps)
+              item.state.textures = item.state.textures
+            }}
+          />
+        {/each}
+      </div>
+    {/if}
   {/if}
 
   <!-- Scripts -->

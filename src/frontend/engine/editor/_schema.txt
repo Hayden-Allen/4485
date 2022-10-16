@@ -1,0 +1,68 @@
+Game = 
+{
+  selectedEntities = [Entity]
+  entities = [Entity]
+}
+Entity =
+{
+  entity = EngineEntity
+  physicsSettings = [PhysicsSetting]
+  states = [State]
+  variables = [Variable]
+}
+PhysicsSetting =
+{
+  name = String
+  value = [Number | Boolean]
+}
+State = 
+{
+  isCollapsed = Boolean
+  animationsCollapsed = Boolean
+  animations = [Animation]
+  scripts = [Script]
+}
+Variable =
+{
+  name = String
+  type = String
+  defaultValue = <type>
+  currentValue = <type>
+}
+Animation =
+{
+  frameUrls = [String]
+  frameTime = Number
+}
+Script =
+{
+  graph = EngineScriptGraph
+  isCollapsed = Boolean
+  nodes = [ScriptNode]
+  edges = [ScriptEdge]
+  exports = [ScriptExport]
+}
+ScriptNode =
+{
+  x = Number
+  y = Number
+  template = ScriptTemplateId
+}
+ScriptEdge =
+{
+  srcNode = ScriptNode
+  srcPort = Number
+  dstNode = ScriptNode
+  dstPort = Number
+}
+ScriptTemplateId =
+{
+  name = String
+  version = Number
+}
+ScriptExport =
+{
+  name = String
+  type = String
+  value = <type>
+}

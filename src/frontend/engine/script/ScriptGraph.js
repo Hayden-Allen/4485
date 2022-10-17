@@ -215,7 +215,13 @@ export class ScriptGraph extends Component {
   hasInputEdgeAt(node, inputIndex) {
     const edges = this.getEdges(node).in
     for (var i = 0; i < edges.length; i++)
-      if (edges[i].inputIndex === inputIndex) return true
+      if (edges[i].inputIndex === inputIndex) return edges[i]
+    return false
+  }
+  hasOutputEdgeAt(node, outputIndex) {
+    const edges = this.getEdges(node).out
+    for (var i = 0; i < edges.length; i++)
+      if (edges[i].outputIndex === outputIndex) return edges[i]
     return false
   }
   forceCompile() {

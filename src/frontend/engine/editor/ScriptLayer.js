@@ -121,13 +121,24 @@ export class ScriptLayer extends Layer {
           // if we already have a port selected and it can be connected to the new port, add an edge
           if (port && !port.internal) {
             if (this.selectedPort && this.selectedPort.in ^ port.in) {
-              if (this.selectedPort.in)
+              if (
+                this.selectedPort.in &&
+                !this.graphvis.graph.hasInputEdgeAt(
+                  this.selectedPort.node,
+                  port.index
+                )
+              )
                 this.selectedPort.node.attachAsInput(
                   port.node,
                   port.index,
                   this.selectedPort.index
                 )
-              else
+              else if (
+                !this.graphvis.graph.hasOutputEdgeAt(
+                  this.selectedPort.node,
+                  port.index
+                )
+              )
                 this.selectedPort.node.attachAsOutput(
                   this.selectedPort.index,
                   port.node,

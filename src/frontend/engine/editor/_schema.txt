@@ -47,6 +47,7 @@ ScriptNode =
   x = Number
   y = Number
   template = ScriptTemplateId
+  category = String
 }
 ScriptEdge =
 {

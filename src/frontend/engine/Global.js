@@ -21,6 +21,27 @@ export var global = {
   },
 
   init: () => {
+    async function registerAudioContext() {
+      window.removeEventListener('click', registerAudioContext)
+
+      if (!global.audioCtx) {
+        global.audioCtx = new (window.AudioContext ||
+          window.webkitAudioContext)()
+      }
+
+      if (!global.audioBufferBank) {
+        global.audioBufferBank = new Map()
+
+        for (const name of ['boink', 'cheer', 'jazz-lose', 'ta-da']) {
+          global.audioBufferBank.set(
+            name,
+            await global.decodeAudioData(`/sounds/${name}.mp3`)
+          )
+        }
+      }
+    }
+    window.addEventListener('click', registerAudioContext)
+
     global.context = new Context()
     global.varyingController = new VaryingController()
     global.context.addSystem(global.varyingController)
@@ -88,5 +109,24 @@ export var global = {
     return arr.sort((a, b) =>
       a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
     )
+  },
+  decodeAudioData: (url) => {
+    return new Promise((resolve, reject) => {
+      ;(async () => {
+        const req = await window.fetch(url)
+        const res = await req.arrayBuffer()
+        global.audioCtx.decodeAudioData(
+          res,
+          (buffer) => resolve(buffer),
+          (err) => reject(err)
+        )
+      })()
+    })
+  },
+  playSound: (name) => {
+    const source = global.audioCtx.createBufferSource()
+    source.buffer = global.audioBufferBank.get(name)
+    source.connect(global.audioCtx.destination)
+    source.start()
   },
 }

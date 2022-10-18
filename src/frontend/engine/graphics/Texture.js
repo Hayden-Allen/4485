@@ -101,9 +101,6 @@ export class Texture {
     gl.activeTexture(gl.TEXTURE0 + slot)
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.texture)
 
-    /**
-     * @HATODO hacky?
-     */
     if (
       !global.context.paused &&
       this.frameCount > 1 &&
@@ -112,5 +109,9 @@ export class Texture {
       this.frame = (this.frame + 1) % this.frameCount
       this.lastSwitch = global.time.now
     }
+  }
+  reset() {
+    this.lastSwitch = global.time.now
+    this.frame = 0
   }
 }

@@ -181,11 +181,14 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
   getCurrentTexture() {
     return this.currentState.textures[this.animationIndex]
   }
-  setAnimationIndex(i) {
+  setAnimationIndex(i, resetFrame) {
     if (i < 0 || i > 8) {
       this.logError(`Invalid animation index ${i}`)
       return
     }
-    this.animationIndex = i
+    if (this.animationIndex !== i) {
+      this.animationIndex = i
+      if (resetFrame) this.currentState.textures[this.animationIndex].reset()
+    }
   }
 }

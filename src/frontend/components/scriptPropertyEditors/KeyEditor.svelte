@@ -1,7 +1,6 @@
 <script>
   import { global } from '%engine/Global.js'
 
-  export let initialValue = undefined
   export let currentValue = undefined
   export let onApply = undefined
   export let onFocus = undefined,

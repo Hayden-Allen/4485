@@ -4,6 +4,12 @@ import { global } from '%engine/Global.js'
 
 const LINE_WIDTH = [2, 4]
 const COLORS = {
+  audio: {
+    shadow: '#0007',
+    node: '#262626',
+    title: '#262626',
+    outline: ['#737373', '#d4d4d4'],
+  },
   entity: {
     shadow: '#0007',
     node: '#262626',

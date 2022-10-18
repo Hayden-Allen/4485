@@ -34,6 +34,10 @@ export const NODE_CATEGORY_COLORS = {
     bgColor: '#22c55e',
     borderColor: '#15803d',
   },
+  audio: {
+    bgColor: '#22c55e',
+    borderColor: '#15803d',
+  },
 }
 
 class ScriptNodeTemplateBank {
@@ -137,6 +141,7 @@ class ScriptNodeTemplateBank {
     this.createLogic()
     this.createMath()
     this.createExports()
+    this.createAudio()
     /**
      * @HATODO remove
      */
@@ -843,17 +848,19 @@ class ScriptNodeTemplateBank {
         camera.setZoom(zoom)
       }
     )
-    this.create(
+    this.createInternal(
       'entity',
       'SetEntityAnimation',
       [
         ['entity', 'object'],
         ['index', 'int'],
       ],
+      [['reset', 'bool']],
+      [true],
       [],
-      ([entity, index]) => {
+      ([entity, index], { internal }) => {
         if (entity.setAnimationIndex) {
-          entity.setAnimationIndex(index)
+          entity.setAnimationIndex(index, internal[0])
         }
       }
     )
@@ -861,23 +868,28 @@ class ScriptNodeTemplateBank {
       'entity',
       'SetEntityAnimationConst',
       [['entity', 'object']],
-      [['index', 'int']],
-      [4],
+      [
+        ['index', 'int'],
+        ['reset', 'bool'],
+      ],
+      [4, true],
       [],
       ([entity], { internal }) => {
         if (entity.setAnimationIndex) {
-          entity.setAnimationIndex(internal[0])
+          entity.setAnimationIndex(internal[0], internal[1])
         }
       }
     )
-    this.create(
+    this.createInternal(
       'entity',
       'SetControlledEntityAnimation',
       [['index', 'int']],
+      [['reset', 'bool']],
+      [true],
       [],
-      ([index], { entity }) => {
+      ([index], { entity, internal }) => {
         if (entity.setAnimationIndex) {
-          entity.setAnimationIndex(index)
+          entity.setAnimationIndex(index, internal[0])
         }
       }
     )
@@ -885,12 +897,15 @@ class ScriptNodeTemplateBank {
       'entity',
       'SetControlledEntityAnimationConst',
       [],
-      [['index', 'int']],
-      [4],
+      [
+        ['index', 'int'],
+        ['reset', 'bool'],
+      ],
+      [4, true],
       [],
       (_, { entity, internal }) => {
         if (entity.setAnimationIndex) {
-          entity.setAnimationIndex(internal[0])
+          entity.setAnimationIndex(internal[0], internal[1])
         }
       }
     )
@@ -925,6 +940,19 @@ class ScriptNodeTemplateBank {
     this.createExport('entity', 'ExportState', 'state', '---', 'string', {
       valueEditorType: 'state',
     })
+  }
+  createAudio() {
+    this.createInternal(
+      'audio',
+      'PlaySound',
+      [],
+      [['name', 'string']],
+      ['boink'],
+      [],
+      (_, { internal }) => {
+        global.playSound(internal[0])
+      }
+    )
   }
 }
 

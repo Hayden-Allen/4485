@@ -115,7 +115,6 @@
               />
             {:else if exportNode.editorType === 'key'}
               <KeyEditor
-                initialValue={exportNode.value}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}
@@ -124,7 +123,6 @@
             {:else if exportNode.editorType === 'state'}
               <StateEditor
                 {states}
-                initialValue={exportNode.value}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}
@@ -132,7 +130,6 @@
               />
             {:else if exportNode.editorType === 'string'}
               <StringEditor
-                initialValue={exportNode.value}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}
@@ -140,7 +137,6 @@
               />
             {:else if exportNode.editorType === 'bool'}
               <BoolEditor
-                initialValue={exportNode.value}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}

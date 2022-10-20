@@ -100,6 +100,15 @@ class SceneEntity extends Component {
     Body.setMass(this.physicsProxy, mass)
   }
   getCurrentTexture() {}
+  serialize() {
+    return {
+      pos: this.pos,
+    }
+  }
+  /**
+   * @HATODO
+   */
+  deserialize(obj) {}
 }
 
 export class StaticSceneEntity extends SceneEntity {
@@ -191,4 +200,16 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
       if (resetFrame) this.currentState.textures[this.animationIndex].reset()
     }
   }
+  serialize() {
+    return {
+      ...super.serialize(),
+      states: Array.from(this.states.values()).map((state) =>
+        state.serialize()
+      ),
+    }
+  }
+  /**
+   * @HATODO
+   */
+  deserialize(obj) {}
 }

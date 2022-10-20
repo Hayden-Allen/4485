@@ -13,6 +13,18 @@ export class Game {
     this.sceneManager = new SceneManager()
     context.addSystem(this.sceneManager)
   }
+  serialize(name) {
+    /**
+     * @HATODO what metadata?
+     */
+    return {
+      name,
+      scenes: this.sceneManager.serialize(),
+    }
+  }
+  deserialize(obj) {
+    this.sceneManager.deserialize(obj.scenes)
+  }
   setCurrentScene(scene) {
     this.currentScene = scene
     this.sceneManager.addComponent(scene)

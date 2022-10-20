@@ -16,6 +16,32 @@ export class Scene extends Component {
       global.canvas.targetHeight / 2
     )
   }
+  serialize() {
+    // serialize each entity only once (layers reference them by id)
+    let entities = {}
+    this.layers.forEach((layer) => {
+      layer.static.forEach(
+        (entity) => (entities[entity.id] = entity.serialize())
+      )
+      layer.dynamic.forEach(
+        (entity) => (entities[entity.id] = entity.serialize())
+      )
+    })
+    return {
+      entities,
+      layers: this.layers.map((layer) => layer.serialize()),
+      controlledComponents: Array.from(this.controlledComponents.values()).map(
+        (component) => component.id
+      ),
+    }
+  }
+  /**
+   * @HATODO
+   */
+  deserialize(obj) {
+    this.layers = obj.layers
+    this.controlledComponents = new Map(this.controlledComponents)
+  }
   addComponent() {
     this.logError('Use addStaticComponent() and addDynamicComponent() instead')
   }

@@ -28,16 +28,33 @@ export class EditorLayer extends Layer {
     if (!global.context.paused) this.fps = 1000 / e.deltaTime
     return false
   }
-  onKeyDown(e) {
-    if (!e.repeat) {
-      switch (e.key) {
-        case 'Escape':
-          global.context.paused ^= 1
-          break
-        case '`':
-          this.showDebug ^= 1
-          break
+  async onKeyDown(e) {
+    // if (e.repeat) return
+    console.log(e)
+
+    if (!e.repeat && e.key === 'Escape') global.context.paused ^= 1
+    if (!e.repeat && e.key === '`') this.showDebug ^= 1
+    if (e.key.toLowerCase() === 's' && e.ctrlPressed && e.shiftPressed) {
+      console.log('SAVE')
+      // console.log(this.game.serialize(name))
+      let fileHandle = undefined
+      try {
+        fileHandle = await window.showSaveFilePicker({
+          types: [
+            {
+              description: 'JS file',
+              accept: { 'text/javascript': ['.js'] },
+            },
+          ],
+        })
+      } catch (err) {
+        return
       }
+      const name = fileHandle.name.split('.')[0]
+      const writable = await fileHandle.createWritable()
+      const contents = JSON.stringify(this.game.serialize(name), null, 2)
+      await writable.write(contents)
+      await writable.close()
     }
   }
   onRender(e) {

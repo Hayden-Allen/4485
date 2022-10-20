@@ -1,4 +1,5 @@
 import { Component } from '%component/Component.js'
+import { scriptTemplateBank } from '%script/templates/ScriptTemplateBank.js'
 import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
 import { ScriptEdge, ScriptNodeEdgeList } from './ScriptEdge.js'
 
@@ -41,6 +42,7 @@ export class ScriptGraph extends Component {
      */
     this.collapsed = false
     this.firstRun = true
+    this.templateName = undefined
     this.reset()
   }
   isEmpty() {
@@ -62,6 +64,8 @@ export class ScriptGraph extends Component {
     this.firstRun = true
   }
   serialize() {
+    if (this.templateName) return { templateName: this.templateName }
+
     let nodes = []
     // ScriptNodeEdgeLists need to convert ScriptNode references to an index for serialization
     let nodeIndex = new Map()
@@ -73,15 +77,24 @@ export class ScriptGraph extends Component {
     let edges = []
     this.edges.forEach((edgeList) => edges.push(edgeList.serialize(nodeIndex)))
 
-    const obj = {
+    return {
       name: this.debugName,
       nodes,
       edges,
     }
-    return obj
   }
   deserialize(obj) {
+    /**
+     * @HATODO why is this here
+     */
     obj = JSON.parse(JSON.stringify(obj))
+
+    if (obj.templateName)
+      return this.deserialize(
+        scriptTemplateBank.find(
+          (template) => template.name === obj.templateName
+        )
+      )
 
     this.reset()
 
@@ -145,6 +158,7 @@ export class ScriptGraph extends Component {
   }
   // internalValues only necessary when `name` specifies an InternalScriptNodeTemplate
   createNode(name, internalValues) {
+    this.templateName = undefined
     this.cachedCompile = undefined
 
     const node = scriptNodeTemplateBank
@@ -156,7 +170,9 @@ export class ScriptGraph extends Component {
     return node
   }
   removeNode(node) {
+    this.templateName = undefined
     this.cachedCompile = undefined
+
     // for each edge of this node, remove corresponding edge on connected node
     this.getEdges(node).in.forEach((edge) => {
       this.removeEdge(
@@ -179,12 +195,17 @@ export class ScriptGraph extends Component {
     this.edges.delete(node.id)
   }
   addEdge(outputNode, outputIndex, inputNode, inputIndex) {
+    this.templateName = undefined
     this.cachedCompile = undefined
+
     const edge = new ScriptEdge(outputNode, outputIndex, inputNode, inputIndex)
     this.edges.get(outputNode.id).out.push(edge)
     this.edges.get(inputNode.id).in.push(edge)
   }
   removeEdge(outputNode, outputIndex, inputNode, inputIndex) {
+    this.templateName = undefined
+    this.cachedCompile = undefined
+
     this.getEdges(outputNode).out = this.getEdges(outputNode).out.filter(
       (edge) =>
         !(

@@ -3,6 +3,17 @@ export class SceneLayer {
     this.static = new Map()
     this.dynamic = new Map()
   }
+  serialize() {
+    // these reference entries in the Scene's entity list
+    return {
+      static: Array.from(this.static.values()).map((entity) => entity.id),
+      dynamic: Array.from(this.dynamic.values()).map((entity) => entity.id),
+    }
+  }
+  /**
+   * @HATODO
+   */
+  deserialize(obj) {}
   // called by the [Editor|Game]Layer that contains the game that contains the scene that contains this layer
   draw(window, camera) {
     this.static.forEach((entity) => window.draw(entity, camera))

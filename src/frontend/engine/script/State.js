@@ -31,4 +31,17 @@ export class State {
       ? new Texture(this.gl, obj.frameTime, obj.urls)
       : FALLBACK_TEXTURE
   }
+  serialize() {
+    /**
+     * @HATODO textures
+     */
+    return {
+      name: this.name,
+      scripts: this.scripts.map((script) => script.serialize()),
+    }
+  }
+  /**
+   * @HATODO
+   */
+  deserialize(obj) {}
 }

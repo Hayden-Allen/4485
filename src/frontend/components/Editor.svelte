@@ -157,17 +157,6 @@
       { scale: 25 }
     )
 
-    // game.addDynamicSceneEntity(
-    //   new DynamicSceneEntity(
-    //     gameWindow,
-    //     new Vec2(-100, 0),
-    //     0,
-    //     ['https://art.pixilart.com/840bcbc293e372f.png'],
-    //     { scale: 25 }
-    //   ),
-    //   1
-    // )
-
     editorLayer = new EditorLayer(game, (e) => {
       selectedEntity = e
       if (!selectedEntity) {
@@ -281,6 +270,7 @@
         onUseScript={(info) => {
           let script = createEmptyScript('default')
           script.deserialize(info.script)
+          script.templateName = info.name
           selectedState.scripts = [...selectedState.scripts, script]
           selectedEntity.states = selectedEntity.states
         }}

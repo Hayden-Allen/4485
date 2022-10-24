@@ -1,0 +1,103 @@
+.node {
+  outline: 0px 0px 0px 1000px solid;
+  min-width: min-content;
+  margin: 0;
+  width: 100%;
+  border-top-left-radius: 8.44px;
+  border-top-right-radius: 8.44px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+
+  background-color: rgb(31 31 31 / var(--tw-bg-opacity));
+  color: rgb(31 31 31 / var(--tw-bg-opacity)); 
+  box-shadow: 0 0 20px rgb(17, 17, 17); 
+
+  padding: 11px 6px;
+}
+
+.pill {
+  position: relative !important;
+  border: none;
+  text-align: center;
+  height: 25px !important;
+  width: 6px !important;
+  border-radius: 5px;
+  background-color: #00FFF1;
+
+  /* reset default handle transforms */
+  left: 0%;
+  right: 0%;
+  top: 0%;
+  transform: none;
+
+  transition: 0.2s;
+  transition-timing-function: ease-out;
+}
+
+.pill:hover {
+  width: 15px !important;
+}
+
+.label {
+  font-size: 15px;
+}
+
+.title {
+  @apply bg-nodebg;
+  padding-right: 6.5px;
+  line-height: 80%;
+  height: 18.42px;
+  font-weight: 500;
+  font-size: 15px;
+  border-bottom-right-radius: 8.44px;
+
+  display: flex;
+  gap: 6.61px;
+}
+
+
+.title h2 {
+  color: white;
+  opacity: 20%;
+}
+
+.curve svg {
+  height: 18.42px;
+  width: 18.63px;
+  display: block;
+}
+
+.activity {
+  @apply bg-nodebg;
+  padding: 0px 0px 6.5px 9px;
+  border-bottom-left-radius: 8.44px;
+  display: flex;
+}
+
+.variable p {
+  color: rgba(255, 255, 255, 0.2);
+  font-family: monospace;
+  font-size: 9px;
+}
+
+.variable div {
+  width:fit-content;
+  height: min-content;
+  /* width: 100px; */
+
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  z-index: 100;
+  font-size: 12;
+  font-weight: 500;
+
+  padding: 6px 12px;
+  border-radius: 8.44px;
+
+  border-color: white;
+
+  cursor: text;
+}
+

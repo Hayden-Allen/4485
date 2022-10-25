@@ -1,0 +1,1 @@
+export { default as component } from "..\\..\\..\\src\\frontend\\routes\\kittens\\+page.svelte";

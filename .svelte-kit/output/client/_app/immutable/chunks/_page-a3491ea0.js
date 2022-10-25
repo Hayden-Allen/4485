@@ -1,0 +1,1 @@
+import{r as t}from"./index-297b380d.js";function e(){throw t(307,"https://www.youtube.com/watch?v=dQw4w9WgXcQ")}const r=Object.freeze(Object.defineProperty({__proto__:null,load:e},Symbol.toStringTag,{value:"Module"}));export{r as _,e as l};

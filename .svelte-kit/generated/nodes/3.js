@@ -1,1 +1,0 @@
-export { default as component } from "..\\..\\..\\src\\frontend\\routes\\play\\+layout.svelte";

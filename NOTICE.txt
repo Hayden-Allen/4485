@@ -1,0 +1,3 @@
+Always use the PROXY when you are calling methods
+Always use the SNAPSHOT when you are rendering content (inside JSX, except for onClick/etc. that will call methods which should be of the PROXY)
+Always use valtio's ref() around backend properties (anything beginning with an _)

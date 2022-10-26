@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "%engine/*": ["engine/*"],
+      "%component/*": ["engine/component/*"],
+      "%editor/*": ["engine/editor/*"],
+      "%graphics/*": ["engine/graphics/*"],
+      "%physics/*": ["engine/physics/*"],
+      "%script/*": ["engine/script/*"],
+      "%system/*": ["engine/system/*"],
+      "%util/*": ["engine/util/*"],
+      "%window/*": ["engine/window/*"],
+      "%proxies/*": ["proxies/*"]
+    }
+  }
+}

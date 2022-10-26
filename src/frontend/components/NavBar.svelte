@@ -25,7 +25,9 @@
     <h4 class="navbar-pages"><a href="/addgames">Add Game</a></h4>
   </div>
   <div class="navbar-content">
-    <h4 class="navbar-pages"><a href="/edit">Create</a></h4>
+    <h4 class="navbar-pages">
+      <a target="_blank" rel="noopener noreferrer" href="/edit">Create</a>
+    </h4>
   </div>
   <div class="navbar-content">
     <h4 class="navbar-pages"><a href="/leaderboard">Leaderboard</a></h4>

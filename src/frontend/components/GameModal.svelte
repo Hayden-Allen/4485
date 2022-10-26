@@ -14,7 +14,7 @@
     background-color: black;
     border-radius: 5px;
     padding: 4px;
-    box-shadow: 2px 5px #888888;
+    box-shadow: 0px 5px 5px #4ae4ff;
   }
 
   .modal-content {

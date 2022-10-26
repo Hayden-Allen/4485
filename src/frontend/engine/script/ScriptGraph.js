@@ -2,11 +2,15 @@ import { Component } from '%component/Component.js'
 import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
 import { ScriptEdge, ScriptNodeEdgeList } from './ScriptEdge.js'
 
+/**
+ * @HATODO move these to scriptnodetemplatebank
+ */
 const EVENT_NODE_NAMES = new Set()
 EVENT_NODE_NAMES.add('OnTick')
 EVENT_NODE_NAMES.add('OnPostTick')
 EVENT_NODE_NAMES.add('OnCollide')
 EVENT_NODE_NAMES.add('OnSwitch')
+EVENT_NODE_NAMES.add('OnRender')
 
 class ExportNodeProxy {
   constructor(node) {
@@ -211,7 +215,13 @@ export class ScriptGraph extends Component {
   hasInputEdgeAt(node, inputIndex) {
     const edges = this.getEdges(node).in
     for (var i = 0; i < edges.length; i++)
-      if (edges[i].inputIndex === inputIndex) return true
+      if (edges[i].inputIndex === inputIndex) return edges[i]
+    return false
+  }
+  hasOutputEdgeAt(node, outputIndex) {
+    const edges = this.getEdges(node).out
+    for (var i = 0; i < edges.length; i++)
+      if (edges[i].outputIndex === outputIndex) return edges[i]
     return false
   }
   forceCompile() {

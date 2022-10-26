@@ -113,4 +113,8 @@ export class Texture {
       this.lastSwitch = global.time.now
     }
   }
+  reset() {
+    this.lastSwitch = global.time.now
+    this.frame = 0
+  }
 }

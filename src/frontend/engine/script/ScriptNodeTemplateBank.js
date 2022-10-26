@@ -34,6 +34,10 @@ export const NODE_CATEGORY_COLORS = {
     bgColor: '#22c55e',
     borderColor: '#15803d',
   },
+  audio: {
+    bgColor: '#22c55e',
+    borderColor: '#15803d',
+  },
 }
 
 class ScriptNodeTemplateBank {
@@ -137,6 +141,7 @@ class ScriptNodeTemplateBank {
     this.createLogic()
     this.createMath()
     this.createExports()
+    this.createAudio()
     /**
      * @HATODO remove
      */
@@ -154,7 +159,7 @@ class ScriptNodeTemplateBank {
   }
   createEvents() {
     this.createEvent('event', 'OnTick', [])
-    this.createEvent('event', 'OnPostTick', [])
+    this.createEvent('event', 'OnRender', [])
     this.createEvent('event', 'OnCollide', [
       ['normal', 'object'],
       ['entity', 'object'],
@@ -309,6 +314,169 @@ class ScriptNodeTemplateBank {
           { value: equal, active: equal },
           { value: !equal, active: !equal },
           { value: ~~equal },
+        ]
+      }
+    )
+
+    // comparison
+    this.create(
+      'math',
+      'Greater',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a > b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'GreaterEquals',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a >= b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'Less',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a < b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'LessConst',
+      [['a', 'number']],
+      [['b', 'number']],
+      [0],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a], { internal }) => {
+        const r = a < internal[0]
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'Less#',
+      [['a', 'number']],
+      [['b', 'number']],
+      [0],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a], { internal }) => {
+        const r = a < internal[0]
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'LessEquals',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a <= b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'IsZero',
+      [['a', 'number']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a]) => {
+        const r = Math.abs(a) <= global.epsilon
+        // console.log(a)
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'IsNonZero',
+      [['a', 'number']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a]) => {
+        const r = Math.abs(a) > global.epsilon
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
         ]
       }
     )
@@ -527,6 +695,262 @@ class ScriptNodeTemplateBank {
         if (entity.setVelocity) {
           entity.setVelocity(v)
         }
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityVelocityX',
+      [
+        ['entity', 'object'],
+        ['x', 'number'],
+      ],
+      [],
+      ([entity, x]) => {
+        if (entity.setVelocity) {
+          entity.setVelocityX(x)
+          // console.log(entity.physicsProxy.velocity)
+        }
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityVelocityY',
+      [
+        ['entity', 'object'],
+        ['y', 'number'],
+      ],
+      [],
+      ([entity, y]) => {
+        if (entity.setVelocity) {
+          entity.setVelocityY(y)
+        }
+      }
+    )
+    this.create(
+      'entity',
+      'ApplyEntityForce',
+      [
+        ['entity', 'object'],
+        ['force', 'object'],
+      ],
+      [],
+      ([entity, force]) => {
+        entity.applyForce(force)
+      }
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocity',
+      [['entity', 'object']],
+      [['v', 'object']],
+      ([entity]) => {
+        const { x, y } = entity.getVelocity()
+        return [{ value: new Vec2(x, y) }]
+      }
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocityX',
+      [['entity', 'object']],
+      [['x', 'number']],
+      ([entity]) => [{ value: entity.physicsProxy.velocity.x }]
+    )
+    this.create(
+      'entity',
+      'GetControlledEntityVelocityX',
+      [],
+      [['x', 'number']],
+      (_, { entity }) => [{ value: entity.physicsProxy.velocity.x }]
+    )
+    this.create(
+      'entity',
+      'ControlledVelX',
+      [],
+      [['x', 'number']],
+      (_, { entity }) => [{ value: entity.physicsProxy.velocity.x }]
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocityY',
+      [['entity', 'object']],
+      [['y', 'number']],
+      ([entity]) => [{ value: entity.physicsProxy.velocity.y }]
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocityXY',
+      [['entity', 'object']],
+      [
+        ['x', 'number'],
+        ['y', 'number'],
+      ],
+      ([entity]) => {
+        const { x, y } = entity.getVelocity()
+        console.log(x, y)
+        return [{ value: x }, { value: y }]
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScale',
+      [
+        ['entity', 'object'],
+        ['scale', 'number'],
+      ],
+      [],
+      ([entity, s]) => {
+        entity.setScale(s)
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityState',
+      [
+        ['entity', 'object'],
+        ['state', 'string'],
+      ],
+      [],
+      ([entity, state]) => {
+        entity.setState(state)
+      }
+    )
+    this.create(
+      'entity',
+      'DestroyEntity',
+      [['entity', 'object']],
+      [],
+      ([entity], { scene }) => {
+        scene.removeControlledEntity(entity)
+      }
+    )
+    this.create(
+      'entity',
+      'GetEntityPosition',
+      [['entity', 'object']],
+      [['pos', 'object']],
+      ([entity]) => [{ value: entity.pos }]
+    )
+    this.create(
+      'entity',
+      'SetCameraPosition',
+      [['pos', 'object']],
+      [],
+      ([pos], { camera }) => {
+        camera.setPosition(pos)
+      }
+    )
+    this.create(
+      'entity',
+      'SetCameraZoom',
+      [['zoom', 'number']],
+      [],
+      ([zoom], { camera }) => {
+        camera.setZoom(zoom)
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetEntityAnimation',
+      [
+        ['entity', 'object'],
+        ['index', 'int'],
+      ],
+      [['reset', 'bool']],
+      [true],
+      [],
+      ([entity, index], { internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(index, internal[0])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetEntityAnimationConst',
+      [['entity', 'object']],
+      [
+        ['index', 'int'],
+        ['reset', 'bool'],
+      ],
+      [4, true],
+      [],
+      ([entity], { internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(internal[0], internal[1])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetControlledEntityAnimation',
+      [['index', 'int']],
+      [['reset', 'bool']],
+      [true],
+      [],
+      ([index], { entity, internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(index, internal[0])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetControlledEntityAnimationConst',
+      [],
+      [
+        ['index', 'int'],
+        ['reset', 'bool'],
+      ],
+      [4, true],
+      [],
+      (_, { entity, internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(internal[0], internal[1])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetControlledAnimation#',
+      [],
+      [['index', 'int']],
+      [4],
+      [],
+      (_, { entity, internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(internal[0])
+        }
+      }
+    )
+  }
+  createExports() {
+    this.createExport('math', 'ExportInt', 'value', 0, 'int')
+    this.createExport('math', 'ExportIntRange', 'value', 0, 'int', {
+      additionalPorts: [
+        ['min', 'int'],
+        ['max', 'int'],
+      ],
+      additionalValues: [0, 10],
+    })
+    this.createExport('math', 'ExportFloat', 'value', 0, 'float')
+    this.createExport('input', 'ExportKey', 'key', 'A', 'string', {
+      valueEditorType: 'key',
+    })
+
+    this.createExport('entity', 'ExportState', 'state', '---', 'string', {
+      valueEditorType: 'state',
+    })
+  }
+  createAudio() {
+    this.createInternal(
+      'audio',
+      'PlaySound',
+      [],
+      [['name', 'string']],
+      ['boink'],
+      [],
+      (_, { internal }) => {
+        global.playSound(internal[0])
       }
     )
     this.create(

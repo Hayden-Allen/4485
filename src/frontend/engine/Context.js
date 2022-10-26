@@ -32,14 +32,6 @@ export class Context {
     if (!this.paused) {
       // run engine logic
       this.systems.forEach((system) => system.update(deltaTime))
-      // force->velocity & force = 0
-      // this.game.physicsEngine.updateVelocities(deltaTime, deltaCorrection)
-      // clamp velocity
-      this.game.currentScene.controlledComponents.forEach((component) => {
-        component.runScripts('OnPostTick', {
-          camera: this.game.currentScene.camera,
-        })
-      })
       // update physics
       this.game.physicsEngine.update(deltaTime, deltaCorrection)
     }

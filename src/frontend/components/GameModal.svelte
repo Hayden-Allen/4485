@@ -19,8 +19,10 @@
 
   .modal-content {
     font-weight: bold;
+    background-color: #D9D9D905;
+    color: white;
     align-items: center;
-    font-family: 'Brush Script MT', cursive;
+    font-family: 'Gilroy-Bold', sans-serif;
     padding: 15px;
   }
 </style>

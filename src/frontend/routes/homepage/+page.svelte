@@ -3,7 +3,7 @@
   import Card from '../../components/GameCard.svelte'
   import GameModal from '../../components/GameModal.svelte'
   import Navbar from '../../components/NavBar.svelte'
-
+  // import Carousel from 'svelte-carousel'
   // Variables to get game names
   var games = []
   var clickedGameName
@@ -42,6 +42,11 @@
 </script>
 
 <Navbar />
+<!-- <Carousel
+  autoplay
+  autoplayDuration={2000}
+> -->
+
 {#each games as { id, name, description }}
   <button class="Card-button" on:click={onCardClick(name, description, id)}>
     <Card class="card">
@@ -58,6 +63,7 @@
     </Card>
   </button>
 {/each}
+<!-- </Carousel> -->
 
 <h1>List Games</h1>
 <button on:click={getAllGames}>Get Games</button>
@@ -85,13 +91,15 @@
   </GameModal>
 {/if}
 
+
 <style>
   .Card-button {
-    border: none;
-    background: none;
+    border: #0F0F0F;
+    background: #D9D9D905;
   }
   a {
     text-decoration: none;
-    color: black;
+    color: #0F0F0F;
   }
+  
 </style>

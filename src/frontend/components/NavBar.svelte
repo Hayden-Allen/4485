@@ -10,6 +10,9 @@
 
 <div class="navbar">
   <div class="navbar-content">
+    <h4 class="navbar-pages"><a href="/homepage">Home</a></h4>
+  </div>
+  <div class="navbar-content">
     <h4 class="navbar-pages"><a href="/about">About</a></h4>
   </div>
   <div class="navbar-content">
@@ -17,6 +20,9 @@
   </div>
   <div class="navbar-content">
     <h4 class="navbar-pages"><a href="/gamelist">Games</a></h4>
+  </div>
+  <div class="navbar-content">
+    <h4 class="navbar-pages"><a href="/addgames">Add Game</a></h4>
   </div>
   <div class="navbar-content">
     <h4 class="navbar-pages"><a href="/edit">Create</a></h4>
@@ -32,14 +38,16 @@
   </div>
 </div>
 
+
+
 <style>
   .navbar {
     display: inline-block;
-    background: rgb(160, 163, 172);
+    background: #0F0F0F;
     height: 5%;
     width: 100%;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
-    font-family: 'Brush Script MT', cursive;
+    font-family: 'Gilroy-Bold', sans-serif;
   }
   .navbar-content {
     padding: 0.5% 0% 0% 2% !important;
@@ -51,7 +59,7 @@
   }
   a {
     text-decoration: none;
-    color: black;
+    color: #FFFFFF;
   }
   .navbar-right {
     padding: 0.5% 1% 0% 2% !important;

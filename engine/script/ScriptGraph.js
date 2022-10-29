@@ -13,24 +13,6 @@ EVENT_NODE_NAMES.add('OnCollide')
 EVENT_NODE_NAMES.add('OnSwitch')
 EVENT_NODE_NAMES.add('OnRender')
 
-class ExportNodeProxy {
-  constructor(node) {
-    this.node = node
-    this.name = node.internalValues[0]
-    this.value = node.internalValues[1]
-    this.valueType = node.data.internalPorts[1].typename
-    this.editorType = node.data.internalPorts[1].editorTypename
-  }
-  setName(name) {
-    this.name = name
-    this.node.internalValues[0] = name
-  }
-  setValue(value) {
-    this.value = value
-    this.node.internalValues[1] = value
-  }
-}
-
 export class ScriptGraph extends Component {
   constructor(name, inputCache, pushErrorCallback, clearErrorsCallback) {
     super(name)
@@ -40,7 +22,6 @@ export class ScriptGraph extends Component {
     /**
      * @HATODO move this somewhere else??
      */
-    this.collapsed = false
     this.firstRun = true
     this.templateName = undefined
     this.reset()
@@ -55,8 +36,6 @@ export class ScriptGraph extends Component {
     this.eventNodes = new Map()
     // nodes that have no input edges
     this.sourceNodes = []
-    // nodes whose internalValues are editable via the entity properties page
-    this.exportNodes = []
     // all edges (map ScriptNode.id to ScriptNodeEdgeList)
     this.edges = new Map()
     this.cachedCompile = undefined
@@ -257,7 +236,6 @@ export class ScriptGraph extends Component {
     // reset node groups
     this.eventNodes = new Map()
     this.sourceNodes = []
-    this.exportNodes = []
 
     // nodes from which order-building will start (any node with no inputs)
     let buildNodes = []
@@ -272,7 +250,6 @@ export class ScriptGraph extends Component {
       } else {
         node.isSource = false
       }
-      if (node.isExport) this.exportNodes.push(new ExportNodeProxy(node))
     })
 
     // determine execution order using topological sort

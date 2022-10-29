@@ -50,5 +50,43 @@ export default class GameWrapper {
     global.context.game.setCurrentScene(this.currentScene._scene)
 
     global.context.run()
+
+    const animate = () => {
+      window.requestAnimationFrame(animate)
+
+      if (!this.currentScene) {
+        return
+      }
+
+      for (const entity of this.currentScene.entities) {
+        if (entity.x.current !== entity._entity.pos.x) {
+          entity.x.current = entity._entity.pos.x
+        }
+
+        if (entity.y.current !== entity._entity.pos.y) {
+          entity.y.current = entity._entity.pos.y
+        }
+
+        if (entity.scale.current !== entity._entity.ops.scale) {
+          entity.scale.current = entity._entity.ops.scale
+        }
+
+        if (
+          entity.physicsSettings.mass.current !==
+          entity._entity.physicsProxy.mass
+        ) {
+          entity.physicsSettings.mass.current = entity._entity.physicsProxy.mass
+        }
+
+        if (
+          entity.physicsSettings.friction.current !==
+          entity._entity.physicsProxy.friction
+        ) {
+          entity.physicsSettings.friction.current =
+            entity._entity.physicsProxy.friction
+        }
+      }
+    }
+    window.requestAnimationFrame(animate)
   }
 }

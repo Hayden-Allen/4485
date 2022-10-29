@@ -1,18 +1,44 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSnapshot } from 'valtio'
 
 import { gameProxy } from '%proxies/proxies.js'
 
+function EntityInfo({ entity }) {
+  const entitySnap = useSnapshot(entity)
+
+  function handleResetPosition() {
+    entity.setX(entity.x.default)
+    entity.setY(entity.y.default)
+  }
+
+  function handleDelete() {
+    gameProxy.currentScene.removeEntity({ id: entity.id })
+  }
+
+  return (
+    <li>
+      <div>X: {entitySnap.x.current}</div>
+      <div>Y: {entitySnap.y.current}</div>
+      <div>
+        <button onClick={handleResetPosition}>Reset Position</button>{' '}
+        <button onClick={handleDelete}>Delete</button>
+      </div>
+    </li>
+  )
+}
+
 function SceneInfo({ sceneSnap }) {
   return (
-    <div>
-      You have added {sceneSnap.entities.length} entities. You&apos;re a
-      {sceneSnap.entities.length > 0 ? (
-        <span> winner!</span>
-      ) : (
-        <span> loser 💀💀💀</span>
-      )}
-    </div>
+    <ul>
+      {sceneSnap.entities.map((entitySnap, i) => {
+        return (
+          <EntityInfo
+            key={entitySnap.id}
+            entity={gameProxy.currentScene.entities[i]}
+          />
+        )
+      })}
+    </ul>
   )
 }
 
@@ -27,7 +53,7 @@ export default function Editor() {
   }, [gameCanvasRef, uiCanvasRef])
 
   function handleAddEntity() {
-    gameProxy.currentScene.addControlledSceneEntity({
+    gameProxy.currentScene.addControlledEntity({
       x: Math.random() * 640 - 320,
       y: Math.random() * 240,
       z: 0,

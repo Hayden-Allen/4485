@@ -14,7 +14,7 @@ export default class SceneWrapper {
     this.entities = []
   }
 
-  addControlledSceneEntity({ x, y, z }) {
+  addControlledEntity({ x, y, z }) {
     const gameWindow = this._gameWindow
     const newEntityWrapper = new EntityWrapper({ gameWindow, x, y })
 
@@ -27,5 +27,29 @@ export default class SceneWrapper {
     })
 
     this._scene.addControlledEntity(newEntityWrapper._entity, z)
+  }
+
+  removeEntity({ id }) {
+    let index = null
+    for (let i = 0; i < this.entities.length; ++i) {
+      if (this.entities[i].id === id) {
+        index = i
+      }
+    }
+
+    this._scene.removeControlledEntity(this.entities[index]._entity)
+
+    this.entities = produce(this.entities, (draft) => {
+      draft.splice(index, 1)
+    })
+
+    this.selectedEntities = produce(this.selectedEntities, (draft) => {
+      for (let i = 0; i < draft.length; ++i) {
+        if (draft[i]._entity.id === id) {
+          draft.splice(i, 1)
+          return
+        }
+      }
+    })
   }
 }

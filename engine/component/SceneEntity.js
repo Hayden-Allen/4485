@@ -85,6 +85,11 @@ class SceneEntity extends Component {
     //   true
     // )
   }
+  setPosition(x, y) {
+    this.pos.x = x
+    this.pos.y = y
+    Body.setPosition(this.physicsProxy, { x, y })
+  }
   setScale(scale) {
     if (scale === this.ops.scale) return
 
@@ -98,6 +103,9 @@ class SceneEntity extends Component {
   }
   setMass(mass) {
     Body.setMass(this.physicsProxy, mass)
+  }
+  setFriction(friction) {
+    this.physicsProxy.friction = friction
   }
   getCurrentTexture() {}
   serialize() {
@@ -179,6 +187,12 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
   addState(state) {
     this.states.set(state.name, state)
     if (!this.currentState) this.currentState = state
+  }
+  removeState(name) {
+    this.states.delete(name)
+    if (this.currentState.name === name) {
+      this.currentState = null
+    }
   }
   runScripts(event, context) {
     /**

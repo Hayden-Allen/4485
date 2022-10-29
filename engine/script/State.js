@@ -4,20 +4,15 @@ let FALLBACK_TEXTURE = undefined
 
 export class State {
   constructor(name, scripts, gl, animations) {
-    if (!FALLBACK_TEXTURE) {
-      FALLBACK_TEXTURE = new Texture(gl, 0, ['/sprites/MissingTexture.svg'])
-    }
     this.name = name
     this.scripts = scripts || []
-    this.textures = animations.map((obj) =>
-      obj ? new Texture(gl, obj.frameTime, obj.urls) : FALLBACK_TEXTURE
+    this.textures = animations.map(
+      (obj) => new Texture(gl, obj.frameTime, obj.urls)
     )
     /**
      * @HATODO move this ??
      */
     this.gl = gl
-    this.collapsed = false
-    this.animationsCollapsed = false
     this.animationsView = 'grid'
   }
   run(event, context, ...data) {
@@ -27,9 +22,7 @@ export class State {
     this.scripts.forEach((script) => (script.firstRun = true))
   }
   setTexture(i, obj) {
-    this.textures[i] = obj
-      ? new Texture(this.gl, obj.frameTime, obj.urls)
-      : FALLBACK_TEXTURE
+    this.textures[i] = new Texture(this.gl, obj.frameTime, obj.urls)
   }
   serialize() {
     /**

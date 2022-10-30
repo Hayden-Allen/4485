@@ -16,40 +16,46 @@ class ScriptExportWrapper {
   setValue(value) {
     this.value = value
     this._scriptGraphNode.internalValues[1] = this.value
-    // FIXME: The correct property of reactFlowNode may be called something else
-    // Additionally, maybe we need to use immer to update the internal values, or maybe reactFlowNode should not be a ref? Just ideas in case it doesn't work at first...
-    this._reactFlowNode.internalValues[1] = this.value
+    this._reactFlowNode.data.value = this.value
   }
 }
 
 export default class ScriptWrapper {
-  constructor({ name, reactFlowState }) {
+  constructor({ gameWindow, name, reactFlowState }) {
+    this._gameWindow = gameWindow
     this.name = name || 'Untitled Script'
     this.setFromReactFlow(reactFlowState)
   }
 
   setFromReactFlow(reactFlowState) {
-    const graph = new ScriptGraph()
+    const graph = new ScriptGraph(this.name, this._gameWindow.inputCache)
 
-    //
-    // FIXME: Setup the graph from the React Flow nodes/edges...
-    //
+    const { nodes, edges } = reactFlowState
+    let nodeIndex = new Map()
+    nodes.forEach((reactFlowNode) => {
+      const engineNode = graph.createNode(reactFlowNode.data.name, [
+        reactFlowNode.data.name,
+        reactFlowNode.data.value,
+      ])
+      nodeIndex.set(reactFlowNode.id, engineNode)
+    })
+    edges.forEach((edge) => {
+      graph.addEdge(
+        nodeIndex.get(edge.source),
+        parseInt(edge.data.sourcePort.substring(1)),
+        nodeIndex.get(edge.target),
+        parseInt(edge.data.targetPort.substring(1))
+      )
+    })
 
     this._graph = ref(graph)
     this.reactFlow = { ...reactFlowState }
     this.exports = []
-    this._graph.nodes.forEach((node) => {
-      if (node.isExport) {
-        const reactFlowNode = null
-        for (const rfn of reactFlowState.nodes) {
-          // FIXME: Make sure we're comparing the correct IDs (by default React Flow IDs are different than engine UUIDs so we need to map one to the other ??
-          if (rfn.id === node.id) {
-            reactFlowNode = rfn
-            break
-          }
-        }
+    nodes.forEach((reactFlowNode) => {
+      const scriptGraphNode = nodeIndex(reactFlowNode.id)
+      if (scriptGraphNode.isExport) {
         this.exports.push(
-          new ScriptExportWrapper({ scriptGraphNode: node, reactFlowNode })
+          new ScriptExportWrapper({ scriptGraphNode, reactFlowNode })
         )
       }
     })

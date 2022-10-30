@@ -15,13 +15,23 @@ function EntityInfo({ entity }) {
     gameProxy.currentScene.removeEntity({ id: entity.id })
   }
 
+  function handleAddScript() {
+    entity.states[0].addScript({
+      name: 'Test Script',
+      nodes: [],
+      edges: [],
+    })
+  }
+
   return (
     <li>
       <div>X: {entitySnap.x.current}</div>
       <div>Y: {entitySnap.y.current}</div>
+      <div>Scripts: {entitySnap.states[0].scripts.length}</div>
       <div>
         <button onClick={handleResetPosition}>Reset Position</button>{' '}
         <button onClick={handleDelete}>Delete</button>
+        <button onClick={handleAddScript}>Add Script</button>
       </div>
     </li>
   )

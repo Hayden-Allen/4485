@@ -3,6 +3,8 @@ import { ref } from 'valtio'
 
 import { State } from '%script/State.js'
 
+import ScriptWrapper from '%proxies/ScriptWrapper.js'
+
 const FALLBACK_ANIMATION = {
   frameTime: 0,
   urls: ['/sprites/MissingTexture.svg'],
@@ -46,16 +48,26 @@ export default class StateWrapper {
   }
 
   addScript(scriptTemplate) {
+    const gameWindow = this._gameWindow
     this.scripts = produce(this.scripts, (draft) => {
-      draft.push(new ScriptWrapper(scriptTemplate))
+      draft.push(
+        new ScriptWrapper({
+          gameWindow,
+          name: scriptTemplate.name,
+          reactFlowState: {
+            nodes: scriptTemplate.nodes,
+            edges: scriptTemplate.edges,
+          },
+        })
+      )
     })
-    this._state.scripts = this.scripts.map((wrapper) => wrapper._script)
+    this._state.scripts = this.scripts.map((wrapper) => wrapper._graph)
   }
 
   removeScript({ index }) {
     this.scripts = produce(this.scripts, (draft) => {
       draft.splice(index, 1)
     })
-    this._state.scripts = this.scripts.map((wrapper) => wrapper._script)
+    this._state.scripts = this.scripts.map((wrapper) => wrapper._graph)
   }
 }

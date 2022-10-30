@@ -17,14 +17,17 @@ export class ScriptGraph extends Component {
   constructor(name, inputCache, pushErrorCallback, clearErrorsCallback) {
     super(name)
     this.inputCache = inputCache
-    this.pushErrorCallback = pushErrorCallback
-    this.clearErrorsCallback = clearErrorsCallback
+    this.firstRun = true
+    this.reset()
+    /**
+     * @HATODO implement
+     */
+    this.pushErrorCallback = (e) => console.error(e)
+    this.clearErrorsCallback = () => console.log('No errors')
     /**
      * @HATODO move this somewhere else??
      */
-    this.firstRun = true
     this.templateName = undefined
-    this.reset()
   }
   isEmpty() {
     return !this.nodes.size

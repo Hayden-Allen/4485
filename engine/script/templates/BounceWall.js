@@ -1,271 +1,267 @@
 export default {
-  "name": "BounceWall",
-  "nodes": [
+  name: 'BounceWall',
+  nodes: [
     {
-      "type": "OnCollide",
-      "internalValues": []
+      type: 'OnCollide',
+      internalValues: [],
     },
     {
-      "type": "Vec2Components",
-      "internalValues": []
+      type: 'Vec2Components',
+      internalValues: [],
     },
     {
-      "type": "NOT",
-      "internalValues": []
+      type: 'NOT',
+      internalValues: [],
     },
     {
-      "type": "AND",
-      "internalValues": []
+      type: 'AND',
+      internalValues: [],
     },
     {
-      "type": "EqualsConst",
-      "internalValues": [
-        0
-      ]
+      type: 'EqualsConst',
+      internalValues: [0],
     },
     {
-      "type": "EqualsConst",
-      "internalValues": [
-        0
-      ]
+      type: 'EqualsConst',
+      internalValues: [0],
     },
     {
-      "type": "GetControlledEntity",
-      "internalValues": []
+      type: 'GetControlledEntity',
+      internalValues: [],
     },
     {
-      "type": "GetEntityVelocity",
-      "internalValues": []
+      type: 'GetEntityVelocity',
+      internalValues: [],
     },
     {
-      "type": "Vec2Components",
-      "internalValues": []
+      type: 'Vec2Components',
+      internalValues: [],
     },
     {
-      "type": "Negative",
-      "internalValues": []
+      type: 'Negative',
+      internalValues: [],
     },
     {
-      "type": "GetControlledEntity",
-      "internalValues": []
+      type: 'GetControlledEntity',
+      internalValues: [],
     },
     {
-      "type": "SetEntityVelocityX",
-      "internalValues": []
-    }
+      type: 'SetEntityVelocityX',
+      internalValues: [],
+    },
   ],
-  "edges": [
+  edges: [
     {
-      "in": [],
-      "out": [
+      in: [],
+      out: [
         {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 0,
-          "inputNode": 1
-        }
-      ]
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 0,
+          inputNode: 1,
+        },
+      ],
     },
     {
-      "in": [
+      in: [
         {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 0,
-          "inputNode": 1
-        }
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 0,
+          inputNode: 1,
+        },
       ],
-      "out": [
+      out: [
         {
-          "outputIndex": 1,
-          "inputIndex": 0,
-          "outputNode": 1,
-          "inputNode": 5
+          outputIndex: 1,
+          inputIndex: 0,
+          outputNode: 1,
+          inputNode: 5,
         },
         {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 1,
-          "inputNode": 4
-        }
-      ]
-    },
-    {
-      "in": [
-        {
-          "outputIndex": 2,
-          "inputIndex": 0,
-          "outputNode": 4,
-          "inputNode": 2
-        }
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 1,
+          inputNode: 4,
+        },
       ],
-      "out": [
-        {
-          "outputIndex": 2,
-          "inputIndex": 0,
-          "outputNode": 2,
-          "inputNode": 3
-        }
-      ]
     },
     {
-      "in": [
+      in: [
         {
-          "outputIndex": 2,
-          "inputIndex": 0,
-          "outputNode": 2,
-          "inputNode": 3
+          outputIndex: 2,
+          inputIndex: 0,
+          outputNode: 4,
+          inputNode: 2,
+        },
+      ],
+      out: [
+        {
+          outputIndex: 2,
+          inputIndex: 0,
+          outputNode: 2,
+          inputNode: 3,
+        },
+      ],
+    },
+    {
+      in: [
+        {
+          outputIndex: 2,
+          inputIndex: 0,
+          outputNode: 2,
+          inputNode: 3,
         },
         {
-          "outputIndex": 2,
-          "inputIndex": 1,
-          "outputNode": 5,
-          "inputNode": 3
-        }
+          outputIndex: 2,
+          inputIndex: 1,
+          outputNode: 5,
+          inputNode: 3,
+        },
       ],
-      "out": [
+      out: [
         {
-          "outputIndex": 0,
-          "inputIndex": -1,
-          "outputNode": 3,
-          "inputNode": 7
-        }
-      ]
-    },
-    {
-      "in": [
-        {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 1,
-          "inputNode": 4
-        }
+          outputIndex: 0,
+          inputIndex: -1,
+          outputNode: 3,
+          inputNode: 7,
+        },
       ],
-      "out": [
-        {
-          "outputIndex": 2,
-          "inputIndex": 0,
-          "outputNode": 4,
-          "inputNode": 2
-        }
-      ]
     },
     {
-      "in": [
+      in: [
         {
-          "outputIndex": 1,
-          "inputIndex": 0,
-          "outputNode": 1,
-          "inputNode": 5
-        }
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 1,
+          inputNode: 4,
+        },
       ],
-      "out": [
+      out: [
         {
-          "outputIndex": 2,
-          "inputIndex": 1,
-          "outputNode": 5,
-          "inputNode": 3
-        }
-      ]
+          outputIndex: 2,
+          inputIndex: 0,
+          outputNode: 4,
+          inputNode: 2,
+        },
+      ],
     },
     {
-      "in": [],
-      "out": [
+      in: [
         {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 6,
-          "inputNode": 7
-        }
-      ]
+          outputIndex: 1,
+          inputIndex: 0,
+          outputNode: 1,
+          inputNode: 5,
+        },
+      ],
+      out: [
+        {
+          outputIndex: 2,
+          inputIndex: 1,
+          outputNode: 5,
+          inputNode: 3,
+        },
+      ],
     },
     {
-      "in": [
+      in: [],
+      out: [
         {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 6,
-          "inputNode": 7
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 6,
+          inputNode: 7,
+        },
+      ],
+    },
+    {
+      in: [
+        {
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 6,
+          inputNode: 7,
         },
         {
-          "outputIndex": 0,
-          "inputIndex": -1,
-          "outputNode": 3,
-          "inputNode": 7
-        }
+          outputIndex: 0,
+          inputIndex: -1,
+          outputNode: 3,
+          inputNode: 7,
+        },
       ],
-      "out": [
+      out: [
         {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 7,
-          "inputNode": 8
-        }
-      ]
-    },
-    {
-      "in": [
-        {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 7,
-          "inputNode": 8
-        }
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 7,
+          inputNode: 8,
+        },
       ],
-      "out": [
-        {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 8,
-          "inputNode": 9
-        }
-      ]
     },
     {
-      "in": [
+      in: [
         {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 8,
-          "inputNode": 9
-        }
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 7,
+          inputNode: 8,
+        },
       ],
-      "out": [
+      out: [
         {
-          "outputIndex": 0,
-          "inputIndex": 1,
-          "outputNode": 9,
-          "inputNode": 11
-        }
-      ]
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 8,
+          inputNode: 9,
+        },
+      ],
     },
     {
-      "in": [],
-      "out": [
+      in: [
         {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 10,
-          "inputNode": 11
-        }
-      ]
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 8,
+          inputNode: 9,
+        },
+      ],
+      out: [
+        {
+          outputIndex: 0,
+          inputIndex: 1,
+          outputNode: 9,
+          inputNode: 11,
+        },
+      ],
     },
     {
-      "in": [
+      in: [],
+      out: [
         {
-          "outputIndex": 0,
-          "inputIndex": 1,
-          "outputNode": 9,
-          "inputNode": 11
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 10,
+          inputNode: 11,
+        },
+      ],
+    },
+    {
+      in: [
+        {
+          outputIndex: 0,
+          inputIndex: 1,
+          outputNode: 9,
+          inputNode: 11,
         },
         {
-          "outputIndex": 0,
-          "inputIndex": 0,
-          "outputNode": 10,
-          "inputNode": 11
-        }
+          outputIndex: 0,
+          inputIndex: 0,
+          outputNode: 10,
+          inputNode: 11,
+        },
       ],
-      "out": []
-    }
-  ]
+      out: [],
+    },
+  ],
 }

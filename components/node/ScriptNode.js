@@ -1,6 +1,6 @@
 import React from 'react'
 import { Handle } from 'reactflow'
-import styles from './Node.module.css'
+import styles from './ScriptNode.module.sass'
 
 const getTypeColor = (type) => {
   switch (type) {
@@ -17,14 +17,14 @@ const getTypeColor = (type) => {
   }
 }
 
-export default function StandardNode(props) {
+export default function ScriptNode(props) {
   const { label, inputs, outputs, variables } = props.data
 
   return (
-    <div className='flex flex-col'>
+    <div className={styles.node}>
       {/* node content */}
-      <div className={styles.node}>
-        {inputs && <div className='flex flex-col gap-[11px]'>
+      <div className={styles.content}>
+        {inputs && <div className={styles.col}>
           {inputs.map(input => (
             <NodePort
               key={input.label}
@@ -35,7 +35,7 @@ export default function StandardNode(props) {
             />
           ))}
         </div>}
-        {variables && <div className='flex flex-col gap-[11px]'>
+        {variables && <div className={styles.col}>
           {variables.map(variable => (
             <NodeVariable
               key={variable.label}
@@ -45,7 +45,7 @@ export default function StandardNode(props) {
             />
           ))}
         </div>}
-        {outputs && <div className='flex flex-col gap-[11px]'>
+        {outputs && <div className={styles.col}>
           {outputs.map(input => (
             <NodePort
               key={input.label}
@@ -58,9 +58,9 @@ export default function StandardNode(props) {
         </div>}
       </div>
       {/* bottom label decoration */}
-      <div className='flex justify-between'>
-        <div className='flex'>
-          <div className={styles.activity}>
+      <div className={styles.footer}>
+        <div className={styles.flex}>
+          <div className={styles.indicator}>
             <svg
               width='11'
               height='11'
@@ -92,7 +92,7 @@ export default function StandardNode(props) {
             </svg>
           </div>
         </div>
-        <div className='flex'>
+        <div className={styles.flex}>
           <div className={styles.curve}>
             <svg
               fill='none'
@@ -107,7 +107,7 @@ export default function StandardNode(props) {
               />
             </svg>
           </div>
-          <div className={styles.title}>
+          <div className={styles.label}>
             <svg
               width='12'
               height='12'
@@ -131,7 +131,7 @@ export default function StandardNode(props) {
 
 function NodePort({ id, type, label, color }) {
   return (
-    <div className='flex gap-[10px] items-center text-white'>
+    <div className={styles.port}>
       {type == 'target' && (<h3 className={styles.label}>{label}</h3>)}
       <Handle
         className={styles.pill}

@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import Split from 'react-split'
-import TabSystem from '../components/basic/TabSystem'
-import Graph from '../panels/Graph'
+import Icon from '../components/icon/Icon'
+import TabSystem from '../components/layout/tabs/TabSystem'
+import EntityManager from '../panels/EntityManager/EntityManager'
+import ScriptGraph from '../panels/ScriptGraph/ScriptGraph'
+import ScriptLibrary from '../panels/ScriptLibrary/ScriptLibrary'
+import styles from '../styles/pages/Editor.module.sass'
 
 export default function Editor() {
   const [enable, setEnable] = useState(false)
@@ -11,29 +15,29 @@ export default function Editor() {
   }, [])
 
   return enable ? (
-    <Split direction='vertical' sizes={[50, 50]} className='h-full bg-bg p-2'>
-      <Split className='flex'>
+    <Split direction='vertical' sizes={[50, 50]} className={styles.vertical}>
+      <Split className={styles.horizontal}>
         <TabSystem initialTabs={[]} />
         <TabSystem initialTabs={[]} />
       </Split>
-      <Split className='flex'>
+      <Split className={styles.horizontal}>
         <TabSystem initialTabs={[
           {
             title: "SCRIPT LIBRARY",
-            icon: "svg",
-            component: <>Script library</>
+            icon: <Icon size={13} icon="Text" />,
+            component: <ScriptLibrary />
           }
         ]} />
         <TabSystem initialTabs={[
           {
-            title: "NODE GRAPH",
-            icon: "svg",
-            component: <Graph />
+            title: "SCRIPT GRAPH",
+            icon: <Icon size={13} icon="Connection" />,
+            component: <ScriptGraph />
           },
           {
-            title: "STATE MANAGER",
-            icon: "svg",
-            component: <>STATE MANAGER</>
+            title: "ENTITY MANAGER",
+            icon: <Icon size={13} icon="Sliders" />,
+            component: <EntityManager />
           }
         ]} />
       </Split>

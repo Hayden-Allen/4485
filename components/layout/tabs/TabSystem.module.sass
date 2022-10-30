@@ -1,0 +1,104 @@
+@import "../../../styles/variables.sass"
+
+.window
+  width: 100%
+  height: 100%
+  background-color: $bg
+
+  .tabs_column
+    width: 100%
+    height: 100%
+    overflow: hidden
+    display: flex
+    flex-direction: column
+
+    .tabs
+      display: flex
+
+      .space
+        padding-left: rem(20)
+        padding-right: rem(20)
+
+      .sortable_list
+        width: 100%
+
+.list
+  display: flex
+  gap: rem(8)
+  flex-grow: 1
+
+.content
+  flex-grow: 1
+  width: 100%
+  height: 100%
+  border-radius: rem(27px)
+  background-color: $bgTabSelected
+  overflow: hidden
+
+.tab
+  max-width: rem(170)
+
+  display: flex
+  flex-grow: 1
+  justify-content: space-between
+  align-items: center
+
+  padding: 0.5rem 1.3rem
+  position: relative
+  border-top-left-radius: 20px
+  border-top-right-radius: 20px
+  cursor: pointer
+
+  // fallback colors
+  background-color: $bgTabSelected
+  color: $bgTabSelected
+
+  &.selected
+    background-color: $bgTabSelected
+    color: $bgTabSelected
+  
+  &.unselected
+    background-color: $bgTabUnselected
+    color: $bgTabUnselected
+
+  .label
+    color: white
+    font-weight: 600
+    font-size: rem(10.66)
+    user-select: none
+
+  .svg
+    color: white
+    user-select: none
+    font-size: rem(10)
+
+  // curve aesthetic
+  &:before,
+  &:after
+    content: ""
+    position: absolute
+
+    height: 10px
+    width: 20px
+
+    bottom: 0
+
+  &:after
+    right: -20px
+
+    border-radius: 0 0 0 10px
+    -moz-border-radius: 0 0 0 10px
+    -webkit-border-radius: 0 0 0 10px
+
+    -webkit-box-shadow: -10px 0 0 0
+    box-shadow: -10px 0 0 0
+
+  &:before
+    left: -20px
+
+    border-radius: 0 0 10px 0
+    -moz-border-radius: 0 0 10px 0
+    -webkit-border-radius: 0 0 10px 0
+
+    -webkit-box-shadow: 10px 0 0 0
+    box-shadow: 10px 0 0 0

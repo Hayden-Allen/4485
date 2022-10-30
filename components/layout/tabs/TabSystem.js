@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+import styles from './TabSystem.module.sass'
 
 function array_move(arr, old_index, new_index) {
   if (new_index >= arr.length) {
@@ -24,7 +25,7 @@ const SortableItem = SortableElement(({ tab, active, onClick }) => (
 
 const SortableList = SortableContainer(({ tabs, activeTab, onTabClick }) => {
   return (
-    <ul className="flex gap-2 grow">
+    <ul className={styles.list}>
       {tabs.map((tab, index) => (
         <SortableItem
           key={`item-${index}`}
@@ -55,14 +56,14 @@ export default function TabSystem({ initialTabs }) {
   }
 
   return tabs.length > 0 ? (
-    <div className="h-full w-full bg-bg">
-      <div className="h-full w-full bg-bg overflow-hidden flex flex-col">
-        <div className="flex">
+    <div className={styles.window}>
+      <div className={styles.tabs_column}>
+        <div className={styles.tabs}>
           {/* space */}
-          <div className="px-5"></div>
+          <div className={styles.space}></div>
           {/* tabs */}
           <SortableList
-            className="w-full"
+            className={styles.sortable_list}
             lockToContainerEdges={true}
             lockOffset={["0%", "0%"]}
             axis="x"
@@ -74,24 +75,24 @@ export default function TabSystem({ initialTabs }) {
             distance={5}
           />
           {/* space */}
-          <div className="px-5"></div>
+          <div className={styles.space}></div>
         </div>
         {/* content */}
-        <div className="grow h-full w-full rounded-[27px] bg-cellbg overflow-hidden">
+        <div className={styles.content}>
           {tabs[activeTab] && tabs[activeTab].component}
         </div>
       </div>
     </div>
   ) : (
-    <div className="grow h-full w-full rounded-[27px] bg-cellbg overflow-hidden" />
+    <div className={styles.content} />
   )
 }
 
 function Tab({ title, icon, active, onClick }) {
   return (
-    <div onClick={onClick} className={`tab ${active ? "bg-cellbg text-cellbg" : "bg-unselectedTab text-unselectedTab"}`}>
-      <h2 className="text-white font-semibold text-xs select-none">{title}</h2>
-      <div className="text-white select-none text-xs">{icon}</div>
+    <div onClick={onClick} className={`${styles.tab} ${active ? styles.selected : styles.unselected}`}>
+      <h2 className={styles.label}>{title}</h2>
+      <div className={styles.svg}>{icon}</div>
     </div>
   )
 }

@@ -1,0 +1,130 @@
+.window
+  height: 100%
+  width: 100%
+  // flex-grow: 1
+  padding: rem(25px) rem(23.55px)
+  display: flex
+  flex-direction: column
+  gap: rem(18)
+  overflow-y: scroll
+
+  .entity
+    display: flex
+    align-items: center
+    gap: rem(30)
+    
+    .image
+      width: rem(75)
+      height: rem(75)
+      background-color: gray
+      border-radius: rem(6.13)
+    
+    .name
+      font-size: rem(34.54)
+      font-weight: 600
+      line-height: 100%
+
+  .content
+    display: flex
+    gap: rem(19.15px)
+    // background-color: red
+    justify-content: between
+
+.tile
+  padding: rem(9.42px) rem(14px)
+  border-radius: rem(6.13px)
+  display: flex
+  gap: rem(12.39px)
+  align-items: center
+
+  &.selected 
+    background-color: $bgBtnSelected
+  
+  &.unselected 
+    background-color: $bgBtnUnselected
+
+  &:hover 
+    background-color: $bgBtnSelected
+
+  h3 
+    font-size: rem(12.39px)
+    font-weight: 600
+    color: white
+
+  .space
+    flex-grow: 1
+  
+  .icon
+    aspect-ratio: 1
+    color: gray
+    size: 12px
+
+.button
+  align-self: center
+  padding: rem(9.42px)
+  border-radius: rem(8.44px)
+  background-color: $bgBtnUnselected
+  color: white
+
+  &:hover 
+    background-color: $bgBtnSelected
+
+
+.list
+  display: flex
+  flex-direction: column
+  gap: rem(9.37px)
+
+  &.parameters
+    gap: rem(18.37px)
+
+
+.parameter
+  display: flex
+  gap: rem(10.01px)
+  align-items: center
+
+  .pill
+    height: rem(35px)
+    width: rem(7px)
+    border-radius: rem(11px)
+    background-color: #FF0A71
+  
+  .details
+    display: flex
+    flex-direction: column
+    justify-content: center
+
+    .name
+      font-size: rem(16.85px)
+      font-weight: 600
+      line-height: 100%
+
+    .type
+      font-size: rem(8.83px)
+      font-family: monospace
+      color: #6F6F6F
+  
+  .space
+    flex-grow: 1
+
+  .value 
+    div 
+      width: rem(118.66px)
+      height: rem(35.91px)
+      line-height: rem(35.91px)
+
+      border-radius: rem(4.72px)
+      background-color: #1B1B1B
+
+      color: gray
+      font-size: rem(14.25)
+      font-family: monospace
+      font-weight: 600
+
+      z-index: 100  
+      text-align: center
+
+      border-color: white
+
+      cursor: text

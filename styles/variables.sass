@@ -1,0 +1,44 @@
+// general
+$bg: #161616
+
+// tabs
+$bgTabSelected: #0F0F0F
+$bgTabUnselected: #131313
+
+// nodes
+$bgNode: #1f1f1f
+$shadowNode: rgb(17, 17, 17)
+
+// buttons
+$bgBtnSelected: #232323
+$bgBtnUnselected: #171717
+
+// tree nav
+$bgTreeNav: #131313
+$bgSearchBar: #1D1D1D
+
+// block
+$bgBlock: rgba(217, 217, 217, 0.05)
+$bgBlockHover: rgba(217, 217, 217, 0.1)
+$bgBlockSelected: rgba(217, 217, 217, 0.15)
+
+$html-font-size: 16px
+
+@function stripUnit($value) 
+    @return $value / ($value * 0 + 1)
+
+@function rem($pxValue) 
+    @return #{stripUnit($pxValue) / stripUnit($html-font-size)}rem
+
+// block
+@mixin block 
+  background-color: $bgBlock
+  border-radius: rem(7.55)
+  padding: rem(10.24) rem(13.73)
+
+@mixin blockHover 
+  background-color: $bgBlockHover
+
+@mixin blockSelected
+  background-color: $bgBlockSelected
+    

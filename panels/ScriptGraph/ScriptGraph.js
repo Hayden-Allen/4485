@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import ReactFlow, { Background, applyEdgeChanges, applyNodeChanges, addEdge, ConnectionLineType } from 'reactflow';
 import 'reactflow/dist/style.css';
-import StandardNode from '../components/node/StandardNode.js';
+import ScriptNode from '../../components/node/ScriptNode.js';
 
 const initialNodes = [
   {
     id: '1',
     position: { x: 100, y: 100 },
-    type: 'standard',
+    type: 'script',
     data: {
       label: 'NODE LABEL',
       category: 'logic',
@@ -38,7 +38,7 @@ const initialNodes = [
   {
     id: '2',
     position: { x: 100, y: 250 },
-    type: "standard",
+    type: "script",
     data: {
       label: 'NODE LABEL',
       inputs: [
@@ -71,7 +71,7 @@ const initialEdges = [
   // }
 ]
 
-export default function Graph() {
+export default function ScriptGraph() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
 
@@ -80,7 +80,7 @@ export default function Graph() {
 
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [])
 
-  const nodeTypes = useMemo(() => ({ standard: StandardNode }), []);
+  const nodeTypes = useMemo(() => ({ script: ScriptNode }), []);
 
   return (
     <div className="grow h-full w-full bg-cellbg">
@@ -96,7 +96,8 @@ export default function Graph() {
         <Background
           variant="dots"
           color="#202020"
-          size={2}
+          size={3}
+          gap={30}
         />
       </ReactFlow>
     </div>

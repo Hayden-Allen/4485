@@ -1,0 +1,21 @@
+.btn
+  @include block
+  width: fit-content
+
+  &:hover
+    @include blockHover
+
+  &.stretch
+    width: 100% !important
+
+  display: flex
+  justify-content: space-between
+  align-items: center
+  gap: rem(10px)
+  
+  color: white
+
+  .label
+    font-size: rem(10.58)
+    font-weight: 600
+    text-transform: capitalize

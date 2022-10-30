@@ -1,0 +1,112 @@
+.node
+  display: flex
+  flex-direction: column
+
+  .content
+    border-top-left-radius: rem(8.44px)
+    border-top-right-radius: rem(8.44px)
+    display: flex
+    justify-content: space-between
+    align-items: center
+    gap: rem(25px)
+
+    background-color: $bgNode
+    color: $bgNode
+    box-shadow: 0 0 rem(20px) $shadowNode 
+
+    padding: rem(11px) rem(6px)
+
+    .col
+      display: flex
+      flex-direction: column
+      gap: rem(11px)
+
+  .footer
+    display: flex
+    justify-content: space-between
+
+    .flex
+      display: flex
+
+      .indicator
+        background-color: $bgNode 
+        padding: 0px 0px rem(6.5px) rem(9px)
+        border-bottom-left-radius: rem(8.44px)
+        display: flex
+
+      .label
+        background-color: $bgNode
+        padding-right: rem(6.5px)
+        line-height: 80%
+        height: rem(18.42px)
+        font-weight: 600
+        font-size: rem(15px)
+        border-bottom-right-radius: rem(8.44px)
+
+        display: flex
+        gap: rem(6.61px)
+
+        h2
+          color: white
+          opacity: 20%
+
+      .curve 
+        svg 
+          height: rem(18.42px)
+          width: rem(18.63px)
+          display: block
+
+
+.port
+  display: flex
+  gap: rem(10px)
+  align-items: center
+  color: white
+
+  .pill 
+    position: relative !important
+    border: none
+    text-align: center
+    height: rem(25px) !important
+    width: rem(6px) !important
+    border-radius: rem(5px)
+    background-color: #00FFF1
+
+    /* reset default handle transforms */
+    left: 0%
+    right: 0%
+    top: 0%
+    transform: none
+
+    transition: 0.2s
+    transition-timing-function: ease-out
+
+    &:hover 
+      width: 15px !important
+
+  .label
+    font-size: 15px
+    font-weight: 500
+
+
+.variable 
+  p 
+    color: rgba(255, 255, 255, 0.2)
+    font-family: monospace
+    font-size: 9px
+  div 
+    width:fit-content
+    height: min-content
+
+    background-color: rgba(255, 255, 255, 0.2)
+    color: white
+    z-index: 100
+    font-size: 12
+    font-weight: 600
+
+    padding: 6px 12px
+    border-radius: 8.44px
+
+    border-color: white
+
+    cursor: text

@@ -1,14 +1,15 @@
 <script>
   import { fetchGames } from 'frontend/utils/fetchJson'
   import Card from '../../components/GameCard.svelte'
-  import GameModal from '../../components/GameModal.svelte'
   import Navbar from '../../components/NavBar.svelte'
+
   // import Carousel from 'svelte-carousel'
   // Variables to get game names
   var games = []
   var clickedGameName
   var clickedGameId
   var clickedGameDesc
+  const pagename = 'Home'
 
   // Variable for popup
   var isPopupOpen = false
@@ -44,25 +45,24 @@
 <div class="background">
   <Navbar />
   {#each games as { id, name, description }}
-    <button class="Card-button" on:click={onCardClick(name, description, id)}>
+    <button class="Card-button">
       <Card class="card">
         <img
           class="thumbnail"
-          text-align="center"
-          width="175"
-          height="175"
+          width="250wh"
+          height="250vh"
           alt="game thumbnail"
-          src="https://imgs.search.brave.com/_EV0HLkIlUJL5dDP09fpZZtngvKYC8zU9c8oTtpvtrU/rs:fit:600:600:1/g:ce/aHR0cHM6Ly9wYnMu/dHdpbWcuY29tL21l/ZGlhL0NaU0t1dGFV/Z0FFTl9RTi5wbmc"
+          src="public\images\fenginx_logo.png"
         />
 
         <h3>{name}</h3>
-        <h3>{description}</h3>
+        <p>{description}</p>
         <div>
-          <button
+          <button on:click={toggle}
             ><a target="_blank" rel="noopener noreferrer" href="/edit">Play</a
             ></button
           >
-          <button on:click={toggle}
+          <button class="rounded-full" on:click={toggle}
             ><a target="_blank" rel="noopener noreferrer" href="/edit">Edit</a
             ></button
           >
@@ -73,35 +73,12 @@
 
   <h1>List Games</h1>
   <button on:click={getAllGames}>Get Games</button>
-
-  <!-- Code for popup -->
-  {#if isPopupOpen}
-    <GameModal>
-      <img
-        text-align="center"
-        width="300"
-        height="300"
-        class="thumbnail"
-        alt="game thumbnail"
-        src="https://imgs.search.brave.com/_EV0HLkIlUJL5dDP09fpZZtngvKYC8zU9c8oTtpvtrU/rs:fit:600:600:1/g:ce/aHR0cHM6Ly9wYnMu/dHdpbWcuY29tL21l/ZGlhL0NaU0t1dGFV/Z0FFTl9RTi5wbmc"
-      />
-      <h4>{clickedGameName}</h4>
-      <h4>{clickedGameDesc}</h4>
-      <div>
-        <button
-          ><a target="_blank" rel="noopener noreferrer" href="/edit">Play</a
-          ></button
-        >
-        <button on:click={toggle}>Close</button>
-      </div>
-    </GameModal>
-  {/if}
 </div>
 
 <style>
   .Card-button {
-    border: #0f0f0f;
-    background: #d9d9d905;
+    border: black;
+    background-color: #0f0f0f;
   }
   a {
     text-decoration: none;
@@ -110,6 +87,6 @@
   .background {
     height: 100%;
     min-height: 100vh;
-    background-color: white;
+    background-color: #0f0f0f;
   }
 </style>

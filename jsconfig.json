@@ -11,7 +11,9 @@
       "%system/*": ["engine/system/*"],
       "%util/*": ["engine/util/*"],
       "%window/*": ["engine/window/*"],
-      "%proxies/*": ["proxies/*"]
+      "%proxies/*": ["proxies/*"],
+      "lib": ["lib/*"],
+      "models": ["models/*"]
     }
   }
 }

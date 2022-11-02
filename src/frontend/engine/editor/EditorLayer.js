@@ -32,6 +32,11 @@ export class EditorLayer extends Layer {
   async onKeyDown(e) {
     // if (e.repeat) return
 
+    if (this.selectedEntity && (e.key === 'Backspace' || e.key === 'Delete')) {
+      this.game.removeControlledSceneEntity(this.selectedEntity)
+      this.selectedEntity = undefined
+      this.setSelectedEntity(undefined)
+    }
     if (!e.repeat && e.key === 'Escape') global.context.paused ^= 1
     if (!e.repeat && e.key === '`') this.showDebug ^= 1
     if (e.key.toLowerCase() === 's' && e.ctrlPressed && e.shiftPressed) {

@@ -146,16 +146,14 @@
   let dropX = null,
     dropY = null
   function onPointerMove(e) {
-    const rect = gameWindow.canvas.getBoundingClientRect()
-    const dx = (e.clientX - rect.x) / rect.width
-    const dy = (e.clientY - rect.y) / rect.height
-    if (dx > 0 && dx < 1 && dy > 0 && dy < 1) {
-      dropX = dx * 1920 - 1920 / 2
-      dropY = (1 - dy) * 1080 - 1080 / 2
-    } else {
-      dropX = null
-      dropY = null
-    }
+    const { cx, cy } = global.transformDOMToCanvas(
+      gameWindow.canvas,
+      e.clientX,
+      e.clientY
+    )
+    const { wx, wy } = global.transformCanvasToWorld(cx, cy)
+    dropX = wx
+    dropY = wy
   }
 
   function handleDndFinalize(e) {

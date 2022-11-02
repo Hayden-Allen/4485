@@ -12,16 +12,14 @@ class AnimationTemplateInfo {
 export const animationTemplateBank = [
   new AnimationTemplateInfo('Blank', 0, ['/MissingTexture.svg']),
   ...global.alphabetSort([
-    new AnimationTemplateInfo('Link', 0, [
-      'https://art.pixilart.com/840bcbc293e372f.png',
+    new AnimationTemplateInfo('Player (Idle)', 0, [
+      '/sprites/character_0000.png',
     ]),
-    new AnimationTemplateInfo('Item', 0, [
-      'https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/7efb75f9b67e227.png',
+    new AnimationTemplateInfo('Player (Walk)', 125, [
+      '/sprites/character_0000.png',
+      '/sprites/character_0001.png',
     ]),
-    new AnimationTemplateInfo('Link & Item', 500, [
-      'https://art.pixilart.com/840bcbc293e372f.png',
-      'https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/7efb75f9b67e227.png',
-    ]),
+    new AnimationTemplateInfo('Item', 0, ['/sprites/tile_0009.png']),
   ]),
 ]
 

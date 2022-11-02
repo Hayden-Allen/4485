@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte'
+  import { dndzone } from 'svelte-dnd-action'
   import Viewport from 'components/Viewport.svelte'
   import Splitter from 'components/Splitter.svelte'
   import AssetsPanel from 'components/AssetsPanel.svelte'
@@ -63,9 +64,7 @@
       gameWindow,
       pos,
       0,
-      [
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-      ],
+      ['/sprites/tile_0009.png'],
       { vertices, indices, scale: 32 }
     )
   }
@@ -83,64 +82,6 @@
     genRect(game, 10, 700, 50, new Vec2(-960, -544))
     genRect(game, 10, 20, 20, new Vec2(-800, -384))
     genRect(game, 10, 20, 20, new Vec2(-544, -384))
-
-    // add player at z-index 1
-    game.addControlledSceneEntity(
-      1,
-      gameWindow,
-      new Vec2(0, 0),
-      new Map([
-        [
-          'Default',
-          new State('Default', [], gameWindow.gl, [
-            null,
-            null,
-            null,
-            null,
-            {
-              frameTime: 500,
-              urls: [
-                'https://art.pixilart.com/840bcbc293e372f.png',
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-              ],
-            },
-            null,
-            null,
-            null,
-            null,
-          ]),
-        ],
-      ]),
-      'Default',
-      { scale: 32 }
-    )
-
-    game.addControlledSceneEntity(
-      1,
-      gameWindow,
-      new Vec2(-710, 0),
-      new Map([
-        [
-          'Default',
-          new State('Default', [], gameWindow.gl, [
-            null,
-            null,
-            null,
-            null,
-            {
-              frameTime: 0,
-              urls: ['https://art.pixilart.com/840bcbc293e372f.png'],
-            },
-            null,
-            null,
-            null,
-            null,
-          ]),
-        ],
-      ]),
-      'Default',
-      { scale: 32 }
-    )
 
     editorLayer = new EditorLayer(game, (e) => {
       selectedEntity = e
@@ -195,7 +136,66 @@
       }
     )
   }
+
+  let dragItems = []
+
+  function handleDndConsider(e) {
+    dragItems = e.detail.items
+  }
+
+  let dropX = null,
+    dropY = null
+  function onPointerMove(e) {
+    const rect = gameWindow.canvas.getBoundingClientRect()
+    const dx = (e.clientX - rect.x) / rect.width
+    const dy = (e.clientY - rect.y) / rect.height
+    if (dx > 0 && dx < 1 && dy > 0 && dy < 1) {
+      dropX = dx * 1920 - 1920 / 2
+      dropY = (1 - dy) * 1080 - 1080 / 2
+    } else {
+      dropX = null
+      dropY = null
+    }
+  }
+
+  function handleDndFinalize(e) {
+    if (
+      e.detail.items.length > 0 &&
+      e.detail.items[0].candidate &&
+      dropX &&
+      dropY
+    ) {
+      global.context.game.addControlledSceneEntity(
+        1,
+        gameWindow,
+        new Vec2(dropX, dropY),
+        new Map([
+          [
+            'Default',
+            new State('Default', [], gameWindow.gl, [
+              null,
+              null,
+              null,
+              null,
+              {
+                ...e.detail.items[0].candidate,
+              },
+              null,
+              null,
+              null,
+              null,
+            ]),
+          ],
+        ]),
+        'Default',
+        { scale: 32 }
+      )
+    }
+    dragItems = []
+  }
 </script>
+
+<svelte:window on:pointermove={onPointerMove} />
 
 <div
   class="w-full h-full flex flex-col bg-neutral-800 text-neutral-300 overflow-hidden"
@@ -231,6 +231,24 @@
           bind:canvas={uiCanvas}
           onResize={() => global.context.propagateResizeEvent()}
         />
+      </div>
+      <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+        <div
+          class="absolute top-0 left-0 w-full h-full"
+          use:dndzone={{
+            type: 'Animation',
+            dragDisabled: true,
+            morphDisabled: true,
+            dropTargetStyle: '',
+            items: dragItems,
+          }}
+          on:consider={handleDndConsider}
+          on:finalize={handleDndFinalize}
+        >
+          {#each dragItems as item (item.id)}
+            <div class="hidden" />
+          {/each}
+        </div>
       </div>
       <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
         <p id="fps" />

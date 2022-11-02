@@ -73,7 +73,7 @@ export class EditorLayer extends Layer {
         this.selectedEntity.dim.x,
         this.selectedEntity.dim.y,
         '#fff',
-        8
+        4
       )
     }
 

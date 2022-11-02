@@ -1,4 +1,5 @@
 <script>
+  import { onDestroy } from 'svelte'
   import { dndzone } from 'svelte-dnd-action'
   import ArrowLeft from 'icons/24/outline/bold-arrows/arrow-left.svelte'
   import ArrowRight from 'icons/24/outline/bold-arrows/arrow-right.svelte'
@@ -35,7 +36,6 @@
       animationFrame = window.requestAnimationFrame(animate)
     }
     const now = Date.now()
-    console.log(now)
     if (texture.frameTime > 0 && now - timer > texture.frameTime) {
       curFrame = (curFrame + 1) % texture.frameCount
       timer = now
@@ -43,14 +43,17 @@
     }
   }
 
-  function resetAnim(texture) {
-    /*
+  function stopAnim() {
     if (typeof window !== 'undefined') {
       if (animationFrame) {
         window.cancelAnimationFrame(animationFrame)
       }
       animationFrame = undefined
     }
+  }
+
+  function resetAnim(texture) {
+    stopAnim()
 
     curFrame = 0
     timer = Date.now()
@@ -58,12 +61,15 @@
     if (typeof window !== 'undefined' && texture.frameCount > 0) {
       animationFrame = window.requestAnimationFrame(animate)
     }
-    */
   }
 
   $: {
     resetAnim(texture)
   }
+
+  onDestroy(() => {
+    stopAnim()
+  })
 </script>
 
 <div
@@ -103,6 +109,7 @@
     class="absolute top-0 left-0 w-full h-full"
     use:dndzone={{
       type: 'Animation',
+      centreDraggedOnCursor: true,
       dragDisabled: true,
       morphDisabled: true,
       dropTargetStyle: '',

@@ -237,6 +237,7 @@
           class="absolute top-0 left-0 w-full h-full"
           use:dndzone={{
             type: 'Animation',
+            centreDraggedOnCursor: true,
             dragDisabled: true,
             morphDisabled: true,
             dropTargetStyle: '',
@@ -249,9 +250,6 @@
             <div class="hidden" />
           {/each}
         </div>
-      </div>
-      <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
-        <p id="fps" />
       </div>
     </div>
   </div>
@@ -269,23 +267,16 @@
       class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomLeftBasis}%;`}
     >
-      {#if selectedEntity}
-        <ScriptTemplatesPanel
-          onUseScript={(info) => {
-            let script = createEmptyScript('default')
-            script.deserialize(info.script)
-            script.templateName = info.name
-            selectedState.scripts = [...selectedState.scripts, script]
-            selectedEntity.states = selectedEntity.states
-          }}
-        />
-      {:else}
-        <div
-          class="grow-0 shrink-0 w-full h-full flex flex-col items-center justify-center overflow-hidden text-xl font-bold text-neutral-500"
-        >
-          <div>Select an entity to edit</div>
-        </div>
-      {/if}
+      <ScriptTemplatesPanel
+        onUseScript={(info) => {
+          let script = createEmptyScript('default')
+          script.deserialize(info.script)
+          script.templateName = info.name
+          selectedState.scripts = [...selectedState.scripts, script]
+          selectedEntity.states = selectedEntity.states
+        }}
+        canUseScript={selectedEntity && selectedState}
+      />
     </div>
     <Splitter bind:split={bottomSplit} minSplit={0.1} maxSplit={0.9} />
     <div
@@ -323,6 +314,7 @@
               selectedEntity.states = selectedEntity.states
             }}
             onDeleteState={(name, state) => {
+              selectedState = undefined
               selectedEntity.states.delete(name)
               selectedEntity.states = selectedEntity.states
             }}

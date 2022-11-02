@@ -174,8 +174,10 @@ export class Window2D extends Window {
     this.ctx.closePath()
     this.ctx.globalAlpha = prevAlpha
   }
-  drawText(message, x, y, fontFamily, fontSize, color) {
-    this.ctx.font = `${this.scaleFontSize(fontSize)}px ${fontFamily}`
+  drawText(message, x, y, fontFamily, fontSize, color, fontWeight) {
+    this.ctx.font =
+      (fontWeight ? `${fontWeight} ` : '') +
+      `${this.scaleFontSize(fontSize)}px ${fontFamily}`
     this.ctx.fillStyle = color
     this.ctx.textBaseline = 'top'
 
@@ -215,8 +217,9 @@ export class Window2D extends Window {
     this.ctx.fillText(message, cx - this.ctx.measureText(message).width / 2, cy)
     if (options.theta) this.rotate(cx, cy, -options.theta)
   }
-  textMetrics(string, fontFamily, fontSize) {
-    this.ctx.font = `${fontSize}px ${fontFamily}`
+  textMetrics(string, fontFamily, fontSize, fontWeight) {
+    this.ctx.font =
+      (fontWeight ? `${fontWeight} ` : '') + `${fontSize}px ${fontFamily}`
     return this.ctx.measureText(string)
   }
   getScalingFactor() {

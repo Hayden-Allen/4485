@@ -58,9 +58,9 @@
 
   $: {
     const q = searchQuery.trim()
-    if (q.length >= 3) {
+    if (q.length > 0) {
       candidates = []
-      for (const result of animationTemplateIndex.search(q)) {
+      for (const result of animationTemplateIndex.search(`*${q}*`)) {
         candidates.push(animationTemplateBank[parseInt(result.ref)])
       }
       if (candidates.indexOf(selectedTemplate) === -1) {
@@ -130,9 +130,10 @@
   </div>
 
   <div
-    class="grow-1 shrink-1 grid grid-flow-col auto-cols-max auto-rows-max p-4 gap-4 w-full h-full overflow-x-hidden overflow-y-auto"
+    class="grow-1 shrink-1 p-4 w-full h-full overflow-x-hidden overflow-y-auto"
     use:dndzone={{
       type: 'Animation',
+      centreDraggedOnCursor: true,
       dropFromOthersDisabled: true,
       morphDisabled: true,
       dropTargetStyle: '',
@@ -143,7 +144,7 @@
   >
     {#each dragItems as item (item.id)}
       <div
-        class="flex flex-col items-center justify-center grow-0 shrink-0 px-4 py-2 hover:bg-neutral-800 focus:bg-neutral-700 transition-all rounded-md"
+        class="w-24 h-28 px-4 py-2 overflow-hidden inline-flex align-top flex-col items-center justify-center grow-0 shrink-0 hover:bg-neutral-800 focus:bg-neutral-700 transition-all rounded-md"
       >
         <div
           class="w-16 h-16 grow-0 shrink-0 overflow-hidden flex flex-row items-center justify-center bg-neutral-800 border border-solid border-neutral-700"

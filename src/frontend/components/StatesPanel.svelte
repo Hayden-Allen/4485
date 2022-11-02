@@ -34,14 +34,16 @@
   let items = undefined
 
   function updateItems() {
-    items = []
-    for (const [key, value] of states) {
-      items.push({
-        name: key,
-        state: value,
-      })
+    if (states) {
+      items = []
+      for (const [key, value] of states) {
+        items.push({
+          name: key,
+          state: value,
+        })
+      }
+      global.alphabetSort(items)
     }
-    global.alphabetSort(items)
   }
 
   $: {
@@ -102,17 +104,19 @@
     </div>
   {/each}
 
-  {#each items as item}
-    <StatesPanelItem
-      isSelected={selectedState === item.state}
-      {states}
-      onSelect={onSelectState}
-      onRename={onRenameState}
-      onDelete={onDeleteState}
-      {onEditScript}
-      {item}
-    />
-  {/each}
+  {#if items}
+    {#each items as item}
+      <StatesPanelItem
+        isSelected={selectedState === item.state}
+        {states}
+        onSelect={onSelectState}
+        onRename={onRenameState}
+        onDelete={onDeleteState}
+        {onEditScript}
+        {item}
+      />
+    {/each}
+  {/if}
 
   <button
     on:click={onAddState}

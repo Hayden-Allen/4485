@@ -109,6 +109,13 @@ class SceneEntity extends Component {
    * @HATODO
    */
   deserialize(obj) {}
+  setPosition(x, y) {
+    this.pos.x = x
+    this.pos.y = y
+    this.renderable.setTransform(this.pos)
+    this.destroy()
+    this.createPhysicsProxy()
+  }
 }
 
 export class StaticSceneEntity extends SceneEntity {

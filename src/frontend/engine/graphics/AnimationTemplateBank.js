@@ -16,11 +16,11 @@ export const animationTemplateBank = [
       'https://art.pixilart.com/840bcbc293e372f.png',
     ]),
     new AnimationTemplateInfo('Item', 0, [
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+      'https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/7efb75f9b67e227.png',
     ]),
     new AnimationTemplateInfo('Link & Item', 500, [
       'https://art.pixilart.com/840bcbc293e372f.png',
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
+      'https://pixelartmaker-data-78746291193.nyc3.digitaloceanspaces.com/image/7efb75f9b67e227.png',
     ]),
   ]),
 ]

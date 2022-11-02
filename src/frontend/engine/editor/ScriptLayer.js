@@ -432,8 +432,8 @@ export class ScriptLayer extends Layer {
       return {
         x,
         y,
-        width: width / window.devicePixelRatio,
-        height: height / window.devicePixelRatio,
+        width: width,
+        height: height,
         borderAlphaVarying: self.graphvis.outlineAlpha,
         computeReposition: (x, y) => {
           if (

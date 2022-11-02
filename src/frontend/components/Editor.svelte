@@ -26,21 +26,12 @@
 
   let graphEditorScript = undefined
 
-  onMount(() => {
-    global.init()
-
-    var game = global.context.game
-
-    gameWindow = new Window3D(gameCanvas, uiCanvas, [0, 0, 1, 1])
-
-    var scene = new Scene()
-    game.setCurrentScene(scene)
-    const size = 10
+  function genRect(game, size, width, height, pos) {
     let vertices = [],
       indices = [],
       i = 0
-    for (var y = 0; y < 50; y += size) {
-      for (var x = 0; x < 500; x += size) {
+    for (var y = 0; y < height; y += size) {
+      for (var x = 0; x < width; x += size) {
         const sx = x / 10,
           sy = y / 10
         const s = 1
@@ -70,34 +61,28 @@
     game.addStaticSceneEntity(
       0,
       gameWindow,
-      new Vec2(-700, -300),
+      pos,
       0,
       [
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
       ],
-      { vertices, indices, scale: 25 }
+      { vertices, indices, scale: 32 }
     )
-    game.addStaticSceneEntity(
-      0,
-      gameWindow,
-      new Vec2(-700, -150),
-      0,
-      [
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-      ],
-      { vertices, indices, scale: 1 }
-    )
+  }
 
-    game.addStaticSceneEntity(
-      0,
-      gameWindow,
-      new Vec2(-500, -150),
-      0,
-      [
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNYrGPqKAnwSbc1AwWvieLvCe5gy2LASXWOg&usqp=CAU',
-      ],
-      { vertices, indices, scale: 1 }
-    )
+  onMount(() => {
+    global.init()
+
+    var game = global.context.game
+
+    gameWindow = new Window3D(gameCanvas, uiCanvas, [0, 0, 0, 1])
+
+    var scene = new Scene()
+    game.setCurrentScene(scene)
+
+    genRect(game, 10, 700, 50, new Vec2(-960, -544))
+    genRect(game, 10, 20, 20, new Vec2(-800, -384))
+    genRect(game, 10, 20, 20, new Vec2(-544, -384))
 
     // add player at z-index 1
     game.addControlledSceneEntity(
@@ -127,13 +112,13 @@
         ],
       ]),
       'Default',
-      { scale: 25 }
+      { scale: 32 }
     )
 
     game.addControlledSceneEntity(
       1,
       gameWindow,
-      new Vec2(-600, 0),
+      new Vec2(-710, 0),
       new Map([
         [
           'Default',
@@ -154,7 +139,7 @@
         ],
       ]),
       'Default',
-      { scale: 25 }
+      { scale: 32 }
     )
 
     editorLayer = new EditorLayer(game, (e) => {
@@ -266,15 +251,23 @@
       class="grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomLeftBasis}%;`}
     >
-      <ScriptTemplatesPanel
-        onUseScript={(info) => {
-          let script = createEmptyScript('default')
-          script.deserialize(info.script)
-          script.templateName = info.name
-          selectedState.scripts = [...selectedState.scripts, script]
-          selectedEntity.states = selectedEntity.states
-        }}
-      />
+      {#if selectedEntity}
+        <ScriptTemplatesPanel
+          onUseScript={(info) => {
+            let script = createEmptyScript('default')
+            script.deserialize(info.script)
+            script.templateName = info.name
+            selectedState.scripts = [...selectedState.scripts, script]
+            selectedEntity.states = selectedEntity.states
+          }}
+        />
+      {:else}
+        <div
+          class="grow-0 shrink-0 w-full h-full flex flex-col items-center justify-center overflow-hidden text-xl font-bold text-neutral-500"
+        >
+          <div>Select an entity to edit</div>
+        </div>
+      {/if}
     </div>
     <Splitter bind:split={bottomSplit} minSplit={0.1} maxSplit={0.9} />
     <div
@@ -340,6 +333,12 @@
               selectedEntity.states = selectedEntity.states
             }}
           />
+        </div>
+      {:else}
+        <div
+          class="grow-0 shrink-0 w-full h-full flex flex-col items-center justify-center overflow-hidden text-xl font-bold text-neutral-500"
+        >
+          <div>Select an entity to edit</div>
         </div>
       {/if}
     </div>

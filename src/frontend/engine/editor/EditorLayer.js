@@ -14,6 +14,7 @@ export class EditorLayer extends Layer {
     })
     this.showDebug = true
     this.fps = 0
+    this.selectedEntity = undefined
     this.setSelectedEntity = setSelectedEntity
 
     this.camera = new Camera(
@@ -30,12 +31,10 @@ export class EditorLayer extends Layer {
   }
   async onKeyDown(e) {
     // if (e.repeat) return
-    console.log(e)
 
     if (!e.repeat && e.key === 'Escape') global.context.paused ^= 1
     if (!e.repeat && e.key === '`') this.showDebug ^= 1
     if (e.key.toLowerCase() === 's' && e.ctrlPressed && e.shiftPressed) {
-      console.log('SAVE')
       // console.log(this.game.serialize(name))
       let fileHandle = undefined
       try {
@@ -61,17 +60,17 @@ export class EditorLayer extends Layer {
     e.window.clear()
     this.game.draw(e.window)
     // this.game.drawFromPerspective(e.window, this.camera)
-    this.game.currentScene.controlledComponents.forEach((c) => {
+    if (this.selectedEntity) {
       e.window.strokeRect(
         this.camera,
-        c.pos.x - c.dim.x / 2,
-        c.pos.y + c.dim.y / 2,
-        c.dim.x,
-        c.dim.y,
-        '#f0f',
-        5
+        this.selectedEntity.pos.x - this.selectedEntity.dim.x / 2,
+        this.selectedEntity.pos.y + this.selectedEntity.dim.y / 2,
+        this.selectedEntity.dim.x,
+        this.selectedEntity.dim.y,
+        '#fff',
+        8
       )
-    })
+    }
 
     if (global.context.paused) {
       e.window.uiCanvas.drawTransparentRect(
@@ -118,5 +117,6 @@ export class EditorLayer extends Layer {
       }
     })
     this.setSelectedEntity(selected)
+    this.selectedEntity = selected
   }
 }

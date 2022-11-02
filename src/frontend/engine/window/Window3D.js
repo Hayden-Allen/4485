@@ -85,7 +85,7 @@ export class Window3D extends Window {
       this.fpsSamples.reduce((s, c) => (s += c)) / this.fpsSamples.length
     this.fpsElement.innerText = `${avg.toLocaleString(undefined, {
       maximumFractionDigits: 0,
-      minimumIntegerDigits: 3,
+      minimumIntegerDigits: 2,
     })} fps`
   }
   strokeRect(camera, x, y, w, h, color, width) {

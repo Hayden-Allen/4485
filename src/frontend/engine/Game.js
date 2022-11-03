@@ -27,7 +27,7 @@ export class Game {
     const obj = JSON.parse(str)
     this.currentScene = undefined
     this.context.removeSystem(this.sceneManager)
-    this.physicsEngine = new PhysicsEngine(this, -5)
+    this.physicsEngine.reset()
     this.sceneManager = new SceneManager()
     this.context.addSystem(this.sceneManager)
     this.sceneManager.deserialize(obj.scenes)

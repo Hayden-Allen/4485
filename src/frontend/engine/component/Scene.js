@@ -55,8 +55,6 @@ export class Scene extends Component {
       entities.set(id, newEntity)
     }
 
-    console.log(obj)
-
     this.layers = []
     obj.layers.forEach((layer) => {
       const newLayer = new SceneLayer()

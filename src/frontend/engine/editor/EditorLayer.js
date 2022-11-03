@@ -68,7 +68,8 @@ export class EditorLayer extends Layer {
       }
       const name = fileHandle.name.split('.')[0]
       const writable = await fileHandle.createWritable()
-      const contents = JSON.stringify(this.game.serialize(name), null, 2)
+      const contents =
+        'export default ' + JSON.stringify(this.game.serialize(name))
       await writable.write(contents)
       await writable.close()
     }
@@ -89,7 +90,7 @@ export class EditorLayer extends Layer {
       }
       const fileData = await fileHandle.getFile()
       const text = await fileData.text()
-      const parsed = JSON.parse(text)
+      const parsed = JSON.parse(text.replace('export default ', ''))
       global.context.game.deserialize(parsed)
     }
   }
@@ -136,26 +137,6 @@ export class EditorLayer extends Layer {
           border
         )
       }
-    }
-
-    if (global.context.paused) {
-      e.window.uiCanvas.drawTransparentRect(
-        0,
-        0,
-        e.window.canvas.width,
-        e.window.canvas.height,
-        '#000',
-        0.5
-      )
-      e.window.uiCanvas.drawCenteredText(
-        'PAUSED',
-        e.window.canvas.width / 2,
-        e.window.canvas.height / 2,
-        'courier new',
-        this.textSize.getValue(),
-        '#0f0',
-        { theta: this.textTheta.getValue() }
-      )
     }
   }
   onMouseDown(e) {

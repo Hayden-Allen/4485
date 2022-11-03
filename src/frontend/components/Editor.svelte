@@ -18,6 +18,7 @@
   import PauseIcon from 'icons/24/solid/pause.svelte'
   import StopIcon from 'icons/24/solid/stop.svelte'
   import { Context } from '%engine/Context.js'
+  import TestProject from '%editor/projects/test.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -32,64 +33,14 @@
   let graphEditorScript = undefined
 
   let curPlayState = 'stop'
-
-  function genRect(game, size, width, height, pos) {
-    let vertices = [],
-      indices = [],
-      i = 0
-    for (var y = 0; y < height; y += size) {
-      for (var x = 0; x < width; x += size) {
-        const sx = x / 10,
-          sy = y / 10
-        const s = 1
-        vertices.push(
-          sx,
-          sy,
-          0,
-          0,
-          sx + s,
-          sy,
-          1,
-          0,
-          sx + s,
-          sy + s,
-          1,
-          1,
-          sx,
-          sy + s,
-          0,
-          1
-        )
-        const b = i * 4
-        indices.push(b, b + 1, b + 2, b, b + 2, b + 3)
-        i++
-      }
-    }
-    game.addStaticSceneEntity(
-      0,
-      gameWindow,
-      pos,
-      0,
-      ['/sprites/tile_0009.png'],
-      { vertices, indices, scale: 32 }
-    )
-  }
+  let curProject = TestProject
 
   onMount(() => {
     global.init(new Context())
 
-    var game = global.context.game
-
     gameWindow = new Window3D(gameCanvas, uiCanvas, [0, 0, 0, 1])
 
-    var scene = new Scene()
-    game.setCurrentScene(scene)
-
-    genRect(game, 10, 700, 50, new Vec2(-960, -544))
-    genRect(game, 10, 20, 20, new Vec2(-800, -384))
-    genRect(game, 10, 20, 20, new Vec2(-544, -384))
-
-    editorLayer = new EditorLayer(game, (e) => {
+    editorLayer = new EditorLayer(global.context.game, (e) => {
       selectedEntity = e
       if (!selectedEntity) {
         graphEditorScript = undefined
@@ -101,6 +52,9 @@
     gameWindow.pushLayer(editorLayer)
 
     global.context.windows.push(gameWindow)
+
+    global.context.game.deserialize(curProject)
+
     global.context.run()
     curPlayState = 'play'
   })
@@ -200,9 +154,17 @@
   }
 
   function setPlayState(newPlayState) {
-    //
-    // TODO: Update game and context
-    //
+    if (newPlayState === 'play') {
+      if (curPlayState === 'stop') {
+        curProject = global.context.game.serialize(curProject)
+      }
+      global.context.paused = false
+    } else if (newPlayState === 'pause') {
+      global.context.paused = true
+    } else if (newPlayState === 'stop') {
+      global.context.paused = true
+      global.context.game.deserialize(curProject)
+    }
     curPlayState = newPlayState
   }
 </script>
@@ -233,9 +195,50 @@
     </div>
     <Splitter bind:split={topSplit} minSplit={0.1} maxSplit={0.9} />
     <div
-      class="flex flex-col grow shrink relative overflow-hidden bg-neutral-900"
+      class="flex flex-row grow shrink relative overflow-hidden bg-neutral-900 pl-3"
       style={`flex-basis: ${topRightBasis}%;`}
     >
+      <div
+        class="flex flex-col grow-0 shrink-0 p-2 items-center justify-center shadow-lg"
+      >
+        <button
+          class={`p-4 bg-neutral-700 rounded-t-lg ${
+            curPlayState === 'play'
+              ? 'text-green-300'
+              : 'text-neutral-100 hover:text-green-200'
+          } transition-all`}
+          on:click={() => setPlayState('play')}
+        >
+          <div class="w-6 h-6">
+            <PlayIcon />
+          </div>
+        </button>
+        <button
+          class={`p-4 bg-neutral-700 ${
+            curPlayState === 'pause'
+              ? 'text-cyan-300'
+              : 'text-neutral-100 hover:text-cyan-200 disabled:text-neutral-500 disabled:hover:text-neutral-500 disabled:pointer-events-none'
+          } transition-all`}
+          on:click={() => setPlayState('pause')}
+          disabled={curPlayState === 'stop'}
+        >
+          <div class="w-6 h-6">
+            <PauseIcon />
+          </div>
+        </button>
+        <button
+          class={`p-4 bg-neutral-700 rounded-b-lg ${
+            curPlayState === 'stop'
+              ? 'text-red-300'
+              : 'text-neutral-100 hover:text-red-200'
+          } transition-all`}
+          on:click={() => setPlayState('stop')}
+        >
+          <div class="w-6 h-6">
+            <StopIcon />
+          </div>
+        </button>
+      </div>
       <div
         class="relative grow shrink w-full h-full overflow-hidden bg-neutral-900"
       >
@@ -277,47 +280,6 @@
             </div>
           </div>
         {/if}
-      </div>
-      <div
-        class="flex flex-row grow-0 shrink-0 p-2 items-center justify-center shadow-lg"
-      >
-        <button
-          class={`px-4 py-2 bg-neutral-700 rounded-l-lg ${
-            curPlayState === 'play'
-              ? 'text-green-300'
-              : 'text-neutral-100 hover:text-green-200'
-          } transition-all`}
-          on:click={() => setPlayState('play')}
-        >
-          <div class="w-6 h-6">
-            <PlayIcon />
-          </div>
-        </button>
-        <button
-          class={`px-4 py-2 bg-neutral-700 ${
-            curPlayState === 'pause'
-              ? 'text-cyan-300'
-              : 'text-neutral-100 hover:text-cyan-200 disabled:text-neutral-500 disabled:hover:text-neutral-500 disabled:pointer-events-none'
-          } transition-all`}
-          on:click={() => setPlayState('pause')}
-          disabled={curPlayState === 'stop'}
-        >
-          <div class="w-6 h-6">
-            <PauseIcon />
-          </div>
-        </button>
-        <button
-          class={`px-4 py-2 bg-neutral-700 rounded-r-lg ${
-            curPlayState === 'stop'
-              ? 'text-red-300'
-              : 'text-neutral-100 hover:text-red-200'
-          } transition-all`}
-          on:click={() => setPlayState('stop')}
-        >
-          <div class="w-6 h-6">
-            <StopIcon />
-          </div>
-        </button>
       </div>
     </div>
   </div>

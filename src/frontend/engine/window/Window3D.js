@@ -83,7 +83,7 @@ export class Window3D extends Window {
   draw(entity, camera) {
     this.renderer.draw(entity, camera, this.shaderProgram)
 
-    if (this.fpsAvg) {
+    if (this.fpsAvg && !global.context.paused) {
       const systemFontFamily =
         '-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif'
       const metrics = this.uiCanvas.textMetrics(

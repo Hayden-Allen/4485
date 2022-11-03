@@ -26,6 +26,7 @@ export class Game {
   deserialize(obj) {
     this.currentScene = undefined
     this.context.removeSystem(this.sceneManager)
+    this.physicsEngine = new PhysicsEngine(this, -5)
     this.sceneManager = new SceneManager()
     this.context.addSystem(this.sceneManager)
     this.sceneManager.deserialize(obj.scenes)

@@ -1,9 +1,9 @@
-import { Context } from '%engine/Context.js'
 import { VaryingController } from '%util/VaryingController.js'
 
 export var global = {
   context: undefined,
   varyingController: undefined,
+  gl: undefined,
   fps: 60,
   mouseX: 0,
   mouseY: 0,
@@ -20,7 +20,7 @@ export var global = {
     lastDelta: 0,
   },
 
-  init: () => {
+  init: (context) => {
     async function registerAudioContext() {
       window.removeEventListener('click', registerAudioContext)
 
@@ -42,7 +42,7 @@ export var global = {
     }
     window.addEventListener('click', registerAudioContext)
 
-    global.context = new Context()
+    global.context = context
     global.varyingController = new VaryingController()
     global.context.addSystem(global.varyingController)
     window.oncontextmenu = (e) => {

@@ -115,4 +115,16 @@ export class Texture {
     this.lastSwitch = global.time.now
     this.frame = 0
   }
+  serialize() {
+    return {
+      urls: this.urls,
+      frameTime: this.frameTime,
+    }
+  }
+  /**
+   * @HATODO
+   */
+  static deserialize(obj) {
+    return new Texture(global.gl, obj.frameTime, obj.urls)
+  }
 }

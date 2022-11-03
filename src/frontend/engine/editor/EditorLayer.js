@@ -72,31 +72,68 @@ export class EditorLayer extends Layer {
       await writable.write(contents)
       await writable.close()
     }
+    if (e.key.toLowerCase() === 'o' && e.ctrlPressed && e.shiftPressed) {
+      e.domEvent.preventDefault()
+      let fileHandle = undefined
+      try {
+        ;[fileHandle] = await window.showOpenFilePicker({
+          types: [
+            {
+              description: 'JS file',
+              accept: { 'text/javascript': ['.js'] },
+            },
+          ],
+        })
+      } catch (err) {
+        return
+      }
+      const fileData = await fileHandle.getFile()
+      const text = await fileData.text()
+      const parsed = JSON.parse(text)
+      global.context.game.deserialize(parsed)
+    }
   }
   onRender(e) {
     e.window.clear()
     this.game.draw(e.window)
     // this.game.drawFromPerspective(e.window, this.camera)
     if (this.selectedEntity) {
+      const border = 4
+      let ex = 0,
+        ey = 0
+      let dimx = this.selectedEntity.dim.x + border * 2
+      let dimy = this.selectedEntity.dim.y + border * 2
       if (this.selectedEntityIsControlled) {
-        e.window.strokeRect(
-          this.camera,
-          this.selectedEntity.pos.x - this.selectedEntity.dim.x / 2,
-          this.selectedEntity.pos.y + this.selectedEntity.dim.y / 2,
-          this.selectedEntity.dim.x,
-          this.selectedEntity.dim.y,
-          '#fff',
-          4
-        )
+        ex = this.selectedEntity.pos.x - this.selectedEntity.dim.x / 2
+        ey = this.selectedEntity.pos.y + this.selectedEntity.dim.y / 2
       } else {
+        ex = this.selectedEntity.pos.x
+        ey = this.selectedEntity.pos.y + this.selectedEntity.dim.y
+      }
+
+      e.window.strokeRect(
+        this.camera,
+        ex - border,
+        ey + border,
+        dimx,
+        dimy,
+        '#fff',
+        border
+      )
+
+      const dx = [0, 1, 1, 0]
+      const dy = [0, 0, -1, -1]
+      const s = 10
+      // resize controls
+      for (var i = 0; i < 4; i++) {
         e.window.strokeRect(
           this.camera,
-          this.selectedEntity.pos.x,
-          this.selectedEntity.pos.y + this.selectedEntity.dim.y,
-          this.selectedEntity.dim.x,
-          this.selectedEntity.dim.y,
-          '#fff',
-          4
+          ex + dx[i] * dimx - s / 2 - border,
+          ey + dy[i] * dimy + s / 2 + border,
+          s,
+          s,
+          '#f00',
+          border
         )
       }
     }
@@ -128,6 +165,9 @@ export class EditorLayer extends Layer {
     vec4.transformMat4(tc, [mouseX, mouseY, 0, 1], this.camera.inverse())
     const worldMouseX = tc[0]
     const worldMouseY = tc[1]
+
+    if (this.selectedEntity) {
+    }
 
     let selected = undefined
     this.game.currentScene.layers.forEach((layer) => {

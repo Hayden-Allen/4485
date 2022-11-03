@@ -1,4 +1,6 @@
 import { Texture } from '%graphics/Texture.js'
+import { ScriptGraph } from '%script/ScriptGraph.js'
+import { global } from '%engine/Global.js'
 
 let FALLBACK_TEXTURE = undefined
 
@@ -38,10 +40,19 @@ export class State {
     return {
       name: this.name,
       scripts: this.scripts.map((script) => script.serialize()),
+      animations: this.textures.map((t) => t.serialize()),
     }
   }
   /**
    * @HATODO
    */
-  deserialize(obj) {}
+  static deserialize(obj) {
+    let scripts = []
+    obj.scripts.forEach((script) => {
+      let newScript = new ScriptGraph(script.name, global.gameWindow.inputCache)
+      newScript.deserialize(script)
+      scripts.push(newScript)
+    })
+    return new State(obj.name, scripts, global.gl, obj.animations)
+  }
 }

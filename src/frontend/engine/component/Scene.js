@@ -2,6 +2,10 @@ import { Component } from './Component.js'
 import { SceneLayer } from './SceneLayer.js'
 import { global } from '%engine/Global.js'
 import { Camera } from '%graphics/Camera.js'
+import {
+  ControlledSceneEntity,
+  StaticSceneEntity,
+} from '%component/SceneEntity.js'
 
 export class Scene extends Component {
   constructor() {
@@ -39,8 +43,29 @@ export class Scene extends Component {
    * @HATODO
    */
   deserialize(obj) {
-    this.layers = obj.layers
-    this.controlledComponents = new Map(this.controlledComponents)
+    let entities = new Map()
+    for (const id in obj.entities) {
+      const entity = obj.entities[id]
+      let newEntity = undefined
+      if (entity.states) {
+        newEntity = ControlledSceneEntity.deserialize(entity)
+      } else {
+        newEntity = StaticSceneEntity.deserialize(entity)
+      }
+      entities.set(id, newEntity)
+    }
+
+    this.layers = []
+    obj.layers.forEach((layer) => {
+      const newLayer = new SceneLayer()
+      newLayer.deserialize(layer, entities)
+      this.layers.push(newLayer)
+    })
+
+    this.controlledComponents = new Map()
+    obj.controlledComponents.forEach((id) =>
+      this.controlledComponents.set(id, entities.get(id))
+    )
   }
   addComponent() {
     this.logError('Use addStaticComponent() and addDynamicComponent() instead')

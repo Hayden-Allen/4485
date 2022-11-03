@@ -179,11 +179,19 @@ export class ScriptLayer extends Layer {
     ) {
       this.controls.setTransform(this.window.ctx)
       // transform mouse screen->world
-      const [mx, my] = this.inverseTransformCoords(
+      // const [mx, my] = this.inverseTransformCoords(
+      //   this.input.mouseX,
+      //   this.input.mouseY
+      // )
+      // const [lmx, lmy] = this.inverseTransformCoords(
+      //   this.input.lastMouseX,
+      //   this.input.lastMouseY
+      // )
+      const [mx, my] = global.transformCanvasToWorld(
         this.input.mouseX,
         this.input.mouseY
       )
-      const [lmx, lmy] = this.inverseTransformCoords(
+      const [lmx, lmy] = global.transformCanvasToWorld(
         this.input.lastMouseX,
         this.input.lastMouseY
       )

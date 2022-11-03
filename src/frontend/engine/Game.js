@@ -11,6 +11,7 @@ export class Game {
     this.physicsEngine = new PhysicsEngine(this, -5)
     this.currentScene = undefined
     this.sceneManager = new SceneManager()
+    this.context = context
     context.addSystem(this.sceneManager)
   }
   serialize(name) {
@@ -23,7 +24,13 @@ export class Game {
     }
   }
   deserialize(obj) {
+    this.currentScene = undefined
+    this.context.removeSystem(this.sceneManager)
+    this.sceneManager = new SceneManager()
+    this.context.addSystem(this.sceneManager)
     this.sceneManager.deserialize(obj.scenes)
+
+    this.currentScene = Array.from(this.sceneManager.components.values())[0]
   }
   setCurrentScene(scene) {
     this.currentScene = scene

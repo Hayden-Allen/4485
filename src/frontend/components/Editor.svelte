@@ -17,6 +17,7 @@
   import PlayIcon from 'icons/24/solid/play.svelte'
   import PauseIcon from 'icons/24/solid/pause.svelte'
   import StopIcon from 'icons/24/solid/stop.svelte'
+  import { Context } from '%engine/Context.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -75,7 +76,7 @@
   }
 
   onMount(() => {
-    global.init()
+    global.init(new Context())
 
     var game = global.context.game
 

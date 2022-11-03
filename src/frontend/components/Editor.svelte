@@ -30,7 +30,7 @@
 
   let graphEditorScript = undefined
 
-  let curPlayState = undefined
+  let curPlayState = 'stop'
 
   function genRect(game, size, width, height, pos) {
     let vertices = [],
@@ -216,10 +216,19 @@
     style={`flex-basis: ${midTopBasis}%;`}
   >
     <div
-      class="grow shrink overflow-auto bg-neutral-900"
+      class="relative grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${topLeftBasis}%;`}
     >
-      <AssetsPanel />
+      <div class="absolute t-0 l-0 w-full h-full">
+        <AssetsPanel />
+      </div>
+      <div
+        class={`absolute t-0 l-0 w-full h-full ${
+          curPlayState === 'stop'
+            ? 'pointer-events-none opacity-0'
+            : 'bg-black opacity-50'
+        } transition-all`}
+      />
     </div>
     <Splitter bind:split={topSplit} minSplit={0.1} maxSplit={0.9} />
     <div
@@ -246,25 +255,27 @@
             onResize={() => global.context.propagateResizeEvent()}
           />
         </div>
-        <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
-          <div
-            class="absolute top-0 left-0 w-full h-full"
-            use:dndzone={{
-              type: 'Animation',
-              centreDraggedOnCursor: true,
-              dragDisabled: true,
-              morphDisabled: true,
-              dropTargetStyle: '',
-              items: dragItems,
-            }}
-            on:consider={handleDndConsider}
-            on:finalize={handleDndFinalize}
-          >
-            {#each dragItems as item (item.id)}
-              <div class="hidden" />
-            {/each}
+        {#if curPlayState === 'stop'}
+          <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+            <div
+              class="absolute top-0 left-0 w-full h-full"
+              use:dndzone={{
+                type: 'Animation',
+                centreDraggedOnCursor: true,
+                dragDisabled: true,
+                morphDisabled: true,
+                dropTargetStyle: '',
+                items: dragItems,
+              }}
+              on:consider={handleDndConsider}
+              on:finalize={handleDndFinalize}
+            >
+              {#each dragItems as item (item.id)}
+                <div class="hidden" />
+              {/each}
+            </div>
           </div>
-        </div>
+        {/if}
       </div>
       <div
         class="flex flex-row grow-0 shrink-0 p-2 items-center justify-center shadow-lg"

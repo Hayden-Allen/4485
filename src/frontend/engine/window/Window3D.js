@@ -50,8 +50,9 @@ export class Window3D extends Window {
       FRAGMENT_SOURCE
     )
     // performance tracking
-    this.fpsElement = document.getElementById('fps')
+    this.fpsAvg = undefined
     this.fpsSamples = new Array(100).fill(0)
+    this.numValidFpsSamples = 0
     // debug draw
     this.uiCanvas = new Window2D(uiCanvas, undefined, { doScaling: false })
     /**
@@ -81,18 +82,48 @@ export class Window3D extends Window {
   }
   draw(entity, camera) {
     this.renderer.draw(entity, camera, this.shaderProgram)
+
+    if (this.fpsAvg) {
+      const systemFontFamily =
+        '-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif'
+      const metrics = this.uiCanvas.textMetrics(
+        Math.round(this.fpsAvg),
+        systemFontFamily,
+        36,
+        'bold'
+      )
+      const x = this.canvas.width - metrics.width - 20
+      const y = 20
+      this.uiCanvas.drawText(
+        Math.round(this.fpsAvg),
+        x,
+        y,
+        systemFontFamily,
+        36,
+        'white',
+        'bold'
+      )
+      const subMetrics = this.uiCanvas.textMetrics('FPS', systemFontFamily, 20)
+      const subX = x + metrics.width * 0.5 - subMetrics.width * 0.5
+      const subY =
+        y +
+        Math.abs(metrics.actualBoundingBoxAscent) +
+        Math.abs(metrics.actualBoundingBoxDescent) +
+        8
+      this.uiCanvas.drawText('FPS', subX, subY, systemFontFamily, 20, 'white')
+    }
   }
   update(deltaTime) {
     super.update(deltaTime)
 
     this.fpsSamples.shift()
     this.fpsSamples.push(1000 / deltaTime)
-    let avg =
-      this.fpsSamples.reduce((s, c) => (s += c)) / this.fpsSamples.length
-    this.fpsElement.innerText = `${avg.toLocaleString(undefined, {
-      maximumFractionDigits: 0,
-      minimumIntegerDigits: 2,
-    })} fps`
+    if (this.numValidFpsSamples < this.fpsSamples.length) {
+      ++this.numValidFpsSamples
+    } else {
+      this.fpsAvg =
+        this.fpsSamples.reduce((s, c) => (s += c)) / this.fpsSamples.length
+    }
   }
   strokeRect(camera, x, y, w, h, color, width) {
     // world->NDC matrix

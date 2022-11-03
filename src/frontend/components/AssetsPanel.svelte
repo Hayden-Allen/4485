@@ -1,8 +1,8 @@
 <script>
   import AnimationTemplatesPanel from 'components/AnimationTemplatesPanel.svelte'
 
-  let categories = ['Prefabs', 'Animations', 'Sounds']
-  let selectedCategory = 'Animations'
+  let categories = ['Sprites']
+  let selectedCategory = 'Sprites'
 
   function handleSelectCategory(category) {
     selectedCategory = category
@@ -27,12 +27,8 @@
     {/each}
   </div>
   <div class="grow-1 shrink-1 w-full h-full overflow-hidden">
-    {#if selectedCategory === 'Prefabs'}
-      <!-- TODO -->
-    {:else if selectedCategory === 'Animations'}
+    {#if selectedCategory === 'Sprites'}
       <AnimationTemplatesPanel />
-    {:else if selectedCategory === 'Sounds'}
-      <!-- TODO -->
     {/if}
   </div>
 </div>

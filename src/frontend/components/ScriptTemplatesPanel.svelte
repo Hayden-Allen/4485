@@ -7,7 +7,8 @@
   import MagnifyingGlass from 'icons/20/mini/magnifying-glass.svelte'
   import Plus from 'icons/20/mini/plus.svelte'
 
-  export let onUseScript = undefined
+  export let onUseScript = undefined,
+    canUseScript = false
 
   let searchQuery = ''
   let candidates = null
@@ -28,9 +29,9 @@
 
   $: {
     const q = searchQuery.trim()
-    if (q.length >= 3) {
+    if (q.length > 0) {
       candidates = [blankScriptTemplate]
-      for (const result of scriptTemplateIndex.search(q)) {
+      for (const result of scriptTemplateIndex.search(`*${q}*`)) {
         candidates.push(scriptTemplateBank[parseInt(result.ref)])
       }
       if (candidates.indexOf(selectedTemplate) === -1) {
@@ -92,7 +93,8 @@
           {#if hoveredTemplate === template}
             <button
               on:click={() => onUseScript(template)}
-              class="flex grow-0 shrink-0 p-1 items-center justify-center rounded-md bg-emerald-700 hover:bg-emerald-600 transition-all"
+              class="flex grow-0 shrink-0 p-1 items-center justify-center rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:bg-neutral-900 disabled:text-neutral-500 disabled:pointer-events-none transition-all"
+              disabled={!canUseScript}
             >
               <div class="w-5 h-5"><Plus /></div>
             </button>

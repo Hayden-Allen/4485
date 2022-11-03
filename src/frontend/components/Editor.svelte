@@ -32,8 +32,7 @@
 
   let graphEditorScript = undefined
 
-  let curPlayState = 'stop'
-  let curProject = TestProject
+  let curProject = JSON.stringify(TestProject)
 
   onMount(() => {
     global.init(new Context())
@@ -53,10 +52,9 @@
 
     global.context.windows.push(gameWindow)
 
-    global.context.game.deserialize(curProject)
+    setPlayState(global.playState)
 
     global.context.run()
-    curPlayState = 'play'
   })
 
   /*
@@ -107,6 +105,18 @@
   let dropX = null,
     dropY = null
   function onPointerMove(e) {
+    const bounds = gameWindow.canvas.getBoundingClientRect()
+    if (
+      e.clientX < bounds.left ||
+      e.clientY < bounds.top ||
+      e.clientX > bounds.right ||
+      e.clientY > bounds.bottom
+    ) {
+      dropX = null
+      dropY = null
+      return
+    }
+
     const { cx, cy } = global.transformDOMToCanvas(
       gameWindow.canvas,
       e.clientX,
@@ -121,8 +131,8 @@
     if (
       e.detail.items.length > 0 &&
       e.detail.items[0].candidate &&
-      dropX &&
-      dropY
+      dropX !== null &&
+      dropY !== null
     ) {
       global.context.game.addControlledSceneEntity(
         1,
@@ -155,7 +165,7 @@
 
   function setPlayState(newPlayState) {
     if (newPlayState === 'play') {
-      if (curPlayState === 'stop') {
+      if (global.playState === 'stop') {
         curProject = global.context.game.serialize(curProject)
       }
       global.context.paused = false
@@ -164,8 +174,9 @@
     } else if (newPlayState === 'stop') {
       global.context.paused = true
       global.context.game.deserialize(curProject)
+      // global.context.runOnce(true, true)
     }
-    curPlayState = newPlayState
+    global.playState = newPlayState
   }
 </script>
 
@@ -187,7 +198,7 @@
       </div>
       <div
         class={`absolute t-0 l-0 w-full h-full ${
-          curPlayState === 'stop'
+          global.playState === 'stop'
             ? 'pointer-events-none opacity-0'
             : 'bg-black opacity-50'
         } transition-all`}
@@ -203,9 +214,9 @@
       >
         <button
           class={`p-4 bg-neutral-700 rounded-t-lg ${
-            curPlayState === 'play'
-              ? 'text-green-300'
-              : 'text-neutral-100 hover:text-green-200'
+            global.playState === 'play'
+              ? 'text-green-500'
+              : 'text-neutral-100 hover:text-green-300'
           } transition-all`}
           on:click={() => setPlayState('play')}
         >
@@ -215,12 +226,12 @@
         </button>
         <button
           class={`p-4 bg-neutral-700 ${
-            curPlayState === 'pause'
-              ? 'text-cyan-300'
-              : 'text-neutral-100 hover:text-cyan-200 disabled:text-neutral-500 disabled:hover:text-neutral-500 disabled:pointer-events-none'
+            global.playState === 'pause'
+              ? 'text-cyan-500'
+              : 'text-neutral-100 hover:text-cyan-300 disabled:text-neutral-500 disabled:hover:text-neutral-500 disabled:pointer-events-none'
           } transition-all`}
           on:click={() => setPlayState('pause')}
-          disabled={curPlayState === 'stop'}
+          disabled={global.playState === 'stop'}
         >
           <div class="w-6 h-6">
             <PauseIcon />
@@ -228,9 +239,9 @@
         </button>
         <button
           class={`p-4 bg-neutral-700 rounded-b-lg ${
-            curPlayState === 'stop'
-              ? 'text-red-300'
-              : 'text-neutral-100 hover:text-red-200'
+            global.playState === 'stop'
+              ? 'text-red-500'
+              : 'text-neutral-100 hover:text-red-300'
           } transition-all`}
           on:click={() => setPlayState('stop')}
         >
@@ -259,7 +270,7 @@
             onResize={() => global.context.propagateResizeEvent()}
           />
         </div>
-        {#if curPlayState === 'stop'}
+        {#if global.playState === 'stop'}
           <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
             <div
               class="absolute top-0 left-0 w-full h-full"

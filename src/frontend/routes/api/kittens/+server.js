@@ -5,7 +5,6 @@ export async function POST({ request }) {
   await connectToDb()
   const body = await request.json()
   const kitten = await createKitten(body)
-  console.log(kitten)
   return new Response(
     JSON.stringify({
       name: kitten.name,

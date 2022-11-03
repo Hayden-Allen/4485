@@ -8,6 +8,7 @@ export var global = {
   mouseX: 0,
   mouseY: 0,
   epsilon: 10e-5,
+  playState: 'stop',
 
   canvas: {
     targetWidth: 1920,

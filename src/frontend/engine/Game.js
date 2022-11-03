@@ -18,12 +18,13 @@ export class Game {
     /**
      * @HATODO what metadata?
      */
-    return {
+    return JSON.stringify({
       name,
       scenes: this.sceneManager.serialize(),
-    }
+    })
   }
-  deserialize(obj) {
+  deserialize(str) {
+    const obj = JSON.parse(str)
     this.currentScene = undefined
     this.context.removeSystem(this.sceneManager)
     this.physicsEngine = new PhysicsEngine(this, -5)

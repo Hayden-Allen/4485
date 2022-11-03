@@ -1,5 +1,3 @@
-Serialization
-Play/pause/stop
 Resizing
 Tiling
 Convert between static/controlled entity

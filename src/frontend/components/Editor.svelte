@@ -14,6 +14,9 @@
   import { EditorLayer } from '%editor/EditorLayer.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
   import { State } from '%script/State.js'
+  import PlayIcon from 'icons/24/solid/play.svelte'
+  import PauseIcon from 'icons/24/solid/pause.svelte'
+  import StopIcon from 'icons/24/solid/stop.svelte'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -26,6 +29,8 @@
     selectedState = undefined
 
   let graphEditorScript = undefined
+
+  let curPlayState = undefined
 
   function genRect(game, size, width, height, pos) {
     let vertices = [],
@@ -96,6 +101,7 @@
 
     global.context.windows.push(gameWindow)
     global.context.run()
+    curPlayState = 'play'
   })
 
   /*
@@ -191,6 +197,13 @@
     }
     dragItems = []
   }
+
+  function setPlayState(newPlayState) {
+    //
+    // TODO: Update game and context
+    //
+    curPlayState = newPlayState
+  }
 </script>
 
 <svelte:window on:pointermove={onPointerMove} />
@@ -210,44 +223,89 @@
     </div>
     <Splitter bind:split={topSplit} minSplit={0.1} maxSplit={0.9} />
     <div
-      class="relative grow shrink overflow-hidden bg-neutral-900"
+      class="flex flex-col grow shrink relative overflow-hidden bg-neutral-900"
       style={`flex-basis: ${topRightBasis}%;`}
     >
-      <div class="absolute t-0 l-0 w-full h-full p-2">
-        <Viewport
-          focusable={true}
-          targetAspectRatio={global.canvas.targetWidth /
-            global.canvas.targetHeight}
-          bind:canvas={gameCanvas}
-          onResize={() => global.context.propagateResizeEvent()}
-        />
-      </div>
-      <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
-        <Viewport
-          targetAspectRatio={global.canvas.targetWidth /
-            global.canvas.targetHeight}
-          bind:canvas={uiCanvas}
-          onResize={() => global.context.propagateResizeEvent()}
-        />
-      </div>
-      <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
-        <div
-          class="absolute top-0 left-0 w-full h-full"
-          use:dndzone={{
-            type: 'Animation',
-            centreDraggedOnCursor: true,
-            dragDisabled: true,
-            morphDisabled: true,
-            dropTargetStyle: '',
-            items: dragItems,
-          }}
-          on:consider={handleDndConsider}
-          on:finalize={handleDndFinalize}
-        >
-          {#each dragItems as item (item.id)}
-            <div class="hidden" />
-          {/each}
+      <div
+        class="relative grow shrink w-full h-full overflow-hidden bg-neutral-900"
+      >
+        <div class="absolute t-0 l-0 w-full h-full p-2">
+          <Viewport
+            focusable={true}
+            targetAspectRatio={global.canvas.targetWidth /
+              global.canvas.targetHeight}
+            bind:canvas={gameCanvas}
+            onResize={() => global.context.propagateResizeEvent()}
+          />
         </div>
+        <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+          <Viewport
+            targetAspectRatio={global.canvas.targetWidth /
+              global.canvas.targetHeight}
+            bind:canvas={uiCanvas}
+            onResize={() => global.context.propagateResizeEvent()}
+          />
+        </div>
+        <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+          <div
+            class="absolute top-0 left-0 w-full h-full"
+            use:dndzone={{
+              type: 'Animation',
+              centreDraggedOnCursor: true,
+              dragDisabled: true,
+              morphDisabled: true,
+              dropTargetStyle: '',
+              items: dragItems,
+            }}
+            on:consider={handleDndConsider}
+            on:finalize={handleDndFinalize}
+          >
+            {#each dragItems as item (item.id)}
+              <div class="hidden" />
+            {/each}
+          </div>
+        </div>
+      </div>
+      <div
+        class="flex flex-row grow-0 shrink-0 p-2 items-center justify-center shadow-lg"
+      >
+        <button
+          class={`px-4 py-2 bg-neutral-700 rounded-l-lg ${
+            curPlayState === 'play'
+              ? 'text-green-300'
+              : 'text-neutral-100 hover:text-green-200'
+          } transition-all`}
+          on:click={() => setPlayState('play')}
+        >
+          <div class="w-6 h-6">
+            <PlayIcon />
+          </div>
+        </button>
+        <button
+          class={`px-4 py-2 bg-neutral-700 ${
+            curPlayState === 'pause'
+              ? 'text-cyan-300'
+              : 'text-neutral-100 hover:text-cyan-200 disabled:text-neutral-500 disabled:hover:text-neutral-500 disabled:pointer-events-none'
+          } transition-all`}
+          on:click={() => setPlayState('pause')}
+          disabled={curPlayState === 'stop'}
+        >
+          <div class="w-6 h-6">
+            <PauseIcon />
+          </div>
+        </button>
+        <button
+          class={`px-4 py-2 bg-neutral-700 rounded-r-lg ${
+            curPlayState === 'stop'
+              ? 'text-red-300'
+              : 'text-neutral-100 hover:text-red-200'
+          } transition-all`}
+          on:click={() => setPlayState('stop')}
+        >
+          <div class="w-6 h-6">
+            <StopIcon />
+          </div>
+        </button>
       </div>
     </div>
   </div>

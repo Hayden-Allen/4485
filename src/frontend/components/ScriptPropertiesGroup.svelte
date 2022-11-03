@@ -36,9 +36,7 @@
   <div
     class="pl-8 bg-neutral-800 flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left"
   >
-    <div
-      class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
-    >
+    <div class="flex flex-row w-full grow shrink p-2 overflow-hidden font-bold">
       {#if sortedExportNodes.length > 0}
         <button
           on:click={onToggleCollapsed}
@@ -54,9 +52,7 @@
       <div class="grow-0 shrink-0 overflow-hidden font-normal mr-1">
         Script:
       </div>
-      <div
-        class="grow-1 shrink-1 overflow-hidden text-ellipsis whitespace-nowrap"
-      >
+      <div class="grow shrink overflow-hidden text-ellipsis whitespace-nowrap">
         {script.debugName}
       </div>
     </div>
@@ -96,7 +92,7 @@
           >
             {exportNode.name}
           </div>
-          <div class="grow-1 shrink-1 w-full overflow-hidden">
+          <div class="grow shrink w-full overflow-hidden">
             {#if exportNode.editorType === 'int'}
               <IntEditor
                 initialValue={exportNode.value}

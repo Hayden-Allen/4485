@@ -113,14 +113,14 @@
   })
 </script>
 
-<div class="grow-1 shrink-1 w-full h-full overflow-hidden flex flex-col">
+<div class="grow shrink w-full h-full overflow-hidden flex flex-col">
   <div
     class="grow-0 shrink-0 flex flex-row border-b border-solid border-neutral-700 h-10"
   >
     <input
       bind:value={searchQuery}
       placeholder="Search..."
-      class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-none bg-neutral-900"
+      class="grow shrink p-2 pl-8 w-full min-w-0 border-0 outline-none bg-neutral-900"
     />
     <div
       class="absolute w-8 h-10 flex items-center justify-center text-neutral-500 pointer-events-none"
@@ -130,7 +130,7 @@
   </div>
 
   <div
-    class="grow-1 shrink-1 p-4 w-full h-full overflow-x-hidden overflow-y-auto"
+    class="grow shrink p-4 w-full h-full overflow-x-hidden overflow-y-auto"
     use:dndzone={{
       type: 'Animation',
       centreDraggedOnCursor: true,

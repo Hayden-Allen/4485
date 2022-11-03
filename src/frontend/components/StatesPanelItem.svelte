@@ -26,9 +26,7 @@
       isSelected ? 'bg-neutral-100 text-neutral-900' : 'bg-neutral-800'
     } flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left sticky z-[99999] top-0`}
   >
-    <div
-      class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
-    >
+    <div class="flex flex-row w-full grow shrink p-2 overflow-hidden font-bold">
       <button
         on:click={() => (item.state.collapsed = !item.state.collapsed)}
         class={`hover:bg-neutral-500 hover:text-neutral-100 rounded-full grow-0 shrink-0 w-5 h-5 mr-2 transition-all duration-75 ${
@@ -38,9 +36,7 @@
         <ChevronRight />
       </button>
       <div class="grow-0 shrink-0 overflow-hidden font-normal mr-1">State:</div>
-      <div
-        class="grow-1 shrink-1 overflow-hidden text-ellipsis whitespace-nowrap"
-      >
+      <div class="grow shrink overflow-hidden text-ellipsis whitespace-nowrap">
         {item.name}
       </div>
     </div>
@@ -66,7 +62,7 @@
       class={`pl-8 flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left bg-neutral-800`}
     >
       <div
-        class="flex flex-row w-full grow-1 shrink-1 p-2 overflow-hidden font-bold"
+        class="flex flex-row w-full grow shrink p-2 overflow-hidden font-bold"
       >
         <button
           on:click={() =>
@@ -78,7 +74,7 @@
           <ChevronRight />
         </button>
         <div
-          class="w-full grow-1 shrink-1 overflow-hidden text-ellipsis whitespace-nowrap"
+          class="w-full grow shrink overflow-hidden text-ellipsis whitespace-nowrap"
         >
           Animations
         </div>

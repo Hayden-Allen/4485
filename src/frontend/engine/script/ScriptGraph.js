@@ -35,8 +35,8 @@ export class ScriptGraph extends Component {
   constructor(name, inputCache, pushErrorCallback, clearErrorsCallback) {
     super(name)
     this.inputCache = inputCache
-    this.pushErrorCallback = pushErrorCallback
-    this.clearErrorsCallback = clearErrorsCallback
+    this.pushErrorCallback = pushErrorCallback || (() => {})
+    this.clearErrorsCallback = clearErrorsCallback || (() => {})
     /**
      * @HATODO move this somewhere else??
      */
@@ -64,7 +64,7 @@ export class ScriptGraph extends Component {
     this.firstRun = true
   }
   serialize() {
-    if (this.templateName) return { templateName: this.templateName }
+    // if (this.templateName) return { templateName: this.templateName }
 
     let nodes = []
     // ScriptNodeEdgeLists need to convert ScriptNode references to an index for serialization
@@ -87,25 +87,23 @@ export class ScriptGraph extends Component {
     /**
      * @HATODO why is this here
      */
+    // create a clone of the template
     obj = JSON.parse(JSON.stringify(obj))
 
-    if (obj.templateName)
+    if (obj.templateName) {
       return this.deserialize(
         scriptTemplateBank.find(
           (template) => template.name === obj.templateName
         )
       )
+    }
 
     this.reset()
 
     this.debugName = obj.name
     let nodeIndex = new Map()
     for (const node of obj.nodes) {
-      // const newNode = scriptNodeTemplateBank
-      //   .get(node.type)
-      //   .create(this, node.internalValues)
       const newNode = this.createNode(node.type, node.internalValues)
-
       this.nodes.set(newNode.id, newNode)
       nodeIndex.set(nodeIndex.size, newNode)
     }

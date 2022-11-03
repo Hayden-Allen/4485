@@ -13,7 +13,13 @@ export class SceneLayer {
   /**
    * @HATODO
    */
-  deserialize(obj) {}
+  deserialize(obj, entities) {
+    this.static = new Map()
+    this.dynamic = new Map()
+    obj.static.forEach((id) => this.static.set(id, entities.get(id)))
+    obj.dynamic.forEach((id) => this.dynamic.set(id, entities.get(id)))
+    console.log(this.dynamic)
+  }
   // called by the [Editor|Game]Layer that contains the game that contains the scene that contains this layer
   draw(window, camera) {
     this.static.forEach((entity) => window.draw(entity, camera))

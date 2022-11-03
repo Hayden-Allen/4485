@@ -3,6 +3,7 @@ import { Vec2 } from '%util/Vec2.js'
 import { Renderable } from '%graphics/Renderable.js'
 import { global } from '%engine/Global.js'
 import { Texture } from '%graphics/Texture.js'
+import { State } from '%script/State.js'
 import matter from 'matter-js'
 const { Body } = matter
 
@@ -103,12 +104,9 @@ class SceneEntity extends Component {
   serialize() {
     return {
       pos: this.pos,
+      ops: this.ops,
     }
   }
-  /**
-   * @HATODO
-   */
-  deserialize(obj) {}
   setPosition(x, y) {
     this.pos.x = x
     this.pos.y = y
@@ -125,6 +123,23 @@ export class StaticSceneEntity extends SceneEntity {
   }
   getCurrentTexture() {
     return this.texture
+  }
+  serialize() {
+    return {
+      ...super.serialize(),
+      texture: this.texture.serialize(),
+    }
+  }
+  static deserialize(obj) {
+    const pos = new Vec2(obj.pos.x, obj.pos.y)
+    return new StaticSceneEntity(
+      global.context.game,
+      global.gameWindow,
+      pos,
+      obj.texture.frameTIme,
+      obj.texture.urls,
+      obj.ops
+    )
   }
 }
 
@@ -218,5 +233,21 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
   /**
    * @HATODO
    */
-  deserialize(obj) {}
+  static deserialize(obj) {
+    const pos = new Vec2(obj.pos.x, obj.pos.y)
+    let states = new Map()
+    let defaultState = undefined
+    obj.states.forEach((state) => {
+      if (!defaultState) defaultState = state.name
+      states.set(state.name, State.deserialize(state))
+    })
+    return new ControlledSceneEntity(
+      global.context.game,
+      global.gameWindow,
+      pos,
+      states,
+      defaultState,
+      obj.ops
+    )
+  }
 }

@@ -2,6 +2,7 @@ import { Renderer } from '%graphics/Renderer.js'
 import { Window } from './Window.js'
 import { Window2D } from './Window2D.js'
 import { ShaderProgram } from '%graphics/ShaderProgram.js'
+import { global } from '%engine/Global.js'
 import * as vec4 from '%glMatrix/vec4.js'
 
 const VERTEX_SOURCE = `#version 300 es 
@@ -53,6 +54,11 @@ export class Window3D extends Window {
     this.fpsSamples = new Array(100).fill(0)
     // debug draw
     this.uiCanvas = new Window2D(uiCanvas, undefined, { doScaling: false })
+    /**
+     * @HATODO hack
+     */
+    global.gameWindow = this
+    global.gl = this.gl
   }
   setCanvas(canvas) {
     super.setCanvas(canvas)

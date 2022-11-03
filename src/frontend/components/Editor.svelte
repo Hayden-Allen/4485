@@ -14,6 +14,7 @@
   import { EditorLayer } from '%editor/EditorLayer.js'
   import { ScriptGraph } from '%script/ScriptGraph.js'
   import { State } from '%script/State.js'
+  import { Context } from '%engine/Context.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -70,7 +71,7 @@
   }
 
   onMount(() => {
-    global.init()
+    global.init(new Context())
 
     var game = global.context.game
 

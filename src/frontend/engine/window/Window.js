@@ -44,16 +44,16 @@ export class Window {
       this.propagateEvent('onKeyUp', new KeyUpEvent(e))
     })
     this.canvas.addEventListener('pointermove', (e) => {
-      // const rect = this.canvas.getBoundingClientRect()
+      const rect = this.canvas.getBoundingClientRect()
       // // transform from DOM pixels to canvas pixels
       // const x = (e.clientX - rect.x) * (e.target.width / rect.width)
       // const y = (e.clientY - rect.y) * (e.target.height / rect.height)
-      const { cx, cy } = global.transformDOMToCanvas(
+      const [x, y] = global.transformDOMToCanvas(
         this.canvas,
         e.clientX,
         e.clientY
       )
-      this.propagateEvent('onMouseMove', new MouseMoveEvent(e, cx, cy))
+      this.propagateEvent('onMouseMove', new MouseMoveEvent(e, x, y))
     })
     this.canvas.addEventListener('pointerdown', (e) => {
       this.canvas.focus({

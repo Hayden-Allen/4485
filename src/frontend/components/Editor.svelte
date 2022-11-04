@@ -147,12 +147,12 @@
   let dropX = null,
     dropY = null
   function onPointerMove(e) {
-    const { cx, cy } = global.transformDOMToCanvas(
+    const [cx, cy] = global.transformDOMToCanvas(
       gameWindow.canvas,
       e.clientX,
       e.clientY
     )
-    const { wx, wy } = global.transformCanvasToWorld(cx, cy)
+    const [wx, wy] = global.transformCanvasToWorld(cx, cy)
     dropX = wx
     dropY = wy
   }

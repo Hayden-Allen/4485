@@ -122,7 +122,7 @@
       e.clientX,
       e.clientY
     )
-    const [wx, wy] = global.transformCanvasToWorld(cx, cy)
+    const [wx, wy] = global.transformCanvasToWorld(gameWindow.canvas, cx, cy)
     dropX = wx
     dropY = wy
   }

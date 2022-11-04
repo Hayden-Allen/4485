@@ -239,7 +239,11 @@ export class EditorLayer extends Layer {
       this.window.inputCache.isMouseLeft()
     ) {
       // console.log(e.x, e.y)
-      const { wx, wy } = global.transformCanvasToWorld(e.x, e.y)
+      const [wx, wy] = global.transformCanvasToWorld(
+        this.window.canvas,
+        e.x,
+        e.y
+      )
       this.selectedEntity.setPosition(
         wx - this.selectedEntityOffset.x,
         wy - this.selectedEntityOffset.y

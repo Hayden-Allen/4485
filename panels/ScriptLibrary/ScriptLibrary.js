@@ -53,7 +53,7 @@ export default function ScriptLibrary() {
       <div className={`${styles.content} ${styles.row}`}>
         <div className={styles.col}>
           <Section className={styles.name} title="name">
-            <h1 className={styles.text}>PlatformerJump</h1>
+            <h2 className={styles.text}>PlatformerJump</h2>
           </Section>
           <div className={styles.row}>
             <Section className={styles.category} title="category">
@@ -74,7 +74,7 @@ export default function ScriptLibrary() {
         </div>
         <div className={styles.col}>
           <Section className={styles.description} title="description">
-            <h1 className={styles.text}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </h1>
+            <p className={styles.text}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
           </Section>
           <Section className={styles.demo} title="demonstration">
             <div className={styles.view}></div>

@@ -12,7 +12,7 @@ export default function EntityManager() {
       <div className={styles.entity}>
         <div className={styles.image}></div>
         <Section title="entity">
-          <div className={styles.name}>HERO_01</div>
+          <h2 className={styles.name}>HERO_01</h2>
         </Section>
       </div>
       {/* content */}
@@ -27,7 +27,7 @@ export default function EntityManager() {
             <AddButton />
           </Tiles>
         </Section>
-        <div className="flex flex-col w-full gap-5">
+        <div className={styles.content_col}>
           <Section title="animation">
             <div className={styles.list}>
               <Tile

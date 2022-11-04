@@ -121,7 +121,7 @@ export default function ScriptNode(props) {
                 fillOpacity='0.2'
               />
             </svg>
-            <h2>{label}</h2>
+            <h3>{label}</h3>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import ReactFlow, { Background, applyEdgeChanges, applyNodeChanges, addEdge, ConnectionLineType } from 'reactflow';
 import 'reactflow/dist/style.css';
 import ScriptNode from '../../components/node/ScriptNode.js';
+import styles from './ScriptGraph.module.sass'
 
 const initialNodes = [
   {
@@ -83,7 +84,7 @@ export default function ScriptGraph() {
   const nodeTypes = useMemo(() => ({ script: ScriptNode }), []);
 
   return (
-    <div className="grow h-full w-full bg-cellbg">
+    <div className={styles.window}>
       <ReactFlow
         nodeTypes={nodeTypes}
         nodes={nodes}

@@ -52,6 +52,7 @@ export class Scene extends Component {
       } else {
         newEntity = StaticSceneEntity.deserialize(entity)
       }
+      newEntity.id = id
       entities.set(id, newEntity)
     }
 

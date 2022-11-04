@@ -53,7 +53,9 @@ class SceneEntity extends Component {
 
     this.pos = pos
     this.game = game
-    this.createPhysicsProxy()
+    this.scaleX = this.ops.scale
+    this.scaleY = this.ops.scale
+    this.createPhysicsProxy(this.ops.scale, this.ops.scale)
 
     // set when added to scene (Scene.js)
     this.scene = undefined
@@ -63,9 +65,10 @@ class SceneEntity extends Component {
     this.scene = scene
     this.sceneZ = z
   }
-  createPhysicsProxy() {
-    this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
-      this.ops.scale
+  createPhysicsProxy(sx, sy) {
+    this.dim = new Vec2(
+      sx * (this.maxX - this.minX),
+      sy * (this.maxY - this.minY)
     )
     this.physicsProxy = this.game.physicsEngine.createRect(
       this.pos.plus(this.dim.scale(0.5)),
@@ -77,13 +80,13 @@ class SceneEntity extends Component {
     )
     this.physicsProxy._owner = this
   }
-  setScale(scale) {
-    if (scale === this.ops.scale) return
-
-    this.ops.scale = scale
-    this.renderable.setScale(scale)
+  setScale(sx, sy) {
+    // this.ops.scale = scale
+    this.scaleX = sx
+    this.scaleY = sy
+    this.renderable.setScale(sx, sy)
     this.game.physicsEngine.deleteRect(this.physicsProxy)
-    this.createPhysicsProxy()
+    this.createPhysicsProxy(sx, sy)
   }
   destroy() {
     this.game.physicsEngine.deleteRect(this.physicsProxy)
@@ -103,7 +106,7 @@ class SceneEntity extends Component {
     this.pos.y = y
     this.renderable.setTransform(this.pos)
     this.destroy()
-    this.createPhysicsProxy()
+    this.createPhysicsProxy(this.scaleX, this.scaleY)
   }
 }
 
@@ -178,9 +181,10 @@ export class DynamicSceneEntity extends SceneEntity {
     //   y,
     // })
   }
-  createPhysicsProxy() {
-    this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
-      this.ops.scale
+  createPhysicsProxy(sx, sy) {
+    this.dim = new Vec2(
+      sx * (this.maxX - this.minX),
+      sy * (this.maxY - this.minY)
     )
     this.physicsProxy = this.game.physicsEngine.createRect(this.pos, this.dim, {
       isStatic: this.ops.isStatic,

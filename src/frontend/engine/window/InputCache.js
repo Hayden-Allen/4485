@@ -1,4 +1,5 @@
 import { Vec2 } from '%util/Vec2.js'
+import { global } from '%engine/Global.js'
 
 export class InputCache {
   constructor(element) {
@@ -15,11 +16,8 @@ export class InputCache {
       this.keys.set(e.key.toLowerCase(), false)
     })
     this.element.addEventListener('pointermove', (e) => {
-      const rect = this.element.getBoundingClientRect()
-      this.mousePos = new Vec2(
-        (e.clientX - rect.x) * (e.target.width / rect.width),
-        (e.clientY - rect.y) * (e.target.height / rect.height)
-      )
+      const [x, y] = global.transformDOMToCanvas(e.target, e.clientX, e.clientY)
+      this.mousePos = new Vec2(x, y)
     })
     this.element.addEventListener('pointerdown', (e) => {
       this.element.setPointerCapture(e.pointerId)

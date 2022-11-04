@@ -23,6 +23,10 @@ export class EditorLayer extends Layer {
     this.selectedEntityOffset = undefined
     this.selectedEntityIsControlled = false
     this.setSelectedEntity = setSelectedEntity
+    this.borderSize = 4
+    this.dotSize = 20
+    this.dotXOffset = [0, 1, 1, 0]
+    this.dotYOffset = [0, 0, -1, -1]
 
     this.camera = new Camera(
       [0, 0, 0],
@@ -96,13 +100,33 @@ export class EditorLayer extends Layer {
   onRender(e) {
     e.window.clear()
     this.game.draw(e.window)
+
+    {
+      const mouseX =
+        (2 * this.window.inputCache.mousePos.x) / this.window.canvas.width - 1
+      const mouseY =
+        1 - (2 * this.window.inputCache.mousePos.y) / this.window.canvas.height
+      let tc = vec4.create()
+      vec4.transformMat4(tc, [mouseX, mouseY, 0, 1], this.camera.inverse())
+      const worldMouseX = tc[0]
+      const worldMouseY = tc[1]
+
+      e.window.drawRect(
+        this.camera,
+        worldMouseX - this.dotSize / 2,
+        worldMouseY + this.dotSize / 2,
+        this.dotSize,
+        this.dotSize,
+        '#0f0'
+      )
+    }
+
     // this.game.drawFromPerspective(e.window, this.camera)
     if (this.selectedEntity) {
-      const border = 4
       let ex = 0,
         ey = 0
-      let dimx = this.selectedEntity.dim.x + border * 2
-      let dimy = this.selectedEntity.dim.y + border * 2
+      let dimx = this.selectedEntity.dim.x + this.borderSize * 2
+      let dimy = this.selectedEntity.dim.y + this.borderSize * 2
       if (this.selectedEntityIsControlled) {
         ex = this.selectedEntity.pos.x - this.selectedEntity.dim.x / 2
         ey = this.selectedEntity.pos.y + this.selectedEntity.dim.y / 2
@@ -113,28 +137,25 @@ export class EditorLayer extends Layer {
 
       e.window.strokeRect(
         this.camera,
-        ex - border,
-        ey + border,
+        ex - this.borderSize,
+        ey + this.borderSize,
         dimx,
         dimy,
         '#fff',
-        border
+        this.borderSize
       )
 
       if (global.playState === 'stop') {
-        const dx = [0, 1, 1, 0]
-        const dy = [0, 0, -1, -1]
-        const s = 10
         // resize controls
-        for (var i = 0; i < 4; i++) {
-          e.window.strokeRect(
+        for (var i = 0; i < this.dotXOffset.length; i++) {
+          const [dx, dy] = this.getResizeDotCoords(i)
+          e.window.drawRect(
             this.camera,
-            ex + dx[i] * dimx - s / 2 - border,
-            ey + dy[i] * dimy + s / 2 + border,
-            s,
-            s,
-            '#f00',
-            border
+            dx,
+            dy,
+            this.dotSize,
+            this.dotSize,
+            '#f00'
           )
         }
       }
@@ -169,6 +190,34 @@ export class EditorLayer extends Layer {
     const worldMouseX = tc[0]
     const worldMouseY = tc[1]
 
+    // check resize controls
+    if (this.selectedEntity) {
+      for (var i = 0; i < this.dotXOffset.length; i++) {
+        const [dx, dy] = this.getResizeDotCoords(i)
+        if (
+          global.rectIntersect(
+            worldMouseX,
+            worldMouseY,
+            dx,
+            dy - this.dotSize,
+            this.dotSize,
+            this.dotSize
+          )
+        ) {
+          this.resizeCorner = i
+          this.resizeStartX = e.x
+          this.resizeStartY = e.y
+          this.resizeStartScaleX = this.selectedEntity.renderable.scaleX
+          this.resizeStartScaleY = this.selectedEntity.renderable.scaleY
+          this.resizeStartEntityX = this.selectedEntity.pos.x
+          this.resizeStartEntityY = this.selectedEntity.pos.y
+          return
+        }
+      }
+      this.resizeStartX = this.resizeStartY = undefined
+    }
+
+    // check entity intersection
     let selected = undefined
     this.game.currentScene.layers.forEach((layer) => {
       if (selected) return
@@ -238,16 +287,73 @@ export class EditorLayer extends Layer {
       this.selectedEntity &&
       this.window.inputCache.isMouseLeft()
     ) {
-      // console.log(e.x, e.y)
-      const [wx, wy] = global.transformCanvasToWorld(
-        this.window.canvas,
-        e.x,
-        e.y
-      )
-      this.selectedEntity.setPosition(
-        wx - this.selectedEntityOffset.x,
-        wy - this.selectedEntityOffset.y
-      )
+      if (this.resizeStartX) {
+        const ox = e.x - this.resizeStartX
+        const oy = this.resizeStartY - e.y
+        if (
+          this.resizeStartScaleX + ox > 10 &&
+          this.resizeStartScaleY + oy > 10
+        ) {
+          // 3 - tr (1, -1)
+          // 2 - tl (0, -1)
+          // 1 - bl (0, 0)
+          // 0 - br (1, 0)
+          const ddx = [-1, 0, 0, -1]
+          const ddy = [0, 0, 1, 1]
+          const odx = [1, 0, 0, 1]
+          const ody = [0, 0, -1, -1]
+          console.log(this.resizeCorner)
+          this.selectedEntity.setPosition(
+            this.resizeStartEntityX +
+              ddx[this.resizeCorner] * this.selectedEntity.dim.x +
+              odx[this.resizeCorner] * ox,
+            this.resizeStartEntityY -
+              ddy[this.resizeCorner] * this.selectedEntity.dim.y -
+              ody[this.resizeCorner] * oy
+          )
+
+          this.selectedEntity.setScale(
+            this.resizeStartScaleX + ox,
+            this.resizeStartScaleY + oy
+          )
+        }
+      } else {
+        const [wx, wy] = global.transformCanvasToWorld(
+          this.window.canvas,
+          e.x,
+          e.y
+        )
+        this.selectedEntity.setPosition(
+          wx - this.selectedEntityOffset.x,
+          wy - this.selectedEntityOffset.y
+        )
+      }
     }
+  }
+  getSelectedEntityBaseCoords() {
+    let ex = 0,
+      ey = 0
+    if (this.selectedEntityIsControlled) {
+      ex = this.selectedEntity.pos.x - this.selectedEntity.dim.x / 2
+      ey = this.selectedEntity.pos.y + this.selectedEntity.dim.y / 2
+    } else {
+      ex = this.selectedEntity.pos.x
+      ey = this.selectedEntity.pos.y + this.selectedEntity.dim.y
+    }
+    return [ex, ey]
+  }
+  getSelectedEntityEffectiveDims() {
+    return [
+      this.selectedEntity.dim.x + this.borderSize * 2,
+      this.selectedEntity.dim.y + this.borderSize * 2,
+    ]
+  }
+  getResizeDotCoords(i) {
+    const [ex, ey] = this.getSelectedEntityBaseCoords()
+    const [dimx, dimy] = this.getSelectedEntityEffectiveDims()
+    return [
+      ex + this.dotXOffset[i] * dimx - this.dotSize / 2 - this.borderSize,
+      ey + this.dotYOffset[i] * dimy + this.dotSize / 2 + this.borderSize,
+    ]
   }
 }

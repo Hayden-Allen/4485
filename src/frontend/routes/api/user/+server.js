@@ -15,7 +15,7 @@ export async function POST({ request }) {
     throw error(400, 'Password must contain eight or more characters')
   }
 
-  const matchingUsername = await findUsers({ username })
+  const matchingUsername = await findUsers(null, { username })
   if (matchingUsername.length > 0) {
     throw error(400, 'This username is already taken')
   }

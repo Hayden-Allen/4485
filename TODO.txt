@@ -2,6 +2,6 @@ Resizing
 Tiling
 Convert between static/controlled entity
 Edit gravity
-Remove default world
 Checkbox on state to set it as default
+Fix state names when a state is deleted/renamed
 Fix scrollbar overlay (makes it difficult to click delete which is on right side)

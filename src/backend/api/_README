@@ -1,3 +1,0 @@
-Each .js file in this directory maps to a page in src/frontend/routes/api
-
-For example, kittens.js exports utilities used by src/frontent/routes/api/kittens/server.js

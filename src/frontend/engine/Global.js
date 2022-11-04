@@ -134,15 +134,14 @@ export var global = {
     const rect = canvas.getBoundingClientRect()
     const cx = (dx - rect.x) / rect.width
     const cy = (dy - rect.y) / rect.height
-    return {
-      cx: global.canvas.targetWidth * cx,
-      cy: global.canvas.targetHeight * cy,
-    }
+    return [canvas.width * cx, canvas.height * cy]
   },
-  transformCanvasToWorld: (cx, cy) => {
-    return {
-      wx: cx - 0.5 * global.canvas.targetWidth,
-      wy: 0.5 * global.canvas.targetHeight - cy,
-    }
+  transformCanvasToWorld: (canvas, cx, cy) => {
+    const tcx = (cx / canvas.width) * global.canvas.targetWidth
+    const tcy = (cy / canvas.height) * global.canvas.targetHeight
+    return [
+      tcx - 0.5 * global.canvas.targetWidth,
+      0.5 * global.canvas.targetHeight - tcy,
+    ]
   },
 }

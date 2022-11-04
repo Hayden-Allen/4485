@@ -1,0 +1,6 @@
+Resizing
+Tiling
+Convert between static/controlled entity
+Edit gravity
+Remove default world
+Checkbox on state to set it as default

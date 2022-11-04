@@ -7,8 +7,4 @@ const KittenSchema = new mongoose.Schema({
   },
 })
 
-KittenSchema.methods.speak = function () {
-  console.log(this.name)
-}
-
 export default mongoose.models.Kitten || mongoose.model('Kitten', KittenSchema)

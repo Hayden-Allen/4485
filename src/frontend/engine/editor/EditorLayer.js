@@ -12,9 +12,8 @@ export class EditorLayer extends Layer {
   constructor(game, setSelectedEntity) {
     super('EditorLayer')
     this.game = game
-    this.textSize = new Varying(75, 100, -1, { step: 0.5 })
-    this.textTheta = new Varying(-Math.PI / 16, Math.PI / 16, -1, {
-      step: 0.33,
+    this.textAlpha = new Varying(0.5, 1.0, -1, {
+      step: 1.0,
     })
     this.showDebug = true
     this.fps = 0
@@ -68,7 +67,8 @@ export class EditorLayer extends Layer {
       }
       const name = fileHandle.name.split('.')[0]
       const writable = await fileHandle.createWritable()
-      const contents = JSON.stringify(this.game.serialize(name), null, 2)
+      const contents =
+        'export default ' + JSON.stringify(this.game.serialize(name))
       await writable.write(contents)
       await writable.close()
     }
@@ -89,7 +89,7 @@ export class EditorLayer extends Layer {
       }
       const fileData = await fileHandle.getFile()
       const text = await fileData.text()
-      const parsed = JSON.parse(text)
+      const parsed = JSON.parse(text.replace('export default ', ''))
       global.context.game.deserialize(parsed)
     }
   }
@@ -121,24 +121,25 @@ export class EditorLayer extends Layer {
         border
       )
 
-      const dx = [0, 1, 1, 0]
-      const dy = [0, 0, -1, -1]
-      const s = 10
-      // resize controls
-      for (var i = 0; i < 4; i++) {
-        e.window.strokeRect(
-          this.camera,
-          ex + dx[i] * dimx - s / 2 - border,
-          ey + dy[i] * dimy + s / 2 + border,
-          s,
-          s,
-          '#f00',
-          border
-        )
+      if (global.playState === 'stop') {
+        const dx = [0, 1, 1, 0]
+        const dy = [0, 0, -1, -1]
+        const s = 10
+        // resize controls
+        for (var i = 0; i < 4; i++) {
+          e.window.strokeRect(
+            this.camera,
+            ex + dx[i] * dimx - s / 2 - border,
+            ey + dy[i] * dimy + s / 2 + border,
+            s,
+            s,
+            '#f00',
+            border
+          )
+        }
       }
     }
-
-    if (global.context.paused) {
+    if (global.playState === 'pause') {
       e.window.uiCanvas.drawTransparentRect(
         0,
         0,
@@ -147,14 +148,16 @@ export class EditorLayer extends Layer {
         '#000',
         0.5
       )
+
+      const systemFontFamily =
+        '-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif'
       e.window.uiCanvas.drawCenteredText(
         'PAUSED',
         e.window.canvas.width / 2,
         e.window.canvas.height / 2,
-        'courier new',
-        this.textSize.getValue(),
-        '#0f0',
-        { theta: this.textTheta.getValue() }
+        systemFontFamily,
+        20,
+        `rgba(255, 255, 255, ${this.textAlpha.getValue()})`
       )
     }
   }
@@ -165,9 +168,6 @@ export class EditorLayer extends Layer {
     vec4.transformMat4(tc, [mouseX, mouseY, 0, 1], this.camera.inverse())
     const worldMouseX = tc[0]
     const worldMouseY = tc[1]
-
-    if (this.selectedEntity) {
-    }
 
     let selected = undefined
     this.game.currentScene.layers.forEach((layer) => {
@@ -185,10 +185,6 @@ export class EditorLayer extends Layer {
           )
         ) {
           this.selectedEntityIsControlled = false
-          this.selectedEntityOffset = new Vec2(
-            worldMouseX - e.pos.x,
-            worldMouseY - e.pos.y
-          )
           selected = e
         }
       })
@@ -206,16 +202,16 @@ export class EditorLayer extends Layer {
           )
         ) {
           this.selectedEntityIsControlled = true
-          this.selectedEntityOffset = new Vec2(
-            worldMouseX - (e.pos.x - e.dim.x / 2),
-            worldMouseY - (e.pos.y - e.dim.y / 2)
-          )
           selected = e
         }
       })
     })
 
     if (selected) {
+      this.selectedEntityOffset = new Vec2(
+        worldMouseX - selected.pos.x,
+        worldMouseY - selected.pos.y
+      )
       this.selectedEntityMass = selected.physicsProxy.mass
       this.selectedEntityStatic = selected.ops.isStatic
       selected.ops.isStatic = true
@@ -237,7 +233,11 @@ export class EditorLayer extends Layer {
     }
   }
   onMouseMove(e) {
-    if (this.selectedEntity && this.window.inputCache.isMouseLeft()) {
+    if (
+      global.playState === 'stop' &&
+      this.selectedEntity &&
+      this.window.inputCache.isMouseLeft()
+    ) {
       // console.log(e.x, e.y)
       const { wx, wy } = global.transformCanvasToWorld(e.x, e.y)
       this.selectedEntity.setPosition(

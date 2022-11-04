@@ -33,7 +33,7 @@
     bind:this={inputEl}
     bind:value={currentValue}
     on:change={onDestroyPopup}
-    class="grow-1 shrink-1 p-2 w-full min-w-0 border-0 outline-none bg-inherit text-inherit"
+    class="grow shrink p-2 w-full min-w-0 border-0 outline-none bg-inherit text-inherit"
     style={`--placeholder-color: ${placeholderColor};`}
   />
 </EditorLayout>

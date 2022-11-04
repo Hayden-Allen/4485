@@ -57,7 +57,7 @@
 >
   Mass:
 </div>
-<div class="grow-1 shrink-1 w-full overflow-hidden">
+<div class="grow shrink w-full overflow-hidden">
   <FloatEditor
     currentValue={selectedEntity.physicsProxy.mass}
     onApply={(value) => selectedEntity.setMass(value)}
@@ -85,7 +85,7 @@
       >
         {prop.displayName}
       </div>
-      <div class="grow-1 shrink-1 w-full overflow-hidden">
+      <div class="grow shrink w-full overflow-hidden">
         {#if prop.type === 'int'}
           <!-- TODO -->
         {:else if prop.type === 'float'}

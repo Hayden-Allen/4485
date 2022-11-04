@@ -57,7 +57,7 @@
     <input
       bind:value={searchQuery}
       placeholder="Search..."
-      class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-none bg-neutral-900"
+      class="grow shrink p-2 pl-8 w-full min-w-0 border-0 outline-none bg-neutral-900"
     />
     <div
       class="absolute w-8 h-10 flex items-center justify-center text-neutral-500 pointer-events-none"
@@ -66,7 +66,7 @@
     </div>
   </div>
 
-  <div class="grow-1 shrink-1 flex flex-row w-full h-full overflow-hidden">
+  <div class="grow shrink flex flex-row w-full h-full overflow-hidden">
     <div
       class="grow-0 shrink-0 flex flex-col w-full max-w-[256px] h-full border-r border-solid border-neutral-700 overflow-x-hidden overflow-y-auto"
     >
@@ -86,7 +86,7 @@
           }`}
         >
           <div
-            class="grow-1 shrink-1 w-full overflow-hidden whitespace-nowrap text-ellipsis"
+            class="grow shrink w-full overflow-hidden whitespace-nowrap text-ellipsis"
           >
             {template.name}
           </div>
@@ -102,17 +102,15 @@
         </button>
       {/each}
     </div>
-    <div
-      class="grow-1 shrink-1 flex flex-col w-full h-full p-4 overflow-hidden"
-    >
+    <div class="grow shrink flex flex-col w-full h-full p-4 overflow-hidden">
       {#if selectedTemplate}
         <div
-          class="grow-1 shrink-1 w-full font-bold text-2xl overflow-hidden whitespace-nowrap text-ellipsis"
+          class="grow shrink w-full font-bold text-2xl overflow-hidden whitespace-nowrap text-ellipsis"
         >
           {selectedTemplate.name}
         </div>
         <div
-          class="grow-1 shrink-1 w-full h-full overflow-hidden text-ellipsis mt-4"
+          class="grow shrink w-full h-full overflow-hidden text-ellipsis mt-4"
         >
           {selectedTemplate.description}
         </div>

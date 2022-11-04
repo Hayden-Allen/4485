@@ -9,7 +9,8 @@
   }
 </script>
 
-<div class="grow-1 shrink-1 flex flex-col w-full h-full overflow-hidden">
+<div class="grow shrink flex flex-col w-full h-full overflow-hidden">
+  <!--
   <div
     class="grow-0 shrink-0 flex flex-row w-full border-b border-solid border-neutral-700 overflow-x-hidden overflow-y-auto"
   >
@@ -26,7 +27,8 @@
       </button>
     {/each}
   </div>
-  <div class="grow-1 shrink-1 w-full h-full overflow-hidden">
+  -->
+  <div class="grow shrink w-full h-full overflow-hidden">
     {#if selectedCategory === 'Sprites'}
       <AnimationTemplatesPanel />
     {/if}

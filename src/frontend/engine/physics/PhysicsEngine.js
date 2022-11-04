@@ -1,5 +1,5 @@
 import matter from 'matter-js'
-const { Engine, Bodies, Body, Composite, Events, Runner } = matter
+const { Engine, Bodies, Body, Composite, Events, Runner, World } = matter
 import { Vec2 } from '%util/Vec2.js'
 
 export class PhysicsEngine {
@@ -32,6 +32,10 @@ export class PhysicsEngine {
     })
 
     // Runner.run(this.engine)
+  }
+  reset() {
+    World.clear(this.engine.world)
+    Engine.clear(this.engine)
   }
   update(deltaTime, deltaCorrection) {
     Engine.update(this.engine, deltaTime, deltaCorrection)

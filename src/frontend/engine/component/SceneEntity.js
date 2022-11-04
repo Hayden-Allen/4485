@@ -76,15 +76,6 @@ class SceneEntity extends Component {
       }
     )
     this.physicsProxy._owner = this
-    // console.log(this.physicsProxy)
-    /**
-     * @HATODO for platformers?
-     */
-    // Body.setCentre(
-    //   this.physicsProxy,
-    //   { x: -this.dim.x / 2, y: this.dim.y / 2 },
-    //   true
-    // )
   }
   setScale(scale) {
     if (scale === this.ops.scale) return
@@ -186,6 +177,16 @@ export class DynamicSceneEntity extends SceneEntity {
     //   x: this.physicsProxy.velocity.x,
     //   y,
     // })
+  }
+  createPhysicsProxy() {
+    this.dim = new Vec2(this.maxX - this.minX, this.maxY - this.minY).scale(
+      this.ops.scale
+    )
+    this.physicsProxy = this.game.physicsEngine.createRect(this.pos, this.dim, {
+      isStatic: this.ops.isStatic,
+      friction: 0,
+    })
+    this.physicsProxy._owner = this
   }
 }
 

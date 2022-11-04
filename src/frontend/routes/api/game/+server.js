@@ -44,19 +44,28 @@ export async function POST({ request, cookies }) {
     throw error(400, 'You must log in to upload a game')
   }
 
+  let game = null
+
   if (body.gameId) {
-    await updateGame(session, body.gameId, {
+    game = await updateGame(session, body.gameId, {
       isPublic: body.isPublic,
       name: body.name,
       serializedContent: body.serializedContent,
     })
   } else {
-    await createGame(session, {
+    game = await createGame(session, {
       isPublic: body.isPublic || false,
       name: body.name,
       serializedContent: body.serializedContent,
     })
   }
 
-  return new Response('OK')
+  return new Response(
+    JSON.stringify({
+      _id: game._id,
+    }),
+    {
+      'Content-Type': 'application/json',
+    }
+  )
 }

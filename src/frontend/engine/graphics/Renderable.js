@@ -2,22 +2,26 @@ import * as mat4 from '%glMatrix/mat4.js'
 
 export class Renderable {
   constructor(gl, pos, program, vertices, indices, { scale = 1 } = {}) {
+    this.vertices = vertices
     this.vertexArray = undefined
     this.vertexBuffer = undefined
     this.indexBuffer = undefined
     this.init(gl, program, vertices, indices)
     this.elementCount = indices.length
     this.transform = mat4.create()
-    this.scale = scale
+    this.scaleX = scale
+    this.scaleY = scale
     this.setTransform(pos)
   }
   setTransform(pos) {
     mat4.fromTranslation(this.transform, [pos.x, pos.y, 0])
-    this.setScale(this.scale)
+    this.setScale(this.scaleX, this.scaleY)
   }
-  setScale(scale) {
-    this.scale = scale
-    this.transform[0] = this.transform[5] = this.scale
+  setScale(sx, sy) {
+    this.scaleX = sx
+    this.scaleY = sy
+    this.transform[0] = this.scaleX
+    this.transform[5] = this.scaleY
   }
   init(gl, program, vertices, indices) {
     this.vertexArray = gl.createVertexArray()

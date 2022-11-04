@@ -145,4 +145,24 @@ export class Window3D extends Window {
     // console.log(sx, sy, sw, sh)
     this.uiCanvas.strokeRect(sx, sy, sw, sh, color, width)
   }
+  drawRect(camera, x, y, w, h, color) {
+    // world->NDC matrix
+    let mvp = camera.matrix
+    // position of top left corner
+    let pos = vec4.fromValues(x, y, -1, 1)
+    vec4.transformMat4(pos, pos, mvp)
+    // NDC->pixel
+    const sx = ((pos[0] + 1) / 2) * this.canvas.width,
+      sy = ((1 - pos[1]) / 2) * this.canvas.height
+
+    // dim (0 because it's a vector)
+    let dim = vec4.fromValues(w, h, -1, 0)
+    vec4.transformMat4(dim, dim, mvp)
+    // NDC->pixel
+    const sw = (dim[0] * this.canvas.width) / 2,
+      sh = (dim[1] * this.canvas.height) / 2
+
+    // console.log(sx, sy, sw, sh)
+    this.uiCanvas.drawRect(sx, sy, sw, sh, color)
+  }
 }

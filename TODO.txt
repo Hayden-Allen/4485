@@ -1,8 +1,5 @@
-Fix selecting static after controlled entity does not remove states from screen
 Convert between static/controlled entity
-Edit gravity
 Variables
-DrawText node
 Checkbox on state to set it as default
 Prevent rename/delete state when it is referenced elsewhere
 Fix scrollbar overlay (makes it difficult to click delete which is on right side)

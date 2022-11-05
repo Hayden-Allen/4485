@@ -6,7 +6,7 @@ export class PhysicsEngine {
   constructor(game, gravityScale) {
     this.game = game
     this.engine = Engine.create()
-    this.engine.gravity.scale *= gravityScale
+    this.engine.gravity.scale = gravityScale
 
     Events.on(this.engine, 'collisionStart', (event) => {
       event.pairs.forEach((pair) => {

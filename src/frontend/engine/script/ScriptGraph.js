@@ -279,6 +279,7 @@ export class ScriptGraph extends Component {
     buildNodes.forEach((node) => this.traverse(node, visited, order))
 
     this.cachedCompile = order
+    // console.log(order)
     return order
   }
   // dfs
@@ -325,7 +326,7 @@ export class ScriptGraph extends Component {
     startNode.active = true
     startNode.outputs = context.data || []
     // activate all non-event source nodes
-    // this.sourceNodes.forEach((node) => (node.active = true))
+    this.sourceNodes.forEach((node) => (node.active = true))
 
     this.cachedCompile.forEach((node) => {
       if (!node.active) return

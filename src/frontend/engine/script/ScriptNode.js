@@ -93,6 +93,7 @@ export class ScriptNode extends Component {
 
     const results =
       this.data.fn(inputs, {
+        game: context.game,
         entity: context.entity,
         scene: context.entity.scene,
         input: context.inputCache,

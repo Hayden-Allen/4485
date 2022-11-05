@@ -795,11 +795,48 @@ class ScriptNodeTemplateBank {
       'SetEntityScale',
       [
         ['entity', 'object'],
+        ['scaleX', 'number'],
+        ['scaleY', 'number'],
+      ],
+      [],
+      ([entity, sx, sy]) => {
+        entity.setScale(sx, sy)
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScaleX',
+      [
+        ['entity', 'object'],
+        ['scaleX', 'number'],
+      ],
+      [],
+      ([entity, s]) => {
+        entity.setScale(s, entity.scaleY)
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScaleY',
+      [
+        ['entity', 'object'],
+        ['scaleY', 'number'],
+      ],
+      [],
+      ([entity, s]) => {
+        entity.setScale(entity.scaleX, s)
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScaleXY',
+      [
+        ['entity', 'object'],
         ['scale', 'number'],
       ],
       [],
       ([entity, s]) => {
-        entity.setScale(s)
+        entity.setScale(s, s)
       }
     )
     this.create(
@@ -919,6 +956,35 @@ class ScriptNodeTemplateBank {
       (_, { entity, internal }) => {
         if (entity.setAnimationIndex) {
           entity.setAnimationIndex(internal[0])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'GetEntityVariableInt',
+      [['entity', 'object']],
+      [['name', 'string']],
+      ['-'],
+      [['value', 'int']],
+      ([entity], { internal }) => {
+        if (entity.variables) {
+          return [{ value: entity.variables.get(internal[0]) }]
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetEntityVariableInt',
+      [
+        ['entity', 'object'],
+        ['value', 'int'],
+      ],
+      [['name', 'string']],
+      ['-'],
+      [],
+      ([entity, value], { internal }) => {
+        if (entity.variables) {
+          entity.variables.set(internal[0], value)
         }
       }
     )

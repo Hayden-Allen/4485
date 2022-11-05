@@ -18,8 +18,6 @@ export class EditorLayer extends Layer {
     this.showDebug = true
     this.fps = 0
     this.selectedEntity = undefined
-    this.selectedEntityMass = undefined
-    this.selectedEntityStatic = undefined
     this.selectedEntityOffset = undefined
     this.selectedEntityIsControlled = false
     this.setSelectedEntity = setSelectedEntity
@@ -126,7 +124,6 @@ export class EditorLayer extends Layer {
     //   )
     // }
 
-    // this.game.drawFromPerspective(e.window, this.camera)
     if (this.selectedEntity) {
       let ex = 0,
         ey = 0
@@ -272,10 +269,6 @@ export class EditorLayer extends Layer {
         worldMouseX - selected.pos.x,
         worldMouseY - selected.pos.y
       )
-      this.selectedEntityMass = selected.physicsProxy.mass
-      this.selectedEntityStatic = selected.ops.isStatic
-      selected.ops.isStatic = true
-      Body.setStatic(selected.physicsProxy, true)
     }
 
     this.setSelectedEntity(selected)
@@ -283,17 +276,6 @@ export class EditorLayer extends Layer {
 
     if (e.button == 1) {
       this.deleteSelectedEntity()
-    }
-  }
-  onMouseUp(e) {
-    if (this.selectedEntity && e.button === 0) {
-      Body.setStatic(
-        this.selectedEntity.physicsProxy,
-        this.selectedEntityStatic
-      )
-      this.selectedEntity.ops.isStatic = this.selectedEntityStatic
-      Body.setMass(this.selectedEntity.physicsProxy, this.selectedEntityMass)
-      Body.setInertia(this.selectedEntity.physicsProxy, Infinity)
     }
   }
   onMouseMove(e) {

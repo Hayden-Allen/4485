@@ -156,6 +156,28 @@ class ScriptNodeTemplateBank {
         entity.logInfo(internal[0])
       }
     )
+    this.createInternal(
+      'logic',
+      'DrawText',
+      [['msg', 'any']],
+      [
+        ['x', 'number'],
+        ['y', 'number'],
+      ],
+      [0, 0],
+      [],
+      ([msg], { internal, ui }) => {
+        ui.drawText(
+          `${msg}`,
+          internal[0],
+          internal[1],
+          'courier new',
+          32,
+          '#0f0'
+        )
+      }
+    )
+    this.createConstant('logic', 'ConstString', [['string', 'string']], [''])
   }
   createEvents() {
     this.createEvent('event', 'OnTick', [])
@@ -508,7 +530,9 @@ class ScriptNodeTemplateBank {
         ['x', 'number'],
         ['y', 'number'],
       ],
-      ([v]) => [{ value: v.x }, { value: v.y }]
+      ([v]) => {
+        return [{ value: v.x }, { value: v.y }]
+      }
     )
     this.create(
       'math',

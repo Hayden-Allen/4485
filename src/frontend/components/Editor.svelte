@@ -66,6 +66,7 @@
     global.init(new Context())
 
     gameWindow = new Window3D(gameCanvas, uiCanvas, [0, 0, 0, 1])
+    global.gameWindow = gameWindow
 
     editorLayer = new EditorLayer(global.context.game, (e) => {
       selectedEntity = e
@@ -185,7 +186,7 @@
           ],
         ]),
         'Default',
-        { scale: 32 }
+        { scaleX: 32, scaleY: 32 }
       )
     }
     dragItems = []

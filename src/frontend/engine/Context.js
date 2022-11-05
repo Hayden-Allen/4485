@@ -7,6 +7,7 @@ export class Context {
     this.windows = []
     this.paused = false
     this.game = new Game(this)
+    this.gameWindow = undefined
 
     window.addEventListener('resize', () => this.propagateResizeEvent())
     window.addEventListener('keydown', (e) => {

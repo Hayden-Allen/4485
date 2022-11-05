@@ -1,6 +1,7 @@
 import { validateScriptDataTypes } from './ScriptDataType.js'
 import { Component } from '%component/Component.js'
 import { ScriptDataTypeList } from './ScriptDataType.js'
+import { global } from '%engine/Global.js'
 
 export class ScriptNodePort {
   constructor(name, typename, editorTypename) {
@@ -93,6 +94,7 @@ export class ScriptNode extends Component {
 
     const results =
       this.data.fn(inputs, {
+        ui: global.gameWindow.uiCanvas,
         game: context.game,
         entity: context.entity,
         scene: context.entity.scene,

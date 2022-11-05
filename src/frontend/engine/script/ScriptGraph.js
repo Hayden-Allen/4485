@@ -279,6 +279,7 @@ export class ScriptGraph extends Component {
     buildNodes.forEach((node) => this.traverse(node, visited, order))
 
     this.cachedCompile = order
+    console.log(order)
     return order
   }
   // dfs

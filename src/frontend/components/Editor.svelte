@@ -18,6 +18,8 @@
   import StopIcon from 'icons/24/solid/stop.svelte'
   import { Context } from '%engine/Context.js'
   import TestProject from '%editor/projects/test.js'
+  import Bolt from 'icons/20/mini/bolt.svelte'
+  import WorldPropertiesPanel from './WorldPropertiesPanel.svelte'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -49,6 +51,7 @@
     if (curProject) {
       curProject = global.context.game.serialize()
     } else {
+      TestProject.gravity = -0.005
       for (const scene of TestProject.scenes) {
         for (const entityId in scene.entities) {
           const entity = scene.entities[entityId]
@@ -190,6 +193,10 @@
       )
     }
     dragItems = []
+  }
+
+  function handleMakeDynamicEntity() {
+    //
   }
 
   function setPlayState(newPlayState) {
@@ -359,62 +366,81 @@
           states={selectedEntity.states}
         />
       {:else if selectedEntity}
-        <div
-          class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
-        >
-          <StatesPanel
-            states={selectedEntity.states}
-            {selectedEntity}
-            {selectedState}
-            onSelectState={(name, state) => {
-              selectedState = state
-            }}
-            onRenameState={(name, state) => {
-              let newName = window.prompt('Enter new state name:')
-              if (!newName) return
-              newName = newName.trim()
+        {#if selectedEntity.ops.isStatic}
+          <div
+            class="flex flex-col items-center justify-center w-full h-full overflow-x-hidden overflow-y-auto"
+          >
+            <button
+              on:click={handleMakeDynamicEntity}
+              class="flex grow-0 shrink-0 p-2 items-center justify-center rounded-md bg-emerald-600 hover:bg-emerald-500 transition-all"
+            >
+              <div class="w-5 h-5 mr-2"><Bolt /></div>
+              <div>Make dynamic entity</div>
+            </button>
+          </div>
+        {:else}
+          <div
+            class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
+          >
+            <StatesPanel
+              states={selectedEntity.states}
+              {selectedEntity}
+              {selectedState}
+              onSelectState={(name, state) => {
+                selectedState = state
+              }}
+              onRenameState={(name, state) => {
+                let newName = window.prompt('Enter new state name:')
+                if (!newName) return
+                newName = newName.trim()
 
-              selectedEntity.states.delete(name)
-              selectedEntity.states.set(newName, state)
-              selectedEntity.setState(newName)
-              selectedEntity.states = selectedEntity.states
-            }}
-            onDeleteState={(name, state) => {
-              selectedState = undefined
-              selectedEntity.states.delete(name)
-              selectedEntity.states = selectedEntity.states
-            }}
-            onEditScript={(script) => (graphEditorScript = script)}
-            onAddState={() => {
-              let name = window.prompt('Enter new state name:')
-              if (!name) return
-              name = name.trim()
+                selectedEntity.states.delete(name)
+                selectedEntity.states.set(newName, state)
+                selectedEntity.setState(newName)
+                selectedEntity.states = selectedEntity.states
+              }}
+              onDeleteState={(name, state) => {
+                selectedState = undefined
+                selectedEntity.states.delete(name)
+                selectedEntity.states = selectedEntity.states
+              }}
+              onEditScript={(script) => (graphEditorScript = script)}
+              onAddState={() => {
+                let name = window.prompt('Enter new state name:')
+                if (!name) return
+                name = name.trim()
 
-              if (selectedEntity.states.has(name))
-                if (!window.confirm(`State '${name}' exists. Overwrite?`))
-                  return
-              const newState = new State(name, [], gameWindow.gl, [
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-              ])
-              selectedEntity.states.set(name, newState)
-              selectedState = newState
-              selectedEntity.states = selectedEntity.states
-            }}
-          />
-        </div>
+                if (selectedEntity.states.has(name))
+                  if (!window.confirm(`State '${name}' exists. Overwrite?`))
+                    return
+                const newState = new State(name, [], gameWindow.gl, [
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                ])
+                selectedEntity.states.set(name, newState)
+                selectedState = newState
+                selectedEntity.states = selectedEntity.states
+              }}
+            />
+          </div>
+        {/if}
       {:else}
         <div
-          class="grow-0 shrink-0 w-full h-full flex flex-col items-center justify-center overflow-hidden text-xl font-bold text-neutral-500"
+          class="grow-0 shrink-0 w-full h-full flex flex-col overflow-x-hidden overflow-y-auto"
         >
-          <div>Select an entity to edit</div>
+          <WorldPropertiesPanel />
+          <div
+            class="grow-0 shrink-0 items-center justify-center text-xl font-bold text-neutral-500"
+          >
+            <div>Select an entity to edit</div>
+          </div>
         </div>
       {/if}
     </div>

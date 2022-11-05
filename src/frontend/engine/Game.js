@@ -8,7 +8,7 @@ import {
 
 export class Game {
   constructor(context) {
-    this.physicsEngine = new PhysicsEngine(this, -5)
+    this.physicsEngine = new PhysicsEngine(this, -0.001)
     this.currentScene = undefined
     this.sceneManager = new SceneManager()
     this.context = context
@@ -20,6 +20,7 @@ export class Game {
      */
     return JSON.stringify({
       name,
+      gravity: this.physicsEngine.engine.gravity.scale,
       scenes: this.sceneManager.serialize(),
     })
   }
@@ -28,6 +29,7 @@ export class Game {
     this.currentScene = undefined
     this.context.removeSystem(this.sceneManager)
     this.physicsEngine.reset()
+    this.physicsEngine.engine.gravity.scale = obj.gravity
     this.sceneManager = new SceneManager()
     this.context.addSystem(this.sceneManager)
     this.sceneManager.deserialize(obj.scenes)

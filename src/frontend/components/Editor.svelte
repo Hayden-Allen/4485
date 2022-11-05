@@ -33,9 +33,11 @@
     selectedEntity = undefined,
     selectedState = undefined
 
+  let displayGravity = undefined
+
   function resetUiState() {
     //
-    // TODO: After de-serialization, entities should be selected based on their UUID rather than just altogether deselected
+    // TODO: After de-serialization, entities should be re-selected based on their UUID rather than just deselected
     //
     graphEditorScript = undefined
     graphEditorScriptErrors = []
@@ -51,7 +53,9 @@
     if (curProject) {
       curProject = global.context.game.serialize()
     } else {
-      TestProject.gravity = -0.005
+      if (typeof TestProject.gravity === 'undefined') {
+        TestProject.gravity = -0.005
+      }
       for (const scene of TestProject.scenes) {
         for (const entityId in scene.entities) {
           const entity = scene.entities[entityId]
@@ -63,6 +67,14 @@
     }
     resetUiState()
     global.context.game.deserialize(curProject)
+    global.context.game.physicsEngine.engine.gravity.scale =
+      global.context.game.physicsEngine.engine.gravity.scale
+  }
+
+  $: {
+    if (global.context) {
+      displayGravity = global.context.game.physicsEngine.engine.gravity.scale
+    }
   }
 
   onMount(() => {
@@ -201,6 +213,7 @@
 
   function setPlayState(newPlayState) {
     if (newPlayState === 'play') {
+      gameCanvas.focus()
       global.context.paused = false
     } else if (newPlayState === 'pause') {
       global.context.paused = true
@@ -435,9 +448,16 @@
         <div
           class="grow-0 shrink-0 w-full h-full flex flex-col overflow-x-hidden overflow-y-auto"
         >
-          <WorldPropertiesPanel />
+          {#if global.context}
+            <WorldPropertiesPanel
+              gravity={displayGravity}
+              onSetGravity={(value) =>
+                (global.context.game.physicsEngine.engine.gravity.scale =
+                  value)}
+            />
+          {/if}
           <div
-            class="grow-0 shrink-0 items-center justify-center text-xl font-bold text-neutral-500"
+            class="flex flex-col w-full h-full grow shrink items-center justify-center text-xl font-bold text-neutral-500"
           >
             <div>Select an entity to edit</div>
           </div>

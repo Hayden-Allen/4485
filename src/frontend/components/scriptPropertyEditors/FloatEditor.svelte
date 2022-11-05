@@ -19,11 +19,8 @@
   }
 
   $: {
-    if (currentValue !== '') {
-      const x = parseFloat(currentValue)
-      if (!isNaN(x)) {
-        currentValue = x
-      }
+    if (typeof currentValue === 'string') {
+      currentValue = currentValue.replace(/[^\d-.,]/g, '')
     }
   }
 </script>

@@ -1,16 +1,11 @@
 <script>
-  import { global } from '%engine/Global.js'
   import { PORT_COLOR } from '%editor/ScriptVisualizer.js'
   import FloatEditor from 'components/scriptPropertyEditors/FloatEditor.svelte'
 
-  let focusedProp = undefined
-  let curGravity = 0
+  export let gravity = 0,
+    onSetGravity = undefined
 
-  $: {
-    if (global.context) {
-      curGravity = global.context.game.physicsEngine.engine.gravity.scale
-    }
-  }
+  let focusedProp = undefined
 </script>
 
 <div
@@ -33,10 +28,9 @@
     </div>
     <div class="grow shrink w-full overflow-hidden">
       <FloatEditor
-        initialValue={curGravity}
-        currentValue={curGravity}
-        onApply={(value) =>
-          (global.context.game.physicsEngine.engine.gravity.scale = value)}
+        initialValue={gravity}
+        currentValue={gravity}
+        onApply={(value) => onSetGravity(value)}
         onFocus={() => (focusedProp = 'gravity')}
         onBlur={() => (focusedProp = undefined)}
       />

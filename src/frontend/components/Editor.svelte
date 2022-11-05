@@ -51,14 +51,6 @@
     if (curProject) {
       curProject = global.context.game.serialize()
     } else {
-      TestProject.gravity = -0.005
-      for (const scene of TestProject.scenes) {
-        for (const entityId in scene.entities) {
-          const entity = scene.entities[entityId]
-          entity.ops.scaleX = entity.ops.scale
-          entity.ops.scaleY = entity.ops.scale
-        }
-      }
       curProject = JSON.stringify(TestProject) // DEBUG
     }
     resetUiState()

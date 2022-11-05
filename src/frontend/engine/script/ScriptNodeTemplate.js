@@ -32,7 +32,7 @@ export class EventScriptNodeTemplate extends ScriptNodeTemplate {
       outputPorts,
       (_, { node }) =>
         node.outputs.map((value) => {
-          return { value, activate: true }
+          return { value, active: true }
         }),
       false
     )

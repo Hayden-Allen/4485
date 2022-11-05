@@ -16,7 +16,9 @@ export class Camera {
     this.near = near
     this.far = far
     this.pos = position
-    this.init()
+    this.originalPos = [...position]
+    this.originalZoom = 1
+    this.init(this.originalZoom)
   }
   init(zoom = 1) {
     let proj = mat4.create()
@@ -45,7 +47,15 @@ export class Camera {
     this.pos = [-vec2.x, -vec2.y, 0]
     this.init()
   }
+  setPositionFromEditor(vec2) {
+    this.originalPos = [-vec2.x, -vec2.y, 0]
+    this.setPosition(vec2)
+  }
   setZoom(z) {
     this.init(z)
+  }
+  setZoomFromEditor(z) {
+    this.originalZoom = z
+    this.setZoom(z)
   }
 }

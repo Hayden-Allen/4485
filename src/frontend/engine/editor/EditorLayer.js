@@ -303,7 +303,7 @@ export class EditorLayer extends Layer {
           const odx = [1, 0, 0, 1]
           const ody = [0, 0, -1, -1]
           console.log(this.resizeCorner)
-          this.selectedEntity.setPosition(
+          this.selectedEntity.setPositionFromEditor(
             this.resizeStartEntityX +
               ddx[this.resizeCorner] * this.selectedEntity.dim.x +
               odx[this.resizeCorner] * ox,
@@ -312,7 +312,7 @@ export class EditorLayer extends Layer {
               ody[this.resizeCorner] * oy
           )
 
-          this.selectedEntity.setScale(
+          this.selectedEntity.setScaleFromEditor(
             this.resizeStartScaleX + ox,
             this.resizeStartScaleY + oy
           )
@@ -323,7 +323,7 @@ export class EditorLayer extends Layer {
           e.x,
           e.y
         )
-        this.selectedEntity.setPosition(
+        this.selectedEntity.setPositionFromEditor(
           wx - this.selectedEntityOffset.x,
           wy - this.selectedEntityOffset.y
         )

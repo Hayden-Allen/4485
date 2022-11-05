@@ -168,29 +168,12 @@
       dropX !== null &&
       dropY !== null
     ) {
-      global.context.game.addControlledSceneEntity(
-        1,
+      global.context.game.addStaticSceneEntity(
+        0,
         gameWindow,
         new Vec2(dropX, dropY),
-        new Map([
-          [
-            'Default',
-            new State('Default', [], gameWindow.gl, [
-              null,
-              null,
-              null,
-              null,
-              {
-                ...e.detail.items[0].candidate,
-              },
-              null,
-              null,
-              null,
-              null,
-            ]),
-          ],
-        ]),
-        'Default',
+        e.detail.items[0].candidate.frameTime,
+        e.detail.items[0].candidate.urls,
         { scaleX: 32, scaleY: 32 }
       )
     }

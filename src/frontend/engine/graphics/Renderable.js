@@ -12,6 +12,7 @@ export class Renderable {
     this.scaleX = scale
     this.scaleY = scale
     this.setTransform(pos)
+    this.gl = gl
   }
   setTransform(pos) {
     mat4.fromTranslation(this.transform, [pos.x, pos.y, 0])
@@ -22,6 +23,14 @@ export class Renderable {
     this.scaleY = sy
     this.transform[0] = this.scaleX
     this.transform[5] = this.scaleY
+  }
+  bufferVertices() {
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer)
+    this.gl.bufferData(
+      this.gl.ARRAY_BUFFER,
+      new Float32Array(this.vertices),
+      this.gl.STATIC_DRAW
+    )
   }
   init(gl, program, vertices, indices) {
     this.vertexArray = gl.createVertexArray()

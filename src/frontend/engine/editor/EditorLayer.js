@@ -36,14 +36,8 @@ export class EditorLayer extends Layer {
       global.canvas.targetHeight / 2
     )
   }
-  onAppTick(e) {
-    if (!global.context.paused) this.fps = 1000 / e.deltaTime
-    return false
-  }
-  async onKeyDown(e) {
-    // if (e.repeat) return
-
-    if (this.selectedEntity && (e.key === 'Backspace' || e.key === 'Delete')) {
+  deleteSelectedEntity() {
+    if (this.selectedEntity) {
       if (this.selectedEntityIsControlled) {
         this.game.removeControlledSceneEntity(this.selectedEntity)
       } else {
@@ -51,6 +45,17 @@ export class EditorLayer extends Layer {
       }
       this.selectedEntity = undefined
       this.setSelectedEntity(undefined)
+    }
+  }
+  onAppTick(e) {
+    if (!global.context.paused) this.fps = 1000 / e.deltaTime
+    return false
+  }
+  async onKeyDown(e) {
+    // if (e.repeat) return
+
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      this.deleteSelectedEntity()
     }
     if (!e.repeat && e.key === 'Escape') global.context.paused ^= 1
     if (!e.repeat && e.key === '`') this.showDebug ^= 1
@@ -182,13 +187,15 @@ export class EditorLayer extends Layer {
       )
     }
   }
-  onMouseDown(e) {
-    const mouseX = (2 * e.x) / this.window.canvas.width - 1
-    const mouseY = 1 - (2 * e.y) / this.window.canvas.height
+  getMouseWorldCoords(mx, my) {
+    const mouseX = (2 * mx) / this.window.canvas.width - 1
+    const mouseY = 1 - (2 * my) / this.window.canvas.height
     let tc = vec4.create()
     vec4.transformMat4(tc, [mouseX, mouseY, 0, 1], this.camera.inverse())
-    const worldMouseX = tc[0]
-    const worldMouseY = tc[1]
+    return [tc[0], tc[1]]
+  }
+  onMouseDown(e) {
+    const [worldMouseX, worldMouseY] = this.getMouseWorldCoords(e.x, e.y)
 
     // check resize controls
     if (this.selectedEntity) {
@@ -211,6 +218,10 @@ export class EditorLayer extends Layer {
           this.resizeStartScaleY = this.selectedEntity.renderable.scaleY
           this.resizeStartEntityX = this.selectedEntity.pos.x
           this.resizeStartEntityY = this.selectedEntity.pos.y
+          this.resizeStartTexX = this.selectedEntity.getTexCoordX()
+          this.resizeStartTexY = this.selectedEntity.getTexCoordY()
+          this.resizeStartW = this.selectedEntity.dim.x
+          this.resizeStartH = this.selectedEntity.dim.y
           return
         }
       }
@@ -269,6 +280,10 @@ export class EditorLayer extends Layer {
 
     this.setSelectedEntity(selected)
     this.selectedEntity = selected
+
+    if (e.button == 1) {
+      this.deleteSelectedEntity()
+    }
   }
   onMouseUp(e) {
     if (this.selectedEntity && e.button === 0) {
@@ -282,40 +297,82 @@ export class EditorLayer extends Layer {
     }
   }
   onMouseMove(e) {
+    const [worldMouseX, worldMouseY] = this.getMouseWorldCoords(e.x, e.y)
     if (
       global.playState === 'stop' &&
       this.selectedEntity &&
       this.window.inputCache.isMouseLeft()
     ) {
       if (this.resizeStartX) {
-        const ox = e.x - this.resizeStartX
-        const oy = this.resizeStartY - e.y
+        const sox = [-1, 1, 1, -1]
+        const soy = [1, 1, -1, -1]
+        const ox = (e.x - this.resizeStartX) * sox[this.resizeCorner]
+        const oy = (this.resizeStartY - e.y) * soy[this.resizeCorner]
         if (
-          this.resizeStartScaleX + ox > 10 &&
-          this.resizeStartScaleY + oy > 10
+          this.resizeStartScaleX + ox >= 16 &&
+          this.resizeStartScaleY + oy >= 16
         ) {
           // 3 - tr (1, -1)
           // 2 - tl (0, -1)
           // 1 - bl (0, 0)
           // 0 - br (1, 0)
-          const ddx = [-1, 0, 0, -1]
-          const ddy = [0, 0, 1, 1]
-          const odx = [1, 0, 0, 1]
-          const ody = [0, 0, -1, -1]
-          console.log(this.resizeCorner)
-          this.selectedEntity.setPosition(
-            this.resizeStartEntityX +
-              ddx[this.resizeCorner] * this.selectedEntity.dim.x +
-              odx[this.resizeCorner] * ox,
-            this.resizeStartEntityY -
-              ddy[this.resizeCorner] * this.selectedEntity.dim.y -
-              ody[this.resizeCorner] * oy
-          )
+          if (this.selectedEntityIsControlled) {
+            const npw =
+              (this.resizeStartScaleX + ox) *
+              (this.selectedEntity.maxX - this.selectedEntity.minX)
+            const nph =
+              (this.resizeStartScaleY + oy) *
+              (this.selectedEntity.maxY - this.selectedEntity.minY)
+            const crx = [1, -1, -1, 1]
+            const cry = [-1, -1, 1, 1]
+            this.selectedEntity.setPosition(
+              this.selectedEntity.pos.x +
+                ((this.selectedEntity.dim.x - npw) * crx[this.resizeCorner]) /
+                  2,
+              this.selectedEntity.pos.y +
+                ((this.selectedEntity.dim.y - nph) * cry[this.resizeCorner]) / 2
+            )
+          } else {
+            switch (this.resizeCorner) {
+              case 0:
+                this.selectedEntity.setPosition(
+                  worldMouseX,
+                  this.selectedEntity.pos.y
+                )
+                break
+              case 1:
+                this.selectedEntity.setPosition(
+                  this.selectedEntity.pos.x,
+                  this.selectedEntity.pos.y
+                )
+                break
+              case 2:
+                this.selectedEntity.setPosition(
+                  this.selectedEntity.pos.x,
+                  worldMouseY
+                )
+                break
+              case 3:
+                this.selectedEntity.setPosition(worldMouseX, worldMouseY)
+                break
+            }
+          }
 
           this.selectedEntity.setScale(
             this.resizeStartScaleX + ox,
             this.resizeStartScaleY + oy
           )
+
+          if (this.window.inputCache.isKeyPressed('Shift')) {
+            this.selectedEntity.setTexCoordX(
+              (this.resizeStartTexX * this.selectedEntity.dim.x) /
+                this.resizeStartW
+            )
+            this.selectedEntity.setTexCoordY(
+              (this.resizeStartTexY * this.selectedEntity.dim.y) /
+                this.resizeStartH
+            )
+          }
         }
       } else {
         const [wx, wy] = global.transformCanvasToWorld(

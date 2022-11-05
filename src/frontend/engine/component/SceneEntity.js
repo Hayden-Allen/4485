@@ -108,6 +108,20 @@ class SceneEntity extends Component {
     this.destroy()
     this.createPhysicsProxy(this.scaleX, this.scaleY)
   }
+  getTexCoordX() {
+    return this.renderable.vertices[6]
+  }
+  getTexCoordY() {
+    return this.renderable.vertices[11]
+  }
+  setTexCoordX(tx) {
+    this.renderable.vertices[6] = this.renderable.vertices[10] = tx
+    this.renderable.bufferVertices()
+  }
+  setTexCoordY(ty) {
+    this.renderable.vertices[11] = this.renderable.vertices[15] = ty
+    this.renderable.bufferVertices()
+  }
 }
 
 export class StaticSceneEntity extends SceneEntity {

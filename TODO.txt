@@ -1,5 +1,3 @@
-Resizing
-Tiling
 Convert between static/controlled entity
 Edit gravity
 Checkbox on state to set it as default

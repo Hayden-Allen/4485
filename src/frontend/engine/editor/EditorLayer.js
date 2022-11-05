@@ -106,25 +106,25 @@ export class EditorLayer extends Layer {
     e.window.clear()
     this.game.draw(e.window)
 
-    {
-      const mouseX =
-        (2 * this.window.inputCache.mousePos.x) / this.window.canvas.width - 1
-      const mouseY =
-        1 - (2 * this.window.inputCache.mousePos.y) / this.window.canvas.height
-      let tc = vec4.create()
-      vec4.transformMat4(tc, [mouseX, mouseY, 0, 1], this.camera.inverse())
-      const worldMouseX = tc[0]
-      const worldMouseY = tc[1]
+    // {
+    //   const mouseX =
+    //     (2 * this.window.inputCache.mousePos.x) / this.window.canvas.width - 1
+    //   const mouseY =
+    //     1 - (2 * this.window.inputCache.mousePos.y) / this.window.canvas.height
+    //   let tc = vec4.create()
+    //   vec4.transformMat4(tc, [mouseX, mouseY, 0, 1], this.camera.inverse())
+    //   const worldMouseX = tc[0]
+    //   const worldMouseY = tc[1]
 
-      e.window.drawRect(
-        this.camera,
-        worldMouseX - this.dotSize / 2,
-        worldMouseY + this.dotSize / 2,
-        this.dotSize,
-        this.dotSize,
-        '#0f0'
-      )
-    }
+    //   e.window.drawRect(
+    //     this.camera,
+    //     worldMouseX - this.dotSize / 2,
+    //     worldMouseY + this.dotSize / 2,
+    //     this.dotSize,
+    //     this.dotSize,
+    //     '#0f0'
+    //   )
+    // }
 
     // this.game.drawFromPerspective(e.window, this.camera)
     if (this.selectedEntity) {

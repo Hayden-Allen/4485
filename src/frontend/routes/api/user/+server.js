@@ -20,7 +20,14 @@ export async function POST({ request }) {
     throw error(400, 'This username is already taken')
   }
 
-  await createUser({ username, password })
+  const user = await createUser({ username, password })
 
-  return new Response('OK')
+  return new Response(
+    JSON.stringify({
+      _id: user._id,
+    }),
+    {
+      'Content-Type': 'application/json',
+    }
+  )
 }

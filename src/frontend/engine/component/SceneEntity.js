@@ -14,12 +14,14 @@ class SceneEntityOptions {
     vertices = VERTEX_DATA,
     indices = INDEX_DATA,
     isStatic = true,
-    scale = 1,
+    scaleX = 1,
+    scaleY = 1,
   } = {}) {
     this.vertices = vertices
     this.indices = indices
     this.isStatic = isStatic
-    this.scale = scale
+    this.scaleX = scaleX
+    this.scaleY = scaleY
   }
 }
 
@@ -30,15 +32,6 @@ class SceneEntity extends Component {
     this.ops = new SceneEntityOptions(options)
     const vertexData = this.ops.vertices,
       indexData = this.ops.indices
-
-    this.renderable = new Renderable(
-      gameWindow.gl,
-      pos,
-      gameWindow.shaderProgram,
-      vertexData,
-      indexData,
-      { scale: this.ops.scale }
-    )
 
     this.minX = Infinity
     this.maxX = -Infinity
@@ -52,14 +45,24 @@ class SceneEntity extends Component {
     }
 
     this.pos = pos
+    this.originalPos = new Vec2(pos.x, pos.y)
     this.game = game
-    this.scaleX = this.ops.scale
-    this.scaleY = this.ops.scale
-    this.createPhysicsProxy(this.ops.scale, this.ops.scale)
+    this.scaleX = typeof this.ops.scaleX !== 'undefined' ? this.ops.scaleX : 1
+    this.scaleY = typeof this.ops.scaleY !== 'undefined' ? this.ops.scaleY : 1
+    this.createPhysicsProxy(this.scaleX, this.scaleY)
 
     // set when added to scene (Scene.js)
     this.scene = undefined
     this.sceneZ = undefined
+
+    this.renderable = new Renderable(
+      gameWindow.gl,
+      pos,
+      gameWindow.shaderProgram,
+      vertexData,
+      indexData,
+      { scaleX: this.scaleX, scaleY: this.scaleY }
+    )
   }
   bindToScene(scene, z) {
     this.scene = scene
@@ -88,6 +91,11 @@ class SceneEntity extends Component {
     this.game.physicsEngine.deleteRect(this.physicsProxy)
     this.createPhysicsProxy(sx, sy)
   }
+  setScaleFromEditor(sx, sy) {
+    this.ops.scaleX = sx
+    this.ops.scaleY = sy
+    this.setScale(sx, sy)
+  }
   destroy() {
     this.game.physicsEngine.deleteRect(this.physicsProxy)
   }
@@ -97,7 +105,7 @@ class SceneEntity extends Component {
   getCurrentTexture() {}
   serialize() {
     return {
-      pos: this.pos,
+      pos: this.originalPos,
       ops: this.ops,
     }
   }
@@ -121,6 +129,11 @@ class SceneEntity extends Component {
   setTexCoordY(ty) {
     this.renderable.vertices[11] = this.renderable.vertices[15] = ty
     this.renderable.bufferVertices()
+  }
+  setPositionFromEditor(x, y) {
+    this.originalPos.x = x
+    this.originalPos.y = y
+    this.setPosition(x, y)
   }
 }
 

@@ -7,7 +7,6 @@
   import ScriptTemplatesPanel from 'components/ScriptTemplatesPanel.svelte'
   import StatesPanel from 'components/StatesPanel.svelte'
   import ScriptGraphEditor from 'components/ScriptGraphEditor.svelte'
-  import { Scene } from '%component/Scene.js'
   import { Vec2 } from '%util/Vec2.js'
   import { global } from '%engine/Global.js'
   import { Window3D } from '%window/Window3D.js'
@@ -24,15 +23,44 @@
     uiCanvas = undefined
 
   let gameWindow = undefined,
+    editorLayer = undefined
+
+  let graphEditorScript = undefined,
     graphEditorScriptErrors = [],
     graphEditorScriptEmpty = true,
-    editorLayer = undefined,
     selectedEntity = undefined,
     selectedState = undefined
 
-  let graphEditorScript = undefined
+  function resetUiState() {
+    //
+    // TODO: After de-serialization, entities should be selected based on their UUID rather than just altogether deselected
+    //
+    graphEditorScript = undefined
+    graphEditorScriptErrors = []
+    graphEditorScriptEmpty = true
+    editorLayer.selectedEntity = undefined // FIXME
+    selectedEntity = undefined
+    selectedState = undefined
+  }
 
-  let curProject = JSON.stringify(TestProject)
+  let curProject = undefined
+
+  function serializeOnStop() {
+    if (curProject) {
+      curProject = global.context.game.serialize()
+    } else {
+      for (const scene of TestProject.scenes) {
+        for (const entityId in scene.entities) {
+          const entity = scene.entities[entityId]
+          entity.ops.scaleX = entity.ops.scale
+          entity.ops.scaleY = entity.ops.scale
+        }
+      }
+      curProject = JSON.stringify(TestProject) // DEBUG
+    }
+    resetUiState()
+    global.context.game.deserialize(curProject)
+  }
 
   onMount(() => {
     global.init(new Context())
@@ -165,16 +193,12 @@
 
   function setPlayState(newPlayState) {
     if (newPlayState === 'play') {
-      if (global.playState === 'stop') {
-        curProject = global.context.game.serialize(curProject)
-      }
       global.context.paused = false
     } else if (newPlayState === 'pause') {
       global.context.paused = true
     } else if (newPlayState === 'stop') {
       global.context.paused = true
-      global.context.game.deserialize(curProject)
-      // global.context.runOnce(true, true)
+      serializeOnStop()
     }
     global.playState = newPlayState
   }

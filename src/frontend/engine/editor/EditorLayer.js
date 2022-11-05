@@ -325,7 +325,7 @@ export class EditorLayer extends Layer {
               (this.selectedEntity.maxY - this.selectedEntity.minY)
             const crx = [1, -1, -1, 1]
             const cry = [-1, -1, 1, 1]
-            this.selectedEntity.setPosition(
+            this.selectedEntity.setPositionFromEditor(
               this.selectedEntity.pos.x +
                 ((this.selectedEntity.dim.x - npw) * crx[this.resizeCorner]) /
                   2,
@@ -335,30 +335,33 @@ export class EditorLayer extends Layer {
           } else {
             switch (this.resizeCorner) {
               case 0:
-                this.selectedEntity.setPosition(
+                this.selectedEntity.setPositionFromEditor(
                   worldMouseX,
                   this.selectedEntity.pos.y
                 )
                 break
               case 1:
-                this.selectedEntity.setPosition(
+                this.selectedEntity.setPositionFromEditor(
                   this.selectedEntity.pos.x,
                   this.selectedEntity.pos.y
                 )
                 break
               case 2:
-                this.selectedEntity.setPosition(
+                this.selectedEntity.setPositionFromEditor(
                   this.selectedEntity.pos.x,
                   worldMouseY
                 )
                 break
               case 3:
-                this.selectedEntity.setPosition(worldMouseX, worldMouseY)
+                this.selectedEntity.setPositionFromEditor(
+                  worldMouseX,
+                  worldMouseY
+                )
                 break
             }
           }
 
-          this.selectedEntity.setScale(
+          this.selectedEntity.setScaleFromEditor(
             this.resizeStartScaleX + ox,
             this.resizeStartScaleY + oy
           )
@@ -380,7 +383,7 @@ export class EditorLayer extends Layer {
           e.x,
           e.y
         )
-        this.selectedEntity.setPosition(
+        this.selectedEntity.setPositionFromEditor(
           wx - this.selectedEntityOffset.x,
           wy - this.selectedEntityOffset.y
         )

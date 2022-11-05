@@ -74,8 +74,7 @@ export class EditorLayer extends Layer {
       }
       const name = fileHandle.name.split('.')[0]
       const writable = await fileHandle.createWritable()
-      const contents =
-        'export default ' + JSON.stringify(this.game.serialize(name))
+      const contents = 'export default ' + this.game.serialize(name)
       await writable.write(contents)
       await writable.close()
     }

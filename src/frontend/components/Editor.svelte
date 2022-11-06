@@ -233,6 +233,7 @@
       'Default',
       { scaleX: selectedEntity.scaleX, scaleY: selectedEntity.scaleY }
     )
+    selectedState = selectedEntity.states.get('Default')
   }
 
   function setPlayState(newPlayState) {
@@ -253,7 +254,6 @@
     for (const [stateName, state] of selectedEntity.states) {
       if (state.name === name) continue
       for (const script of state.scripts) {
-        console.log(script.exportNodes)
         for (const exportNode of script.exportNodes) {
           if (
             exportNode.node.data.internalPorts[1].editorTypename === 'state' &&
@@ -444,8 +444,11 @@
           >
             <StatesPanel
               states={selectedEntity.states}
+              variables={selectedEntity.variables}
               {selectedEntity}
               {selectedState}
+              onVariablesChanged={() =>
+                (selectedEntity.variables = selectedEntity.variables)}
               onSelectState={(name, state) => {
                 selectedState = state
               }}
@@ -458,6 +461,7 @@
                 }
 
                 let newName = window.prompt('Enter new state name:')
+                if (!newName) return
                 newName = newName.trim()
                 if (!newName) return
                 if (selectedEntity.states.has(newName)) {
@@ -484,6 +488,7 @@
               onEditScript={(script) => (graphEditorScript = script)}
               onAddState={() => {
                 let name = window.prompt('Enter new state name:')
+                if (!name) return
                 name = name.trim()
                 if (!name) return
                 if (selectedEntity.states.has(name)) {

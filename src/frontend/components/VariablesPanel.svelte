@@ -14,6 +14,7 @@
   export let onSetCollapsed = undefined
   export let variables = undefined
   export let focusedVariable = undefined
+  export let onVariablesChanged = undefined
 
   let variablesArray = []
 
@@ -22,7 +23,6 @@
     for (const [stateName, state] of selectedEntity.states) {
       if (state.name === name) continue
       for (const script of state.scripts) {
-        console.log(script.exportNodes)
         for (const exportNode of script.exportNodes) {
           if (
             exportNode.node.data.internalPorts[1].editorTypename ===
@@ -48,6 +48,7 @@
     const name = `Variable ${variableNum}`
     variables.set(name, new EntityVariable(name, 0))
     variables = variables
+    onVariablesChanged()
   }
 
   function onRenameVariable(variable) {
@@ -58,15 +59,15 @@
       return
     }
     let newName = window.prompt('Enter new state name:')
+    if (!newName) return
     newName = newName.trim()
-    if (!newName) {
-      return
-    }
+    if (!newName) return
 
     variables.delete(variable.name)
     variable.name = newName
     variables.set(newName, variable)
     variables = variables
+    onVariablesChanged()
   }
 
   function onDeleteVariable(variable) {
@@ -78,6 +79,7 @@
     }
     variables.delete(variable.name)
     variables = variables
+    onVariablesChanged()
   }
 
   $: {

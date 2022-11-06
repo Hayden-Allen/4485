@@ -6,6 +6,7 @@
 
   export let parentStateSelected = false
   export let states = undefined
+  export let variables = undefined
   export let scripts = undefined
   export let onRearrangeScripts = undefined
   export let onEditScript = undefined
@@ -67,6 +68,7 @@
       >
         <ScriptPropertiesGroup
           {states}
+          {variables}
           script={item.script}
           onEditScript={() => onEditScript(item.script)}
           onDelete={() => onDeleteScript(item.script)}

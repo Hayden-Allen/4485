@@ -1030,6 +1030,10 @@ class ScriptNodeTemplateBank {
     this.createExport('entity', 'ExportState', 'state', '---', 'string', {
       valueEditorType: 'state',
     })
+
+    this.createExport('entity', 'ExportVariable', 'var', '---', 'string', {
+      valueEditorType: 'variable',
+    })
   }
   createAudio() {
     this.createInternal(

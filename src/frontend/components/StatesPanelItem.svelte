@@ -9,6 +9,7 @@
 
   export let isSelected = false
   export let states = undefined
+  export let variables = undefined
   export let onSelect = undefined
   export let onRename = undefined
   export let onDelete = undefined
@@ -129,6 +130,7 @@
     <ScriptPropertiesPanel
       parentStateSelected={isSelected}
       {states}
+      {variables}
       scripts={item.state.scripts}
       onRearrangeScripts={(scripts) => (item.state.scripts = scripts)}
       {onEditScript}

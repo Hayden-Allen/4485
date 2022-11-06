@@ -5,6 +5,7 @@
   import FloatEditor from 'components/scriptPropertyEditors/FloatEditor.svelte'
   import KeyEditor from 'components/scriptPropertyEditors/KeyEditor.svelte'
   import StateEditor from 'components/scriptPropertyEditors/StateEditor.svelte'
+  import VariableEditor from 'components/scriptPropertyEditors/VariableEditor.svelte'
   import BoolEditor from 'components/scriptPropertyEditors/BoolEditor.svelte'
   import StringEditor from 'components/scriptPropertyEditors/StringEditor.svelte'
   import ChevronRight from 'icons/20/mini/chevron-right.svelte'
@@ -12,6 +13,7 @@
   import Trash from 'icons/20/mini/trash.svelte'
 
   export let states = undefined
+  export let variables = undefined
   export let script = undefined
   export let onEditScript = undefined
   export let onDelete = undefined
@@ -119,6 +121,14 @@
             {:else if exportNode.editorType === 'state'}
               <StateEditor
                 {states}
+                currentValue={exportNode.value}
+                onApply={(value) => exportNode.setValue(value)}
+                onFocus={() => (focusedNode = exportNode)}
+                onBlur={() => (focusedNode = undefined)}
+              />
+            {:else if exportNode.editorType === 'variable'}
+              <VariableEditor
+                {variables}
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}

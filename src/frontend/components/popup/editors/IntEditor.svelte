@@ -39,7 +39,7 @@
   {bgColor}
   {fgColor}
   {onDestroyPopup}
-  width="96px"
+  width="128px"
   height="auto"
 >
   <input

@@ -8,6 +8,7 @@
   import ChevronRight from 'icons/20/mini/chevron-right.svelte'
 
   export let states = undefined
+  export let variables = undefined
   export let selectedState = undefined
   export let selectedEntity = undefined
   export let onSelectState = undefined
@@ -15,6 +16,7 @@
   export let onDeleteState = undefined
   export let onEditScript = undefined
   export let onAddState = undefined
+  export let onVariablesChanged = undefined
 
   let selectedPanel = null
   let focusedGlobalProperty = null
@@ -58,7 +60,7 @@
     class="grow-0 shrink-0 flex flex-col overflow-x-clip"
     on:click={() => {
       selectedPanel = 'physics'
-      selectedState = undefined
+      onSelectState(undefined, undefined)
     }}
   >
     <button
@@ -129,9 +131,10 @@
     isSelected={selectedPanel === 'variables'}
     onSelect={() => {
       selectedPanel = 'variables'
-      selectedState = undefined
+      onSelectState(undefined, undefined)
     }}
     variables={selectedEntity.variables}
+    {onVariablesChanged}
   />
 
   {#if items}
@@ -139,6 +142,7 @@
       <StatesPanelItem
         isSelected={selectedState === item.state}
         {states}
+        {variables}
         onSelect={(name, state) => {
           selectedPanel = 'states'
           onSelectState(name, state)

@@ -206,14 +206,18 @@
       dropX !== null &&
       dropY !== null
     ) {
-      global.context.game.addStaticSceneEntity(
-        0,
-        gameWindow,
-        new Vec2(dropX, dropY),
-        e.detail.items[0].candidate.frameTime,
-        e.detail.items[0].candidate.urls,
-        { scaleX: 32, scaleY: 32 }
-      )
+      if (global.playState === 'stop') {
+        selectedEntity = global.context.game.addStaticSceneEntity(
+          0,
+          gameWindow,
+          new Vec2(dropX, dropY),
+          e.detail.items[0].candidate.frameTime,
+          e.detail.items[0].candidate.urls,
+          { scaleX: 32, scaleY: 32 }
+        )
+      } else {
+        window.alert('Cannot add new entities while game is running')
+      }
     }
     dragItems = []
   }
@@ -234,6 +238,26 @@
       { scaleX: selectedEntity.scaleX, scaleY: selectedEntity.scaleY }
     )
     selectedState = selectedEntity.states.get('Default')
+  }
+
+  function handleMakeStaticEntity() {
+    global.context.game.removeControlledSceneEntity(selectedEntity)
+    selectedEntity.destroy()
+
+    const { frameTime, urls } = selectedEntity.states.get(
+      selectedEntity.defaultStateName
+    ).textures[4]
+
+    selectedEntity = global.context.game.addStaticSceneEntity(
+      0,
+      global.gameWindow,
+      selectedEntity.pos,
+      frameTime,
+      urls,
+      { scaleX: selectedEntity.scaleX, scaleY: selectedEntity.scaleY }
+    )
+
+    selectedState = undefined
   }
 
   function setPlayState(newPlayState) {
@@ -287,6 +311,7 @@
       <div class="absolute t-0 l-0 w-full h-full">
         <AssetsPanel />
       </div>
+      <!--
       <div
         class={`absolute t-0 l-0 w-full h-full ${
           global.playState === 'stop'
@@ -294,6 +319,7 @@
             : 'bg-black opacity-50'
         } transition-all`}
       />
+      -->
     </div>
     <Splitter bind:split={topSplit} minSplit={0.1} maxSplit={0.9} />
     <div
@@ -361,27 +387,25 @@
             onResize={() => global.context.propagateResizeEvent()}
           />
         </div>
-        {#if global.playState === 'stop'}
-          <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
-            <div
-              class="absolute top-0 left-0 w-full h-full"
-              use:dndzone={{
-                type: 'Animation',
-                centreDraggedOnCursor: true,
-                dragDisabled: true,
-                morphDisabled: true,
-                dropTargetStyle: '',
-                items: dragItems,
-              }}
-              on:consider={handleDndConsider}
-              on:finalize={handleDndFinalize}
-            >
-              {#each dragItems as item (item.id)}
-                <div class="hidden" />
-              {/each}
-            </div>
+        <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+          <div
+            class="absolute top-0 left-0 w-full h-full"
+            use:dndzone={{
+              type: 'Animation',
+              centreDraggedOnCursor: true,
+              dragDisabled: true,
+              morphDisabled: true,
+              dropTargetStyle: '',
+              items: dragItems,
+            }}
+            on:consider={handleDndConsider}
+            on:finalize={handleDndFinalize}
+          >
+            {#each dragItems as item (item.id)}
+              <div class="hidden" />
+            {/each}
           </div>
-        {/if}
+        </div>
       </div>
     </div>
   </div>
@@ -422,8 +446,10 @@
           errorsList={graphEditorScriptErrors}
           graphIsEmpty={graphEditorScriptEmpty}
           onBackClicked={() => (graphEditorScript = undefined)}
-          states={selectedEntity.states}
-          variables={selectedEntity.variables}
+          {selectedEntity}
+          onVariablesChanged={() => {
+            selectedEntity.variables = selectedEntity.variables
+          }}
         />
       {:else if selectedEntity}
         {#if selectedEntity.ops.isStatic}
@@ -432,7 +458,8 @@
           >
             <button
               on:click={handleMakeDynamicEntity}
-              class="flex grow-0 shrink-0 p-2 items-center justify-center rounded-md bg-emerald-600 hover:bg-emerald-500 transition-all"
+              disabled={global.playState !== 'stop'}
+              class="flex grow-0 shrink-0 p-2 items-center justify-center rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:bg-neutral-800 disabled:hover:bg-neutral-800 disabled:text-neutral-500 disabled:pointer-events-none transition-all"
             >
               <div class="w-5 h-5 mr-2"><Bolt /></div>
               <div>Make dynamic entity</div>
@@ -443,21 +470,27 @@
             class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto mac-pad-right-fix-scrollbar"
           >
             <StatesPanel
+              playState={global.playState}
               states={selectedEntity.states}
               variables={selectedEntity.variables}
               {selectedEntity}
               {selectedState}
-              onVariablesChanged={() =>
-                (selectedEntity.variables = selectedEntity.variables)}
+              onVariablesChanged={() => {
+                selectedEntity.variables = selectedEntity.variables
+                selectedEntity.states = selectedEntity.states
+              }}
               onSelectState={(name, state) => {
                 selectedState = state
               }}
               onRenameState={(name, state) => {
                 if (isStateReferenced(name)) {
-                  window.alert(
-                    'Cannot rename this state because it is referenced by other states'
-                  )
-                  return
+                  if (
+                    !window.confirm(
+                      'Are you sure you want to rename a state that is referenced by other states?'
+                    )
+                  ) {
+                    return
+                  }
                 }
 
                 let newName = window.prompt('Enter new state name:')
@@ -469,7 +502,27 @@
                   return
                 }
 
+                for (const [
+                  otherStateName,
+                  otherState,
+                ] of selectedEntity.states) {
+                  for (const script of otherState.scripts) {
+                    for (const exportNode of script.exportNodes) {
+                      if (
+                        exportNode.node.data.internalPorts[1].editorTypename ===
+                          'state' &&
+                        exportNode.node.internalValues[1] === name
+                      ) {
+                        exportNode.setValue(newName)
+                      }
+                    }
+                  }
+                }
+
                 selectedEntity.states.delete(name)
+                if (selectedEntity.defaultStateName === state.name) {
+                  selectedEntity.defaultStateName = newName
+                }
                 state.name = newName
                 selectedEntity.states.set(newName, state)
                 selectedEntity.states = selectedEntity.states
@@ -478,6 +531,16 @@
                 if (isStateReferenced(name)) {
                   window.alert(
                     'Cannot delete this state because it is referenced by other states'
+                  )
+                  return
+                }
+                if (selectedEntity.defaultStateName === name) {
+                  window.alert('Cannot delete the default state')
+                  return
+                }
+                if (selectedEntity.currentState.name === name) {
+                  window.alert(
+                    'Cannot delete the current state. Try again after stopping the game.'
                   )
                   return
                 }
@@ -511,6 +574,18 @@
                 selectedState = newState
                 selectedEntity.states = selectedEntity.states
               }}
+              onSetDefaultState={(state) => {
+                if (global.playState === 'stop') {
+                  selectedEntity.defaultStateName = state.name
+                  selectedEntity.states = selectedEntity.states
+                  selectedEntity.setState(state.name)
+                } else {
+                  window.alert(
+                    'Cannot change default state while game is running'
+                  )
+                }
+              }}
+              onMakeStaticEntity={handleMakeStaticEntity}
             />
           </div>
         {/if}

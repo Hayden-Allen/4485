@@ -1,1 +1,3 @@
-Checkbox on state to set it as default
+Integer co-ordinates for tiling
+Scale to same aspect ratio
+^^ both of these maybe only happen while holding Ctrl/Cmd ??

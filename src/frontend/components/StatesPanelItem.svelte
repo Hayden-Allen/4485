@@ -14,8 +14,18 @@
   export let onRename = undefined
   export let onDelete = undefined
   export let onEditScript = undefined
+  export let onSetDefault = undefined
 
-  export let item = undefined
+  export let item = undefined,
+    isDefault = false
+
+  function handleDefaultCheck(event, state) {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!state.isDefault) {
+      onSetDefault(state)
+    }
+  }
 </script>
 
 <div
@@ -25,7 +35,7 @@
   <button
     class={`${
       isSelected ? 'bg-neutral-100 text-neutral-900' : 'bg-neutral-800'
-    } flex flex-row grow-0 shrink-0 w-full overflow-x-hidden text-left sticky z-[99999] top-0`}
+    } flex flex-row items-center grow-0 shrink-0 w-full overflow-x-hidden text-left sticky z-[99999] top-0`}
   >
     <div class="flex flex-row w-full grow shrink p-2 overflow-hidden font-bold">
       <button
@@ -41,6 +51,27 @@
         {item.name}
       </div>
     </div>
+    {#if isDefault}
+      <input
+        class="mr-1"
+        id={`isStateDefault_${item.name}`}
+        type="checkbox"
+        checked={true}
+        disabled={true}
+        on:change={(event) => handleDefaultCheck(event, item.state)}
+        on:click={(event) => handleDefaultCheck(event, item.state)}
+      />
+    {:else}
+      <input
+        class="mr-1"
+        id={`isStateDefault_${item.name}`}
+        type="checkbox"
+        checked={false}
+        on:change={(event) => handleDefaultCheck(event, item.state)}
+        on:click={(event) => handleDefaultCheck(event, item.state)}
+      />
+    {/if}
+    <label class="mr-2" for={`isStateDefault_${item.name}`}>Default</label>
     <button
       class="grow-0 shrink-0 p-2 hover:bg-neutral-500 hover:text-neutral-100 h-full"
       on:click={(e) => {

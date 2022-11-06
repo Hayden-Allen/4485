@@ -21,7 +21,6 @@
   function isVariableReferenced(name) {
     let found = false
     for (const [stateName, state] of selectedEntity.states) {
-      if (state.name === name) continue
       for (const script of state.scripts) {
         for (const exportNode of script.exportNodes) {
           if (
@@ -53,15 +52,33 @@
 
   function onRenameVariable(variable) {
     if (isVariableReferenced(variable.name)) {
-      window.alert(
-        'Cannot rename this variable because it is referenced by other states'
-      )
-      return
+      if (
+        !window.confirm(
+          'Are you sure you want to rename a variable that is referenced by other states?'
+        )
+      ) {
+        return
+      }
     }
-    let newName = window.prompt('Enter new state name:')
+
+    let newName = window.prompt('Enter new variable name:')
     if (!newName) return
     newName = newName.trim()
     if (!newName) return
+
+    for (const [stateName, state] of selectedEntity.states) {
+      for (const script of state.scripts) {
+        for (const exportNode of script.exportNodes) {
+          if (
+            exportNode.node.data.internalPorts[1].editorTypename ===
+              'variable' &&
+            exportNode.node.internalValues[1] === variable.name
+          ) {
+            exportNode.setValue(newName)
+          }
+        }
+      }
+    }
 
     variables.delete(variable.name)
     variable.name = newName

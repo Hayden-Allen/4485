@@ -105,12 +105,12 @@
     <div class="grow shrink flex flex-col w-full h-full p-4 overflow-hidden">
       {#if selectedTemplate}
         <div
-          class="grow shrink w-full font-bold text-2xl overflow-hidden whitespace-nowrap text-ellipsis"
+          class="grow shrink w-full font-bold text-2xl overflow-hidden whitespace-nowrap text-ellipsis select-text"
         >
           {selectedTemplate.name}
         </div>
         <div
-          class="grow shrink w-full h-full overflow-hidden text-ellipsis mt-4"
+          class="grow shrink w-full h-full overflow-hidden text-ellipsis mt-4 select-text"
         >
           {selectedTemplate.description}
         </div>

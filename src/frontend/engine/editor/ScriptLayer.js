@@ -10,23 +10,18 @@ import FloatPortEditor from 'components/popup/editors/FloatEditor.svelte'
 import StatePortEditor from 'components/popup/editors/StateEditor.svelte'
 import StringPortEditor from 'components/popup/editors/StringEditor.svelte'
 import VariablePortEditor from 'components/popup/editors/VariableEditor.svelte'
-import { PORT_COLOR } from './ScriptVisualizer.js'
-import { ScriptEdgeProxy } from './ScriptEdgeProxy'
+import { PORT_COLOR } from '%editor/ScriptVisualizer.js'
+import { ScriptEdgeProxy } from '%editor/ScriptEdgeProxy.js'
+import { EntityVariable } from '%component/SceneEntity.js'
 
 export class ScriptLayer extends Layer {
-  constructor(
-    input,
-    controls,
-    script,
-    selectedEntityStates,
-    selectedEntityVariables
-  ) {
+  constructor(input, controls, script, selectedEntity, onVariablesChanged) {
     super('ScriptLayer')
     this.input = input
     this.controls = controls
     this.script = script
-    this.selectedEntityStates = selectedEntityStates
-    this.selectedEntityVariables = selectedEntityVariables
+    this.selectedEntity = selectedEntity
+    this.onVariablesChanged = onVariablesChanged
     this.capturedLeftClick = false
     this.graphvis = undefined
     this.selected = undefined
@@ -470,6 +465,26 @@ export class ScriptLayer extends Layer {
         },
         onAddNode: (name) => {
           const node = self.graphvis.graph.createNode(name)
+          if (node.isExport) {
+            if (node.data.internalPorts[1].editorTypename === 'state') {
+              node.internalValues[1] = this.selectedEntity.defaultStateName
+            } else if (
+              node.data.internalPorts[1].editorTypename === 'variable'
+            ) {
+              if (this.selectedEntity.variables.size > 0) {
+                for (const [name] of this.selectedEntity.variables) {
+                  node.internalValues[1] = name
+                  break
+                }
+              } else {
+                this.selectedEntity.variables.set(
+                  'Variable 1',
+                  new EntityVariable('Variable 1', 0)
+                )
+                node.internalValues[1] = 'Variable 1'
+              }
+            }
+          }
           self.graphvis.recompile()
           const proxy = self.graphvis.proxies.get(node.id)
           const [x, y] = self.inverseTransformCoords(
@@ -516,9 +531,9 @@ export class ScriptLayer extends Layer {
 
     let extra = {}
     if (type === StatePortEditor) {
-      extra = { states: this.selectedEntityStates }
+      extra = { states: this.selectedEntity.states }
     } else if (type === VariablePortEditor) {
-      extra = { variables: this.selectedEntityVariables }
+      extra = { variables: this.selectedEntity.variables }
     }
 
     return {

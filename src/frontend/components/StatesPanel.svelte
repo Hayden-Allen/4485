@@ -2,6 +2,7 @@
   import { global } from '%engine/Global.js'
   import { PORT_COLOR } from '%editor/ScriptVisualizer.js'
   import Plus from 'icons/24/outline/plus.svelte'
+  import BoltSlash from 'icons/20/mini/bolt-slash.svelte'
   import FloatEditor from 'components/scriptPropertyEditors/FloatEditor.svelte'
   import StatesPanelItem from 'components/StatesPanelItem.svelte'
   import VariablesPanel from './VariablesPanel.svelte'
@@ -17,6 +18,9 @@
   export let onEditScript = undefined
   export let onAddState = undefined
   export let onVariablesChanged = undefined
+  export let onSetDefaultState = undefined
+  export let onMakeStaticEntity = undefined
+  export let playState = undefined
 
   let selectedPanel = null
   let focusedGlobalProperty = null
@@ -44,6 +48,7 @@
         items.push({
           name: key,
           state: value,
+          isDefault: value.isDefault,
         })
       }
       global.alphabetSort(items)
@@ -121,6 +126,18 @@
           </div>
         </div>
       {/each}
+      <div
+        class="grow-0 shrink-0 flex flex-row items-center justify-center p-2 bg-neutral-900 border-b border-solid border-neutral-700 w-full"
+      >
+        <button
+          on:click={onMakeStaticEntity}
+          disabled={playState !== 'stop'}
+          class="flex grow-0 shrink-0 p-2 items-center justify-center rounded-md text-rose-500 disabled:text-neutral-500 bg-neutral-800 hover:bg-neutral-700 disabled:hover:bg-neutral-800 disabled:pointer-events-none transition-all"
+        >
+          <div class="w-5 h-5 mr-2"><BoltSlash /></div>
+          <div>Make static entity</div>
+        </button>
+      </div>
     {/if}
   </div>
 
@@ -149,6 +166,8 @@
         }}
         onRename={onRenameState}
         onDelete={onDeleteState}
+        onSetDefault={onSetDefaultState}
+        isDefault={selectedEntity.defaultStateName === item.name}
         {onEditScript}
         {item}
       />

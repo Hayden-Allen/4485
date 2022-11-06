@@ -251,6 +251,7 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     this.animationIndex = 4
     this.variables = options.variables || new Map()
     this.variablesCollapsed = false
+    this.defaultStateName = currentStateName
   }
   runScripts(event, context) {
     /**
@@ -286,6 +287,7 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
 
     return {
       ...super.serialize(),
+      defaultStateName: this.defaultStateName,
       states: Array.from(this.states.values()).map((state) =>
         state.serialize()
       ),
@@ -298,9 +300,8 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
   static deserialize(obj) {
     const pos = new Vec2(obj.pos.x, obj.pos.y)
     let states = new Map()
-    let defaultState = undefined
+    let defaultState = obj.defaultStateName
     obj.states.forEach((state) => {
-      if (!defaultState) defaultState = state.name
       states.set(state.name, State.deserialize(state))
     })
 

@@ -228,6 +228,7 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     this.currentState = this.states.get(currentStateName)
     this.animationIndex = 4
     this.variables = new Map()
+    this.variablesCollapsed = false
   }
   runScripts(event, context) {
     /**

@@ -20,7 +20,7 @@ export class State {
     this.gl = gl
     this.collapsed = false
     this.animationsCollapsed = false
-    this.animationsView = 'grid'
+    this.animationsView = 'list'
   }
   run(event, context, ...data) {
     this.scripts.forEach((script) => script.run(event, context, ...data))

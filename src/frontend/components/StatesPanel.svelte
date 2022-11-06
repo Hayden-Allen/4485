@@ -4,6 +4,7 @@
   import Plus from 'icons/24/outline/plus.svelte'
   import FloatEditor from 'components/scriptPropertyEditors/FloatEditor.svelte'
   import StatesPanelItem from 'components/StatesPanelItem.svelte'
+  import VariablesPanel from './VariablesPanel.svelte'
 
   export let states = undefined
   export let selectedState = undefined
@@ -103,6 +104,11 @@
       </div>
     </div>
   {/each}
+
+  <VariablesPanel
+    collapsed={selectedEntity.variablesCollapsed}
+    onSetCollapsed={(value) => (selectedEntity.variablesCollapsed = value)}
+  />
 
   {#if items}
     {#each items as item}

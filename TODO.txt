@@ -1,2 +1,1 @@
 Checkbox on state to set it as default
-Prevent rename/delete state/variable when it is referenced elsewhere

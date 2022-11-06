@@ -9,16 +9,24 @@ import BoolPortEditor from 'components/popup/editors/BoolEditor.svelte'
 import FloatPortEditor from 'components/popup/editors/FloatEditor.svelte'
 import StatePortEditor from 'components/popup/editors/StateEditor.svelte'
 import StringPortEditor from 'components/popup/editors/StringEditor.svelte'
+import VariablePortEditor from 'components/popup/editors/VariableEditor.svelte'
 import { PORT_COLOR } from './ScriptVisualizer.js'
 import { ScriptEdgeProxy } from './ScriptEdgeProxy'
 
 export class ScriptLayer extends Layer {
-  constructor(input, controls, script, selectedEntityStates) {
+  constructor(
+    input,
+    controls,
+    script,
+    selectedEntityStates,
+    selectedEntityVariables
+  ) {
     super('ScriptLayer')
     this.input = input
     this.controls = controls
     this.script = script
     this.selectedEntityStates = selectedEntityStates
+    this.selectedEntityVariables = selectedEntityVariables
     this.capturedLeftClick = false
     this.graphvis = undefined
     this.selected = undefined
@@ -488,6 +496,7 @@ export class ScriptLayer extends Layer {
       float: FloatPortEditor,
       number: FloatPortEditor,
       state: StatePortEditor,
+      variable: VariablePortEditor,
     }
     const type = typenameToEditor[port.port.editorTypename]
     const nodeProps = { proxy, port }
@@ -508,6 +517,8 @@ export class ScriptLayer extends Layer {
     let extra = {}
     if (type === StatePortEditor) {
       extra = { states: this.selectedEntityStates }
+    } else if (type === VariablePortEditor) {
+      extra = { variables: this.selectedEntityVariables }
     }
 
     return {

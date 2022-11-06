@@ -14,6 +14,7 @@
   export let graphIsEmpty = false
   export let onBackClicked = undefined
   export let states = undefined
+  export let variables = undefined
 
   let scriptWindow = undefined,
     scriptCanvas = undefined,
@@ -30,7 +31,8 @@
       scriptInputLayer,
       scriptControlsLayer,
       undefined,
-      states
+      states,
+      variables
     )
     scriptWindow.pushLayer(scriptControlsLayer)
     scriptWindow.pushLayer(scriptLayer)

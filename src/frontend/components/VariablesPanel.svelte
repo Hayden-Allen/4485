@@ -7,6 +7,7 @@
   import Trash from 'icons/20/mini/trash.svelte'
   import Plus from 'icons/24/outline/plus.svelte'
 
+  export let selectedEntity = undefined
   export let isSelected = false
   export let collapsed = false
   export let onSelect = undefined
@@ -15,6 +16,29 @@
   export let focusedVariable = undefined
 
   let variablesArray = []
+
+  function isVariableReferenced(name) {
+    let found = false
+    for (const [stateName, state] of selectedEntity.states) {
+      if (state.name === name) continue
+      for (const script of state.scripts) {
+        console.log(script.exportNodes)
+        for (const exportNode of script.exportNodes) {
+          if (
+            exportNode.node.data.internalPorts[1].editorTypename ===
+              'variable' &&
+            exportNode.node.internalValues[1] === name
+          ) {
+            found = true
+            break
+          }
+        }
+        if (found) break
+      }
+      if (found) break
+    }
+    return found
+  }
 
   function onAddVariable() {
     let variableNum = 1
@@ -27,6 +51,12 @@
   }
 
   function onRenameVariable(variable) {
+    if (isVariableReferenced(variable.name)) {
+      window.alert(
+        'Cannot rename this variable because it is referenced by other states'
+      )
+      return
+    }
     let newName = window.prompt('Enter new state name:')
     newName = newName.trim()
     if (!newName) {
@@ -40,6 +70,12 @@
   }
 
   function onDeleteVariable(variable) {
+    if (isVariableReferenced(variable.name)) {
+      window.alert(
+        'Cannot delete this variable because it is referenced by other states'
+      )
+      return
+    }
     variables.delete(variable.name)
     variables = variables
   }

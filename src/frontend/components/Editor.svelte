@@ -247,6 +247,28 @@
     }
     global.playState = newPlayState
   }
+
+  function isStateReferenced(name) {
+    let found = false
+    for (const [stateName, state] of selectedEntity.states) {
+      if (state.name === name) continue
+      for (const script of state.scripts) {
+        console.log(script.exportNodes)
+        for (const exportNode of script.exportNodes) {
+          if (
+            exportNode.node.data.internalPorts[1].editorTypename === 'state' &&
+            exportNode.node.internalValues[1] === name
+          ) {
+            found = true
+            break
+          }
+        }
+        if (found) break
+      }
+      if (found) break
+    }
+    return found
+  }
 </script>
 
 <svelte:window on:pointermove={onPointerMove} />
@@ -401,6 +423,7 @@
           graphIsEmpty={graphEditorScriptEmpty}
           onBackClicked={() => (graphEditorScript = undefined)}
           states={selectedEntity.states}
+          variables={selectedEntity.variables}
         />
       {:else if selectedEntity}
         {#if selectedEntity.ops.isStatic}
@@ -427,9 +450,20 @@
                 selectedState = state
               }}
               onRenameState={(name, state) => {
+                if (isStateReferenced(name)) {
+                  window.alert(
+                    'Cannot rename this state because it is referenced by other states'
+                  )
+                  return
+                }
+
                 let newName = window.prompt('Enter new state name:')
                 newName = newName.trim()
                 if (!newName) return
+                if (selectedEntity.states.has(newName)) {
+                  window.alert('A state with this name already exists')
+                  return
+                }
 
                 selectedEntity.states.delete(name)
                 state.name = newName
@@ -437,6 +471,12 @@
                 selectedEntity.states = selectedEntity.states
               }}
               onDeleteState={(name, state) => {
+                if (isStateReferenced(name)) {
+                  window.alert(
+                    'Cannot delete this state because it is referenced by other states'
+                  )
+                  return
+                }
                 selectedState = undefined
                 selectedEntity.states.delete(name)
                 selectedEntity.states = selectedEntity.states
@@ -444,12 +484,13 @@
               onEditScript={(script) => (graphEditorScript = script)}
               onAddState={() => {
                 let name = window.prompt('Enter new state name:')
-                if (!name) return
                 name = name.trim()
+                if (!name) return
+                if (selectedEntity.states.has(name)) {
+                  window.alert('A state with this name already exists')
+                  return
+                }
 
-                if (selectedEntity.states.has(name))
-                  if (!window.confirm(`State '${name}' exists. Overwrite?`))
-                    return
                 const newState = new State(name, [], gameWindow.gl, [
                   null,
                   null,

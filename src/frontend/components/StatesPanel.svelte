@@ -123,6 +123,7 @@
   </div>
 
   <VariablesPanel
+    {selectedEntity}
     collapsed={selectedEntity.variablesCollapsed}
     onSetCollapsed={(value) => (selectedEntity.variablesCollapsed = value)}
     isSelected={selectedPanel === 'variables'}

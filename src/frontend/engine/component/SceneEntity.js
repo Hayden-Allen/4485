@@ -106,6 +106,7 @@ class SceneEntity extends Component {
   getCurrentTexture() {}
   serialize() {
     return {
+      id: this.id,
       pos: this.originalPos,
       ops: this.ops,
     }
@@ -173,6 +174,7 @@ export class DynamicSceneEntity extends SceneEntity {
     })
     const v = options.vel || new Vec2(0, 0)
     Body.setVelocity(this.physicsProxy, { x: v.x, y: v.y })
+    this.physicsCollapsed = false
   }
   move() {
     // copy position from physics simulation
@@ -222,7 +224,7 @@ export class DynamicSceneEntity extends SceneEntity {
   }
 }
 
-class EntityVariable {
+export class EntityVariable {
   constructor(name, defaultValue) {
     this.name = name
     this.defaultValue = defaultValue
@@ -243,12 +245,6 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     this.animationIndex = 4
     this.variables = new Map()
     this.variablesCollapsed = false
-  }
-  addVariable(name, defaultValue) {
-    this.variables.set(name, new EntityVariable(name, defaultValue))
-  }
-  deleteVariable(name) {
-    this.variables.delete(name)
   }
   runScripts(event, context) {
     /**

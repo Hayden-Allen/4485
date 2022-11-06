@@ -66,7 +66,7 @@
           }
         }
         if (!selectedEntity) {
-          for (const [entityId, entity] of layer.static) {
+          for (const [entityId, entity] of layer.dynamic) {
             if (entityId === oldState.selectedEntity.id) {
               selectedEntity = entity
               editorLayer.selectedEntity = selectedEntity
@@ -428,12 +428,12 @@
               }}
               onRenameState={(name, state) => {
                 let newName = window.prompt('Enter new state name:')
-                if (!newName) return
                 newName = newName.trim()
+                if (!newName) return
 
                 selectedEntity.states.delete(name)
+                state.name = newName
                 selectedEntity.states.set(newName, state)
-                selectedEntity.setState(newName)
                 selectedEntity.states = selectedEntity.states
               }}
               onDeleteState={(name, state) => {

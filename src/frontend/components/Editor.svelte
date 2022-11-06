@@ -35,24 +35,64 @@
 
   let displayGravity = undefined
 
-  function resetUiState() {
-    //
-    // TODO: After de-serialization, entities should be re-selected based on their UUID rather than just deselected
-    //
-    graphEditorScript = undefined
-    graphEditorScriptErrors = []
-    graphEditorScriptEmpty = true
-    editorLayer.selectedEntity = undefined // FIXME
-    selectedEntity = undefined
-    selectedState = undefined
-  }
-
   let curProject = undefined
 
   function serializeOnStop() {
     curProject = global.context.game.serialize()
-    resetUiState()
+
+    const oldState = {
+      graphEditorScript,
+      selectedEntity,
+      selectedState,
+    }
+
+    // This is necessary because we check for selectedEntity below to determine whether to break
+    // while searching the newly deserialized state
+    graphEditorScript = undefined
+    editorLayer.selectedEntity = undefined
+    selectedEntity = undefined
+    selectedState = undefined
+
     global.context.game.deserialize(curProject)
+
+    if (oldState.selectedEntity) {
+      for (const layer of global.context.game.currentScene.layers) {
+        for (const [entityId, entity] of layer.static) {
+          if (entityId === oldState.selectedEntity.id) {
+            selectedEntity = entity
+            editorLayer.selectedEntity = selectedEntity
+            break
+          }
+        }
+        if (!selectedEntity) {
+          for (const [entityId, entity] of layer.static) {
+            if (entityId === oldState.selectedEntity.id) {
+              selectedEntity = entity
+              editorLayer.selectedEntity = selectedEntity
+              break
+            }
+          }
+        }
+      }
+
+      if (oldState.selectedState) {
+        selectedState = entity.states.get(oldState.selectedState.name)
+      }
+
+      if (oldState.graphEditorScript) {
+        for (const [stateName, state] of entity.states) {
+          for (const script of state.scripts) {
+            if (script.id === oldState.graphEditorScript.id) {
+              graphEditorScript = script
+            }
+          }
+          if (graphEditorScript) {
+            break
+          }
+        }
+      }
+    }
+
     global.context.game.physicsEngine.engine.gravity.scale =
       global.context.game.physicsEngine.engine.gravity.scale
   }
@@ -178,7 +218,7 @@
   }
 
   function handleMakeDynamicEntity() {
-    //
+    global.context.game.removeStaticSceneEntity(selectedEntity)
   }
 
   function setPlayState(newPlayState) {

@@ -78,6 +78,7 @@ export class ScriptGraph extends Component {
     this.edges.forEach((edgeList) => edges.push(edgeList.serialize(nodeIndex)))
 
     return {
+      id: this.id,
       name: this.debugName,
       nodes,
       edges,
@@ -100,6 +101,7 @@ export class ScriptGraph extends Component {
 
     this.reset()
 
+    this.id = obj.id
     this.debugName = obj.name
     let nodeIndex = new Map()
     for (const node of obj.nodes) {

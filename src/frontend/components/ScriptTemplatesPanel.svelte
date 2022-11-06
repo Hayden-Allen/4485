@@ -68,7 +68,7 @@
 
   <div class="grow shrink flex flex-row w-full h-full overflow-hidden">
     <div
-      class="grow-0 shrink-0 flex flex-col w-full max-w-[256px] h-full border-r border-solid border-neutral-700 overflow-x-hidden overflow-y-auto"
+      class="grow-0 shrink-0 flex flex-col w-full max-w-[256px] h-full border-r border-solid border-neutral-700 overflow-x-hidden overflow-y-auto mac-pad-right-fix-scrollbar"
     >
       {#each candidates as template, i}
         <button

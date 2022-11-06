@@ -130,7 +130,7 @@
   </div>
 
   <div
-    class="grow shrink p-4 w-full h-full overflow-x-hidden overflow-y-auto"
+    class="grow shrink p-4 w-full h-full overflow-x-hidden overflow-y-auto mac-pad-right-fix-scrollbar"
     use:dndzone={{
       type: 'Animation',
       centreDraggedOnCursor: true,

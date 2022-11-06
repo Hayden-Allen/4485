@@ -17,9 +17,9 @@
   import PauseIcon from 'icons/24/solid/pause.svelte'
   import StopIcon from 'icons/24/solid/stop.svelte'
   import { Context } from '%engine/Context.js'
-  import TestProject from '%editor/projects/test.js'
   import Bolt from 'icons/20/mini/bolt.svelte'
   import WorldPropertiesPanel from './WorldPropertiesPanel.svelte'
+  import { Scene } from '%component/Scene.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -50,11 +50,7 @@
   let curProject = undefined
 
   function serializeOnStop() {
-    if (curProject) {
-      curProject = global.context.game.serialize()
-    } else {
-      curProject = JSON.stringify(TestProject) // DEBUG
-    }
+    curProject = global.context.game.serialize()
     resetUiState()
     global.context.game.deserialize(curProject)
     global.context.game.physicsEngine.engine.gravity.scale =
@@ -69,6 +65,7 @@
 
   onMount(() => {
     global.init(new Context())
+    global.context.game.setCurrentScene(new Scene())
 
     gameWindow = new Window3D(gameCanvas, uiCanvas, [0, 0, 0, 1])
     global.gameWindow = gameWindow

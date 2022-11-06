@@ -4,9 +4,6 @@ import * as vec4 from '%glMatrix/vec4.js'
 import { global } from '%engine/Global.js'
 import { Camera } from '%graphics/Camera.js'
 import { Vec2 } from '%util/Vec2.js'
-import matter from 'matter-js'
-
-const { Body } = matter
 
 export class EditorLayer extends Layer {
   constructor(game, setSelectedEntity) {
@@ -124,22 +121,12 @@ export class EditorLayer extends Layer {
     // }
 
     if (this.selectedEntity) {
-      let ex = 0,
-        ey = 0
-      let dimx = this.selectedEntity.dim.x + this.borderSize * 2
-      let dimy = this.selectedEntity.dim.y + this.borderSize * 2
-      if (this.selectedEntityIsControlled) {
-        ex = this.selectedEntity.pos.x - this.selectedEntity.dim.x / 2
-        ey = this.selectedEntity.pos.y + this.selectedEntity.dim.y / 2
-      } else {
-        ex = this.selectedEntity.pos.x
-        ey = this.selectedEntity.pos.y + this.selectedEntity.dim.y
-      }
-
+      const [ex, ey] = this.getResizeDotCoords(0)
+      const [dimx, dimy] = this.getSelectedEntityEffectiveDims()
       e.window.strokeRect(
         this.camera,
-        ex - this.borderSize,
-        ey + this.borderSize,
+        ex + this.borderSize * 2,
+        ey - this.borderSize * 2,
         dimx,
         dimy,
         '#fff',
@@ -234,8 +221,8 @@ export class EditorLayer extends Layer {
           global.rectIntersect(
             worldMouseX,
             worldMouseY,
-            e.pos.x,
-            e.pos.y,
+            e.pos.x - e.dim.x / 2,
+            e.pos.y - e.dim.y / 2,
             e.dim.x,
             e.dim.y
           )
@@ -297,50 +284,20 @@ export class EditorLayer extends Layer {
           // 2 - tl (0, -1)
           // 1 - bl (0, 0)
           // 0 - br (1, 0)
-          if (this.selectedEntityIsControlled) {
-            const npw =
-              (this.resizeStartScaleX + ox) *
-              (this.selectedEntity.maxX - this.selectedEntity.minX)
-            const nph =
-              (this.resizeStartScaleY + oy) *
-              (this.selectedEntity.maxY - this.selectedEntity.minY)
-            const crx = [1, -1, -1, 1]
-            const cry = [-1, -1, 1, 1]
-            this.selectedEntity.setPositionFromEditor(
-              this.selectedEntity.pos.x +
-                ((this.selectedEntity.dim.x - npw) * crx[this.resizeCorner]) /
-                  2,
-              this.selectedEntity.pos.y +
-                ((this.selectedEntity.dim.y - nph) * cry[this.resizeCorner]) / 2
-            )
-          } else {
-            switch (this.resizeCorner) {
-              case 0:
-                this.selectedEntity.setPositionFromEditor(
-                  worldMouseX,
-                  this.selectedEntity.pos.y
-                )
-                break
-              case 1:
-                this.selectedEntity.setPositionFromEditor(
-                  this.selectedEntity.pos.x,
-                  this.selectedEntity.pos.y
-                )
-                break
-              case 2:
-                this.selectedEntity.setPositionFromEditor(
-                  this.selectedEntity.pos.x,
-                  worldMouseY
-                )
-                break
-              case 3:
-                this.selectedEntity.setPositionFromEditor(
-                  worldMouseX,
-                  worldMouseY
-                )
-                break
-            }
-          }
+          const npw =
+            (this.resizeStartScaleX + ox) *
+            (this.selectedEntity.maxX - this.selectedEntity.minX)
+          const nph =
+            (this.resizeStartScaleY + oy) *
+            (this.selectedEntity.maxY - this.selectedEntity.minY)
+          const crx = [1, -1, -1, 1]
+          const cry = [-1, -1, 1, 1]
+          this.selectedEntity.setPositionFromEditor(
+            this.selectedEntity.pos.x +
+              ((this.selectedEntity.dim.x - npw) * crx[this.resizeCorner]) / 2,
+            this.selectedEntity.pos.y +
+              ((this.selectedEntity.dim.y - nph) * cry[this.resizeCorner]) / 2
+          )
 
           this.selectedEntity.setScaleFromEditor(
             this.resizeStartScaleX + ox,
@@ -372,16 +329,10 @@ export class EditorLayer extends Layer {
     }
   }
   getSelectedEntityBaseCoords() {
-    let ex = 0,
-      ey = 0
-    if (this.selectedEntityIsControlled) {
-      ex = this.selectedEntity.pos.x - this.selectedEntity.dim.x / 2
-      ey = this.selectedEntity.pos.y + this.selectedEntity.dim.y / 2
-    } else {
-      ex = this.selectedEntity.pos.x
-      ey = this.selectedEntity.pos.y + this.selectedEntity.dim.y
-    }
-    return [ex, ey]
+    return [
+      this.selectedEntity.pos.x - this.selectedEntity.dim.x / 2,
+      this.selectedEntity.pos.y + this.selectedEntity.dim.y / 2,
+    ]
   }
   getSelectedEntityEffectiveDims() {
     return [

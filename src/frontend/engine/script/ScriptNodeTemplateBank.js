@@ -730,9 +730,7 @@ class ScriptNodeTemplateBank {
       ],
       [],
       ([entity, x]) => {
-        console.log(x)
         if (entity.setVelocity) {
-          console.log(x)
           entity.setVelocityX(x)
           // console.log(entity.physicsProxy.velocity)
         }

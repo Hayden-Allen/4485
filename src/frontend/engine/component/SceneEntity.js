@@ -11,8 +11,8 @@ const VERTEX_DATA = [-1, -1, 0, 0, 1, -1, 1, 0, 1, 1, 1, 1, -1, 1, 0, 1]
 const INDEX_DATA = [0, 1, 2, 0, 2, 3]
 class SceneEntityOptions {
   constructor({
-    vertices = VERTEX_DATA,
-    indices = INDEX_DATA,
+    vertices = [...VERTEX_DATA],
+    indices = [...INDEX_DATA],
     isStatic = true,
     scaleX = 1,
     scaleY = 1,
@@ -74,7 +74,8 @@ class SceneEntity extends Component {
       sy * (this.maxY - this.minY)
     )
     this.physicsProxy = this.game.physicsEngine.createRect(
-      this.pos.plus(this.dim.scale(0.5)),
+      this.pos,
+      //this.pos.plus(this.dim.scale(0.5)),
       this.dim,
       {
         isStatic: this.ops.isStatic,
@@ -221,6 +222,19 @@ export class DynamicSceneEntity extends SceneEntity {
   }
 }
 
+class EntityVariable {
+  constructor(name, defaultValue) {
+    this.name = name
+    this.defaultValue = defaultValue
+    this.currentValue = defaultValue
+  }
+  reset() {
+    this.currentValue = this.defaultValue
+  }
+  set(v) {
+    this.currentValue = v
+  }
+}
 export class ControlledSceneEntity extends DynamicSceneEntity {
   constructor(game, gameWindow, pos, states, currentStateName, options = {}) {
     super(game, gameWindow, pos, options)
@@ -229,6 +243,12 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     this.animationIndex = 4
     this.variables = new Map()
     this.variablesCollapsed = false
+  }
+  addVariable(name, defaultValue) {
+    this.variables.set(name, new EntityVariable(name, defaultValue))
+  }
+  deleteVariable(name) {
+    this.variables.delete(name)
   }
   runScripts(event, context) {
     /**

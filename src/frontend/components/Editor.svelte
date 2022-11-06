@@ -20,6 +20,7 @@
   import Bolt from 'icons/20/mini/bolt.svelte'
   import WorldPropertiesPanel from './WorldPropertiesPanel.svelte'
   import { Scene } from '%component/Scene.js'
+  import { ControlledSceneEntity } from '%component/SceneEntity.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -76,11 +77,11 @@
       }
 
       if (oldState.selectedState) {
-        selectedState = entity.states.get(oldState.selectedState.name)
+        selectedState = selectedEntity.states.get(oldState.selectedState.name)
       }
 
       if (oldState.graphEditorScript) {
-        for (const [stateName, state] of entity.states) {
+        for (const [stateName, state] of selectedEntity.states) {
           for (const script of state.scripts) {
             if (script.id === oldState.graphEditorScript.id) {
               graphEditorScript = script
@@ -219,6 +220,19 @@
 
   function handleMakeDynamicEntity() {
     global.context.game.removeStaticSceneEntity(selectedEntity)
+    selectedEntity.destroy()
+
+    const { frameTime, urls } = selectedEntity.texture
+    let animations = new Array(9).fill(null)
+    animations[4] = { frameTime, urls }
+    selectedEntity = global.context.game.addControlledSceneEntity(
+      0,
+      global.gameWindow,
+      selectedEntity.pos,
+      new Map([['Default', new State('Default', [], global.gl, animations)]]),
+      'Default',
+      { scaleX: selectedEntity.scaleX, scaleY: selectedEntity.scaleY }
+    )
   }
 
   function setPlayState(newPlayState) {

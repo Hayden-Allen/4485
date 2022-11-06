@@ -41,16 +41,21 @@ export class Game {
     this.sceneManager.addComponent(scene)
   }
   addStaticSceneEntity(z, gameWindow, pos, frameTime, urls, options = {}) {
-    this.currentScene.addStaticEntity(
-      new StaticSceneEntity(this, gameWindow, pos, frameTime, urls, options),
-      z
+    const newEntity = new StaticSceneEntity(
+      this,
+      gameWindow,
+      pos,
+      frameTime,
+      urls,
+      options
     )
+    this.currentScene.addStaticEntity(newEntity, z)
+    return newEntity
   }
   addDynamicSceneEntity(z, gameWindow, pos, options = {}) {
-    this.currentScene.addDynamicEntity(
-      new DynamicSceneEntity(this, gameWindow, pos, options),
-      z
-    )
+    const newEntity = new DynamicSceneEntity(this, gameWindow, pos, options)
+    this.currentScene.addDynamicEntity(newEntity, z)
+    return newEntity
   }
   addControlledSceneEntity(
     z,
@@ -60,17 +65,16 @@ export class Game {
     currentStateName,
     options = {}
   ) {
-    this.currentScene.addControlledEntity(
-      new ControlledSceneEntity(
-        this,
-        gameWindow,
-        pos,
-        states,
-        currentStateName,
-        options
-      ),
-      z
+    const newEntity = new ControlledSceneEntity(
+      this,
+      gameWindow,
+      pos,
+      states,
+      currentStateName,
+      options
     )
+    this.currentScene.addControlledEntity(newEntity, z)
+    return newEntity
   }
   removeStaticSceneEntity(component) {
     this.currentScene.removeStaticEntity(component)

@@ -236,6 +236,12 @@ export class EntityVariable {
   set(v) {
     this.currentValue = v
   }
+  serialize() {
+    return {
+      name: this.name,
+      defaultValue: this.defaultValue,
+    }
+  }
 }
 export class ControlledSceneEntity extends DynamicSceneEntity {
   constructor(game, gameWindow, pos, states, currentStateName, options = {}) {
@@ -243,7 +249,7 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     this.states = states
     this.currentState = this.states.get(currentStateName)
     this.animationIndex = 4
-    this.variables = new Map()
+    this.variables = options.variables || new Map()
     this.variablesCollapsed = false
   }
   runScripts(event, context) {
@@ -273,11 +279,17 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     }
   }
   serialize() {
+    let variables = {}
+    for (const [name, variable] of this.variables) {
+      variables[name] = variable.serialize()
+    }
+
     return {
       ...super.serialize(),
       states: Array.from(this.states.values()).map((state) =>
         state.serialize()
       ),
+      variables,
     }
   }
   /**
@@ -291,13 +303,23 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
       if (!defaultState) defaultState = state.name
       states.set(state.name, State.deserialize(state))
     })
+
+    let variables = new Map()
+    for (const name in obj.variables) {
+      const newVariable = new EntityVariable(
+        name,
+        obj.variables[name].defaultValue
+      )
+      variables.set(name, newVariable)
+    }
+
     return new ControlledSceneEntity(
       global.context.game,
       global.gameWindow,
       pos,
       states,
       defaultState,
-      obj.ops
+      { ...obj.ops, variables }
     )
   }
 }

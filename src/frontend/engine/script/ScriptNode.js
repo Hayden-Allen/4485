@@ -117,9 +117,9 @@ export class ScriptNode extends Component {
       } else {
         const { active } = results[edge.outputIndex]
         // activate child nodes if the result of running this node says so
-        //if (active || (!this.isSource && active === undefined)) {
-        if (active || active === undefined) {
-          console.log(this.debugName, active)
+        if (active || (!this.isSource && active === undefined)) {
+          //if (active || active === undefined) {
+          // console.log(this.debugName, active)
           edge.inputNode.active = true
         }
         if (active === false) edge.inputNode.active = false

@@ -440,7 +440,7 @@
           </div>
         {:else}
           <div
-            class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto"
+            class="flex flex-col w-full h-full overflow-x-hidden overflow-y-auto mac-pad-right-fix-scrollbar"
           >
             <StatesPanel
               states={selectedEntity.states}

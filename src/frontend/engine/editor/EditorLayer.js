@@ -92,8 +92,7 @@ export class EditorLayer extends Layer {
       }
       const fileData = await fileHandle.getFile()
       const text = await fileData.text()
-      const parsed = JSON.parse(text.replace('export default ', ''))
-      global.context.game.deserialize(parsed)
+      global.context.game.deserialize(text.replace('export default ', ''))
     }
   }
   onRender(e) {
@@ -178,6 +177,10 @@ export class EditorLayer extends Layer {
     return [tc[0], tc[1]]
   }
   onMouseDown(e) {
+    if (global.playState !== 'stop') {
+      return
+    }
+
     const [worldMouseX, worldMouseY] = this.getMouseWorldCoords(e.x, e.y)
 
     // check resize controls
@@ -265,7 +268,10 @@ export class EditorLayer extends Layer {
     }
   }
   onMouseMove(e) {
-    const [worldMouseX, worldMouseY] = this.getMouseWorldCoords(e.x, e.y)
+    if (global.playState !== 'stop') {
+      return
+    }
+
     if (
       global.playState === 'stop' &&
       this.selectedEntity &&

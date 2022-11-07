@@ -20,7 +20,6 @@
   import Bolt from 'icons/20/mini/bolt.svelte'
   import WorldPropertiesPanel from './WorldPropertiesPanel.svelte'
   import { Scene } from '%component/Scene.js'
-  import { ControlledSceneEntity } from '%component/SceneEntity.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -33,35 +32,41 @@
     graphEditorScriptEmpty = true,
     selectedEntity = undefined,
     selectedState = undefined
+  let beforePlaySelectedEntity = undefined
 
   let displayGravity = undefined
 
   let curProject = undefined
 
-  function serializeOnStop() {
+  function serializeOnPlay() {
+    beforePlaySelectedEntity = selectedEntity
+    selectedEntity = undefined
     curProject = global.context.game.serialize()
+  }
 
+  function deserializeOnStop() {
     const oldState = {
       graphEditorScript,
-      selectedEntity,
+      selectedEntity: beforePlaySelectedEntity,
       selectedState,
     }
+    beforePlaySelectedEntity = undefined
 
     // This is necessary because we check for selectedEntity below to determine whether to break
     // while searching the newly deserialized state
     graphEditorScript = undefined
-    editorLayer.selectedEntity = undefined
     selectedEntity = undefined
     selectedState = undefined
 
-    global.context.game.deserialize(curProject)
+    if (curProject) {
+      global.context.game.deserialize(curProject)
+    }
 
     if (oldState.selectedEntity) {
       for (const layer of global.context.game.currentScene.layers) {
         for (const [entityId, entity] of layer.static) {
           if (entityId === oldState.selectedEntity.id) {
             selectedEntity = entity
-            editorLayer.selectedEntity = selectedEntity
             break
           }
         }
@@ -69,14 +74,13 @@
           for (const [entityId, entity] of layer.dynamic) {
             if (entityId === oldState.selectedEntity.id) {
               selectedEntity = entity
-              editorLayer.selectedEntity = selectedEntity
               break
             }
           }
         }
       }
 
-      if (oldState.selectedState) {
+      if (oldState.selectedState && selectedEntity && selectedEntity.states) {
         selectedState = selectedEntity.states.get(oldState.selectedState.name)
       }
 
@@ -101,6 +105,12 @@
   $: {
     if (global.context) {
       displayGravity = global.context.game.physicsEngine.engine.gravity.scale
+    }
+  }
+
+  $: {
+    if (editorLayer) {
+      editorLayer.selectedEntity = selectedEntity
     }
   }
 
@@ -226,7 +236,7 @@
     global.context.game.removeStaticSceneEntity(selectedEntity)
     selectedEntity.destroy()
 
-    const { frameTime, urls } = selectedEntity.texture
+    const { frameTime, urls } = selectedEntity.getCurrentTexture()
     let animations = new Array(9).fill(null)
     animations[4] = { frameTime, urls }
     selectedEntity = global.context.game.addControlledSceneEntity(
@@ -235,7 +245,12 @@
       selectedEntity.pos,
       new Map([['Default', new State('Default', [], global.gl, animations)]]),
       'Default',
-      { scaleX: selectedEntity.scaleX, scaleY: selectedEntity.scaleY }
+      {
+        scaleX: selectedEntity.scaleX,
+        scaleY: selectedEntity.scaleY,
+        texX: selectedEntity.getTexCoordX(),
+        texY: selectedEntity.getTexCoordY(),
+      }
     )
     selectedState = selectedEntity.states.get('Default')
   }
@@ -254,7 +269,12 @@
       selectedEntity.pos,
       frameTime,
       urls,
-      { scaleX: selectedEntity.scaleX, scaleY: selectedEntity.scaleY }
+      {
+        scaleX: selectedEntity.scaleX,
+        scaleY: selectedEntity.scaleY,
+        texX: selectedEntity.getTexCoordX(),
+        texY: selectedEntity.getTexCoordY(),
+      }
     )
 
     selectedState = undefined
@@ -262,13 +282,14 @@
 
   function setPlayState(newPlayState) {
     if (newPlayState === 'play') {
+      serializeOnPlay()
       gameCanvas.focus()
       global.context.paused = false
     } else if (newPlayState === 'pause') {
       global.context.paused = true
     } else if (newPlayState === 'stop') {
       global.context.paused = true
-      serializeOnStop()
+      deserializeOnStop()
     }
     global.playState = newPlayState
   }
@@ -308,18 +329,16 @@
       class="relative grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${topLeftBasis}%;`}
     >
-      <div class="absolute t-0 l-0 w-full h-full">
+      <div class="absolute top-0 left-0 w-full h-full">
         <AssetsPanel />
       </div>
-      <!--
       <div
-        class={`absolute t-0 l-0 w-full h-full ${
+        class={`absolute top-0 left-0 w-full h-full ${
           global.playState === 'stop'
             ? 'pointer-events-none opacity-0'
             : 'bg-black opacity-50'
         } transition-all`}
       />
-      -->
     </div>
     <Splitter bind:split={topSplit} minSplit={0.1} maxSplit={0.9} />
     <div
@@ -370,7 +389,7 @@
       <div
         class="relative grow shrink w-full h-full overflow-hidden bg-neutral-900"
       >
-        <div class="absolute t-0 l-0 w-full h-full p-2">
+        <div class="absolute top-0 left-0 w-full h-full p-2">
           <Viewport
             focusable={true}
             targetAspectRatio={global.canvas.targetWidth /
@@ -379,7 +398,9 @@
             onResize={() => global.context.propagateResizeEvent()}
           />
         </div>
-        <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+        <div
+          class="absolute top-0 left-0 w-full h-full pointer-events-none p-2"
+        >
           <Viewport
             targetAspectRatio={global.canvas.targetWidth /
               global.canvas.targetHeight}
@@ -387,7 +408,9 @@
             onResize={() => global.context.propagateResizeEvent()}
           />
         </div>
-        <div class="absolute t-0 l-0 w-full h-full pointer-events-none p-2">
+        <div
+          class="absolute top-0 left-0 w-full h-full pointer-events-none p-2"
+        >
           <div
             class="absolute top-0 left-0 w-full h-full"
             use:dndzone={{
@@ -420,7 +443,7 @@
     style={`flex-basis: ${midBottomBasis}%;`}
   >
     <div
-      class="grow shrink overflow-auto bg-neutral-900"
+      class="relative grow shrink overflow-auto bg-neutral-900"
       style={`flex-basis: ${bottomLeftBasis}%;`}
     >
       <ScriptTemplatesPanel
@@ -432,6 +455,13 @@
           selectedEntity.states = selectedEntity.states
         }}
         canUseScript={selectedEntity && selectedState}
+      />
+      <div
+        class={`absolute top-0 left-0 w-full h-full ${
+          global.playState === 'stop'
+            ? 'pointer-events-none opacity-0'
+            : 'bg-black opacity-50'
+        } transition-all`}
       />
     </div>
     <Splitter bind:split={bottomSplit} minSplit={0.1} maxSplit={0.9} />
@@ -608,6 +638,13 @@
           </div>
         </div>
       {/if}
+      <div
+        class={`absolute top-0 left-0 w-full h-full ${
+          global.playState === 'stop'
+            ? 'pointer-events-none opacity-0'
+            : 'bg-black opacity-50'
+        } transition-all`}
+      />
     </div>
   </div>
 </div>

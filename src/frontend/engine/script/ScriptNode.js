@@ -95,7 +95,7 @@ export class ScriptNode extends Component {
     const results =
       this.data.fn(inputs, {
         ui: global.gameWindow.uiCanvas,
-        game: context.game,
+        game: global.context.game,
         entity: context.entity,
         scene: context.entity.scene,
         input: context.inputCache,

@@ -880,8 +880,9 @@ class ScriptNodeTemplateBank {
       'DestroyEntity',
       [['entity', 'object']],
       [],
-      ([entity], { scene }) => {
-        scene.removeControlledEntity(entity)
+      ([entity], _) => {
+        console.log(_)
+        _.scene.removeControlledEntityFromScript(entity)
       }
     )
     this.create(

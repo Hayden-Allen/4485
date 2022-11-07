@@ -696,10 +696,33 @@ class ScriptNodeTemplateBank {
         ['1', 'any'],
       ],
       [['out', 'any']],
-      ([index, a0, a1]) => [{ value: index ? a1 : a0 }]
+      ([index, a0, a1]) => {
+        return [{ value: index ? a1 : a0 }]
+      }
     )
   }
   createEntity() {
+    this.createInternal(
+      'entity',
+      'EntityHasVariable',
+      [['entity', 'object']],
+      [['variable', 'string']],
+      ['player'],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([entity], { internal }) => {
+        let r = false
+        if (entity.variables && entity.variables.has(internal[0])) r = true
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
     this.create(
       'entity',
       'GetControlledEntity',
@@ -880,9 +903,8 @@ class ScriptNodeTemplateBank {
       'DestroyEntity',
       [['entity', 'object']],
       [],
-      ([entity], _) => {
-        console.log(_)
-        _.scene.removeControlledEntityFromScript(entity)
+      ([entity], { scene }) => {
+        scene.removeControlledEntityFromScript(entity)
       }
     )
     this.create(

@@ -100,6 +100,7 @@
 
     global.context.game.physicsEngine.engine.gravity.scale =
       global.context.game.physicsEngine.engine.gravity.scale
+    displayGravity = global.context.game.physicsEngine.engine.gravity.scale
   }
 
   $: {

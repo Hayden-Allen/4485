@@ -73,11 +73,11 @@
 </script>
 
 <div
-  class="w-16 h-16 bg-neutral-800 border border-solid border-neutral-700 overflow-hidden flex flex-row items-center justify-center relative"
+  class="w-16 h-16 bg-neutral-800 border border-solid border-neutral-700 overflow-hidden flex flex-row items-center justify-center relative bg-contain bg-center"
+  style={`background-image: url(${texture.urls[curFrame]}); image-rendering: pixelated;`}
   on:mouseenter={() => (hovered = true)}
   on:mouseleave={() => (hovered = false)}
 >
-  <img class="max-w-full max-h-full" src={texture.urls[curFrame]} alt="" />
   <div
     class={`absolute top-0 left-0 w-full h-full flex flex-row items-center justify-center ${
       hovered ? 'opacity-100' : 'opacity-0'

@@ -311,14 +311,19 @@ export class EditorLayer extends Layer {
           )
 
           if (this.window.inputCache.isKeyPressed('Shift')) {
-            this.selectedEntity.setTexCoordX(
+            let tx =
               (this.resizeStartTexX * this.selectedEntity.dim.x) /
-                this.resizeStartW
-            )
-            this.selectedEntity.setTexCoordY(
+              this.resizeStartW
+            let ty =
               (this.resizeStartTexY * this.selectedEntity.dim.y) /
-                this.resizeStartH
-            )
+              this.resizeStartH
+            if (!this.window.inputCache.isKeyPressed('Control')) {
+              tx = Math.max(1, Math.floor(tx))
+              ty = Math.max(1, Math.floor(ty))
+            }
+
+            this.selectedEntity.setTexCoordX(tx)
+            this.selectedEntity.setTexCoordY(ty)
           }
         }
       } else {

@@ -4,7 +4,7 @@ import {
   updateGame,
   findGames,
   findGameById,
-} from 'backend/api/apiFunctions'
+} from 'backend/functions/apiFunctions'
 import { validateSessionCookie } from 'backend/helpers/authFunctions'
 
 export async function GET({ request, cookies }) {

@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit'
-import { createUser, findUsers } from 'backend/api/apiFunctions'
+import { createUser, findUsers } from 'backend/functions/apiFunctions'
 
 export async function POST({ request }) {
   const body = await request.json()

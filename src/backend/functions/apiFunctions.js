@@ -46,11 +46,13 @@ export async function createUser(options) {
 export async function findUsers(session, options, sortAndLimit) {
   await connectToDb()
   let query = User.find(options)
-  if (sortAndLimit.sort) {
-    query = query.sort(sortAndLimit.sort)
-  }
-  if (sortAndLimit.limit) {
-    query = query.limit(sortAndLimit.limit)
+  if (sortAndLimit) {
+    if (sortAndLimit.sort) {
+      query = query.sort(sortAndLimit.sort)
+    }
+    if (sortAndLimit.limit) {
+      query = query.limit(sortAndLimit.limit)
+    }
   }
   return await query
 }

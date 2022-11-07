@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from '$env/static/private'
 
-export async function createSessionToken(user) {
+export function createSessionToken(user) {
   return jwt.sign(
     {
       userId: user._id,
@@ -13,7 +13,7 @@ export async function createSessionToken(user) {
   )
 }
 
-export async function validateSessionToken(token) {
+export function validateSessionToken(token) {
   try {
     return jwt.verify(token, JWT_SECRET)
   } catch (error) {
@@ -22,27 +22,27 @@ export async function validateSessionToken(token) {
   }
 }
 
-export async function setSessionCookie(cookies, token) {
+export function setSessionCookie(cookies, token) {
   cookies.set('session', token, {
     path: '/',
     sameSite: 'strict',
   })
 }
 
-export async function deleteSessionCookie(cookies) {
-  cookies.set('session', '', {
+export function deleteSessionCookie(cookies) {
+  cookies.delete('session', {
     path: '/',
     sameSite: 'strict',
   })
 }
 
-export async function getSessionCookie(cookies) {
+export function getSessionCookie(cookies) {
   return cookies.get('session', {
     path: '/',
     sameSite: 'strict',
   })
 }
 
-export async function validateSessionCookie(cookies) {
+export function validateSessionCookie(cookies) {
   return validateSessionToken(getSessionCookie(cookies))
 }

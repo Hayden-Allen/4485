@@ -1,26 +1,22 @@
 <div class="card">
-  <div class="card-content">
+  <div>
     <slot />
   </div>
 </div>
 
 <style>
   .card {
-    display: inline-block;
+    display: grid;
+    grid-template-columns: auto auto auto;
     background-color: #1e1e1e;
-    height: 225px;
+    height: 285px;
     width: 250px;
     margin: 10px;
     border-radius: 6px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
     font-family: 'Gilroy-Bold', sans-serif;
     color: white;
     transition: transform 1s ease;
     overflow: hidden;
-  }
-
-  .card-content {
-    padding: 10px;
   }
 
   .card:hover {

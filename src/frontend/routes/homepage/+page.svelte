@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { fetchGames } from 'frontend/utils/fetchJson'
   import Card from '../../components/GameCard.svelte'
   import Navbar from '../../components/NavBar.svelte'
@@ -14,18 +15,16 @@
   // Variable for popup
   var isPopupOpen = false
 
+  // Dynamically load game cards when page is loaded
+  onMount(async () => {
+    getAllGames()
+  })
+
   async function getAllGames() {
     const responseJson = await fetchGames('/api/games', {
       method: 'GET',
     })
     games = responseJson
-    console.log(games)
-  }
-
-  // Function to perform all card click actions together
-  function onCardClick(gamename, gamedescription, gameid) {
-    storeClickedGameInfo(gamename, gamedescription, gameid)
-    toggle()
   }
 
   function storeClickedGameInfo(name, description, id) {
@@ -58,11 +57,11 @@
         <h3>{name}</h3>
         <p>{description}</p>
         <div>
-          <button on:click={toggle}
+          <button class="card-game-button" on:click={toggle}
             ><a target="_blank" rel="noopener noreferrer" href="/edit">Play</a
             ></button
           >
-          <button class="rounded-full" on:click={toggle}
+          <button class="card-game-button" on:click={toggle}
             ><a target="_blank" rel="noopener noreferrer" href="/edit">Edit</a
             ></button
           >
@@ -70,9 +69,6 @@
       </Card>
     </button>
   {/each}
-
-  <h1>List Games</h1>
-  <button on:click={getAllGames}>Get Games</button>
 </div>
 
 <style>
@@ -88,5 +84,22 @@
     height: 100%;
     min-height: 100vh;
     background-color: #0f0f0f;
+  }
+  .text {
+    color: white;
+  }
+  .card-game-button {
+    font-weight: bold;
+    font-family: 'Gilroy-Bold', sans-serif;
+    width: 45%;
+    border-radius: 25px;
+    background-color: #c5ff4a;
+  }
+  .get-game-button {
+    font-weight: bold;
+    font-family: 'Gilroy-Bold', sans-serif;
+    width: 10%;
+    border-radius: 25px;
+    background-color: #c5ff4a;
   }
 </style>

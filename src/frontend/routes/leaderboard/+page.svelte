@@ -1,8 +1,19 @@
 <script>
-    import NavBar from "../../components/NavBar.svelte"
-
+  import NavBar from '../../components/NavBar.svelte'
 </script>
-<NavBar>
-    
-</NavBar>
-<h1>Leaderboard Page</h1>
+
+<div class="background">
+  <NavBar />
+  <h1 class="text">Leaderboard Page</h1>
+</div>
+
+<style>
+  .background {
+    height: 100%;
+    min-height: 100vh;
+    background-color: #0f0f0f;
+  }
+  .text {
+    color: white;
+  }
+</style>

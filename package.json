@@ -39,6 +39,7 @@
   "dependencies": {
     "bootstrap": "^5.2.2",
     "svelte-material-ui": "^6.2.0",
+    "svelte-select": "^4.4.7",
     "sveltestrap": "^5.9.0"
   }
 }

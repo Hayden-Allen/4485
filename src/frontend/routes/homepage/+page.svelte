@@ -69,6 +69,23 @@
       </Card>
     </button>
   {/each}
+
+  <button
+    class="Card-button"
+    onclick="location.href = 'http://localhost:5173/addgames';"
+  >
+    <Card>
+      <img
+        class="thumbnail"
+        width="250wh"
+        height="250vh"
+        alt="game thumbnail"
+        src="public\images\add-game.png"
+      />
+      <h3>Add Custom Game</h3>
+      <p>Have a custom game? Add it to our collection...</p>
+    </Card>
+  </button>
 </div>
 
 <style>

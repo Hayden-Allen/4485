@@ -28,40 +28,30 @@
       <a href="/homepage">Home</a>
     </h4>
   </div>
+  <!-- <div class="navbar-logo">
+    <img src="public\images\fenginx_logo_white.png" alt="logo" />
+    <h6>FENGINX</h6>
+  </div> -->
   <div class="navbar-content">
     <h4 class="navbar-pages"><a href="/about">About</a></h4>
   </div>
   <div class="navbar-content">
-    <h4 class="navbar-pages"><a href="/trending">Trending</a></h4>
-  </div>
-  <div class="navbar-content">
     <h4 class="navbar-pages"><a href="/gamelist">Games</a></h4>
-  </div>
-  <div class="navbar-content">
-    <h4 class="navbar-pages"><a href="/addgames">Add Game</a></h4>
   </div>
   <div class="navbar-content">
     <h4 class="navbar-pages">
       <a target="_blank" rel="noopener noreferrer" href="/edit">Create</a>
     </h4>
   </div>
-  <div class="navbar-content">
-    <h4 class="navbar-pages"><a href="/leaderboard">Leaderboard</a></h4>
-  </div>
   <div class="navbar-right">
     <h4 class="navbar-pages"><a href="/" on:click={handleLogin}>Login</a></h4>
   </div>
-  <!-- <div class="navbar-right">
-    <h4 class="navbar-pages">
-      <a href="/search" on:click={handleSearch}>Search</a>
-    </h4>
-  </div> -->
   <div class="navbar-search">
     <input
       type="search"
       name="Search"
       label="search"
-      placeholder="Search Games..."
+      placeholder="Search Games"
     />
   </div>
 </div>
@@ -76,6 +66,14 @@
     font-family: 'Gilroy-Bold', sans-serif;
   }
   .navbar-content {
+    padding: 0.5% 0% 0% 2% !important;
+    border: none;
+    vertical-align: middle;
+    height: 48px;
+    line-height: 48px;
+    float: left;
+  }
+  .navbar-logo {
     padding: 0.5% 0% 0% 2% !important;
     border: none;
     vertical-align: middle;

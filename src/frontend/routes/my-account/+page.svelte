@@ -5,6 +5,7 @@
   import Eye from 'icons/20/mini/eye.svelte'
   import EyeSlash from 'icons/20/mini/eye-slash.svelte'
   import Trash from 'icons/20/mini/trash.svelte'
+  import Pencil from 'icons/20/mini/pencil.svelte'
   import { Context } from '%engine/Context.js'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
@@ -55,6 +56,39 @@
       console.error(err)
       window.alert(
         'Game created but unable to refresh games list. Please refresh the page.'
+      )
+    }
+  }
+
+  async function handleRenameGame(game) {
+    let name = window.prompt('New name:')
+    if (name) {
+      name = name.trim()
+    }
+    if (!name) {
+      return
+    }
+
+    try {
+      await fetchJson('/api/game', {
+        method: 'POST',
+        body: {
+          gameId: game._id,
+          name,
+        },
+      })
+    } catch (err) {
+      console.error(err)
+      window.alert('Unable to rename game')
+      return
+    }
+
+    try {
+      await refreshGamesList()
+    } catch (err) {
+      console.error(err)
+      window.alert(
+        'Game renamed but unable to refresh games list. Please refresh the page.'
       )
     }
   }
@@ -180,6 +214,12 @@
             >
               {game.name}
             </a>
+            <button
+              class="grow-0 shrink-0 w-5 h-5 ml-2"
+              on:click={() => handleRenameGame(game)}
+            >
+              <Pencil />
+            </button>
             <button
               class="grow-0 shrink-0 w-5 h-5 ml-2"
               on:click={() => handleToggleGamePublic(game)}

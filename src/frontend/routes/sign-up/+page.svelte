@@ -22,7 +22,7 @@
     } catch (err) {
       console.error(err)
       window.alert(
-        'Unable to sign up. Username must contain at least 3 characters and password must contain at least 8. Try another username.'
+        'Unable to sign up. Username must contain at least 3 characters (no spaces) and password must contain at least 8. Try another username.'
       )
     }
   }
@@ -33,7 +33,7 @@
       if (usersJson.length !== 1) {
         throw new Error('usersJson.length !== 1')
       }
-      window.location.pathname = '/my-profile'
+      window.location.pathname = '/my-account'
     } catch (err) {
       doneLoading = true
     }

@@ -5,6 +5,7 @@ import {
   findGames,
   findGameById,
   deleteGame,
+  findUserById,
 } from 'backend/functions/apiFunctions'
 import { validateSessionCookie } from 'backend/functions/authFunctions'
 
@@ -16,9 +17,17 @@ export async function GET({ url, cookies }) {
   if (url.searchParams.has('gameId')) {
     games = [await findGameById(session, url.searchParams.get('gameId'))]
   } else if (url.searchParams.has('creatorId')) {
-    games = await findGames(session, {
-      creatorId: url.searchParams.get('creatorId'),
-    })
+    games = await findGames(
+      session,
+      {
+        creatorId: url.searchParams.get('creatorId'),
+      },
+      {
+        sort: {
+          name: 1,
+        },
+      }
+    )
   } else {
     games = await findGames(
       session,
@@ -27,14 +36,35 @@ export async function GET({ url, cookies }) {
         sort: {
           lastModifiedAt: -1,
         },
-        limit: 10,
+        limit: 25,
       }
     )
   }
 
+  const isMetaOnly = url.searchParams.get('isMetaOnly') === 'true'
+  const isPublicOnly = url.searchParams.get('isPublicOnly') === 'true'
   for (let i = 0; i < games.length; ++i) {
+    if (isPublicOnly) {
+      if (!games[i].isPublic) {
+        games.splice(i, 1)
+        --i
+        continue
+      }
+    }
+
     games[i] = games[i].toJSON()
-    games[i].canEdit = games[i].creatorId.equals(session.userId)
+    games[i].canEdit = session
+      ? games[i].creatorId.equals(session.userId)
+      : false
+
+    if (isMetaOnly) {
+      games[i] = {
+        _id: games[i]._id,
+        name: games[i].name,
+        isPublic: games[i].isPublic,
+        creatorName: (await findUserById(session, games[i].creatorId)).username,
+      }
+    }
   }
 
   return new Response(JSON.stringify(games), {

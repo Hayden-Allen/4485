@@ -8,7 +8,7 @@
     try {
       await fetchJson('/api/auth/logout', { method: 'POST' })
       signedOut = true
-      window.location.pathname = '/sign-in'
+      window.location.pathname = '/'
     } catch (err) {
       console.error(err)
       window.alert('Unable to sign out')

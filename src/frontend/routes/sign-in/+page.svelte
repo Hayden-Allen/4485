@@ -18,7 +18,7 @@
           password,
         },
       })
-      window.location.pathname = '/my-profile'
+      window.location.pathname = '/my-account'
     } catch (err) {
       console.error(err)
       window.alert(
@@ -33,7 +33,7 @@
       if (usersJson.length !== 1) {
         throw new Error('usersJson.length !== 1')
       }
-      window.location.pathname = '/my-profile'
+      window.location.pathname = '/my-account'
     } catch (err) {
       doneLoading = true
     }

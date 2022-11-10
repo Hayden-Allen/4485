@@ -2,6 +2,8 @@
   import { onMount } from 'svelte'
   import fetchJson from 'frontend/utils/fetchJson.js'
   import ArrowLeftOnRectangle from 'icons/24/outline/arrow-left-on-rectangle.svelte'
+  import Eye from 'icons/20/mini/eye.svelte'
+  import EyeSlash from 'icons/20/mini/eye-slash.svelte'
   import Trash from 'icons/20/mini/trash.svelte'
   import { Context } from '%engine/Context.js'
   import { Game } from '%engine/Game.js'
@@ -14,6 +16,7 @@
     gamesList = await fetchJson('/api/game', {
       query: {
         creatorId: userInfo.id,
+        isMetaOnly: true,
       },
     })
   }
@@ -35,7 +38,7 @@
       await fetchJson('/api/game', {
         method: 'POST',
         body: {
-          isPublic: true,
+          isPublic: false,
           name,
           serializedContent,
         },
@@ -56,12 +59,16 @@
     }
   }
 
-  async function handleDeleteGame(gameId) {
+  async function handleDeleteGame(game) {
+    if (!window.confirm(`Are you sure you want to delete "${game.name}"?`)) {
+      return
+    }
+
     try {
       await fetchJson('/api/game', {
         method: 'DELETE',
         body: {
-          gameId,
+          gameId: game._id,
         },
       })
     } catch (err) {
@@ -76,6 +83,47 @@
       console.error(err)
       window.alert(
         'Game deleted but unable to refresh games list. Please refresh the page.'
+      )
+    }
+  }
+
+  async function handleToggleGamePublic(game) {
+    const newPublic = !game.isPublic
+
+    if (newPublic) {
+      if (
+        !window.confirm(`Are you sure you want to make "${game.name}" public?`)
+      ) {
+        return
+      }
+    } else {
+      if (
+        !window.confirm(`Are you sure you want to make "${game.name}" private?`)
+      ) {
+        return
+      }
+    }
+
+    try {
+      await fetchJson('/api/game', {
+        method: 'POST',
+        body: {
+          gameId: game._id,
+          isPublic: newPublic,
+        },
+      })
+    } catch (err) {
+      console.error(err)
+      window.alert('Unable to set game publicity')
+      return
+    }
+
+    try {
+      await refreshGamesList()
+    } catch (err) {
+      console.error(err)
+      window.alert(
+        'Game publicity changed but unable to refresh games list. Please refresh the page.'
       )
     }
   }
@@ -134,7 +182,17 @@
             </a>
             <button
               class="grow-0 shrink-0 w-5 h-5 ml-2"
-              on:click={() => handleDeleteGame(game._id)}
+              on:click={() => handleToggleGamePublic(game)}
+            >
+              {#if game.isPublic}
+                <Eye />
+              {:else}
+                <EyeSlash />
+              {/if}
+            </button>
+            <button
+              class="grow-0 shrink-0 w-5 h-5 ml-2"
+              on:click={() => handleDeleteGame(game)}
             >
               <Trash />
             </button>
@@ -142,7 +200,7 @@
         {/each}
         <button
           on:click={handleNewGame}
-          class="w-[640px] p-4 mb-4 bg-neutral-700 hover:underline overflow-hidden text-overflow-ellipsis whitespace-nowrap text-left"
+          class="grow-0 shrink-0 w-[640px] p-4 mb-4 bg-neutral-700 hover:underline overflow-hidden text-overflow-ellipsis whitespace-nowrap text-left"
           >New Game</button
         >
       </div>

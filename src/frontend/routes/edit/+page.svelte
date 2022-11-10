@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
 
   onMount(() => {
-    window.location.pathname = '/my-profile'
+    window.location.pathname = '/my-account'
   })
 </script>
 

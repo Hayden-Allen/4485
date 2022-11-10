@@ -6,6 +6,6 @@ export function load({ params }) {
       gameId: params.gameId,
     }
   } else {
-    throw redirect(307, '/my-profile')
+    throw redirect(307, '/my-account')
   }
 }

@@ -49,7 +49,7 @@
       }
     } catch (err) {
       console.error(err)
-      window.location.pathname = '/my-profile'
+      window.location.pathname = '/my-account'
     }
   })
 </script>
@@ -67,10 +67,13 @@
       <div class="grow-1 shrink-1 w-full h-full" />
       <a
         class="group grow-0 shrink-0 h-full flex flex-row items-center justify-center p-3 border-l border-neutral-700 border-solid hover:bg-neutral-300 transition-all"
-        href="/my-profile"
+        href="/my-account"
       >
-        <div class="w-6 h-6 group-hover:text-neutral-900 transition-all">
+        <div class="w-6 h-6 mr-2 group-hover:text-neutral-900 transition-all">
           <UserCircle />
+        </div>
+        <div class="group-hover:text-neutral-900 transition-all">
+          My Account
         </div>
       </a>
     </div>

@@ -4,3 +4,4 @@ Scale to same aspect ratio
 
 gravity serialization
 can't connect multiple node edges
+Auto-saves every 10 seconds but you could lose data if you change anything in the last 10sec before closing the window

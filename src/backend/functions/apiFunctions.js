@@ -140,9 +140,23 @@ export async function updateGame(session, gameId, options) {
       `updateGame: incorrect permissions to update game ${game._id}: session.userId=${session.userId} and game.creatorId=${game.creatorId}`
     )
   }
+
+  return game
 }
 
 export async function deleteGame(session, gameId) {
   await connectToDb()
-  await Game.deleteOne({ _id: gameId, creatorId: session.userId })
+
+  const game = await Game.findById(gameId)
+  if (!game) {
+    throw new Error(`deleteGame: no game found with id: ${gameId}`)
+  }
+
+  if (game.creatorId.equals(session.userId)) {
+    await Game.deleteOne({ _id: gameId, creatorId: session.userId })
+  } else {
+    throw new Error(
+      `deleteGame: incorrect permissions to update game ${game._id}: session.userId=${session.userId} and game.creatorId=${game.creatorId}`
+    )
+  }
 }

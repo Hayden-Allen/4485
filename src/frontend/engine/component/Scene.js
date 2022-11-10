@@ -12,6 +12,7 @@ export class Scene extends Component {
     super('Scene')
     this.layers = []
     this.controlledComponents = new Map()
+    this.entities = new Map()
     this.camera = new Camera(
       [0, 0, 0],
       -global.canvas.targetWidth / 2,
@@ -53,6 +54,7 @@ export class Scene extends Component {
         newEntity = StaticSceneEntity.deserialize(entity)
       }
       newEntity.id = id
+      newEntity.bindToScene(this, entity.sceneZ)
       entities.set(id, newEntity)
     }
 
@@ -81,6 +83,7 @@ export class Scene extends Component {
 
     if (!this.layers[z]) this.layers[z] = new SceneLayer()
     this.layers[z][type].set(component.id, component)
+    this.entities.set(component.id, component)
   }
   // TODO limit z in some way?
   addStaticEntity(component, z) {
@@ -101,7 +104,10 @@ export class Scene extends Component {
       'Use removeStaticComponent() and removeDynamicComponent() instead'
     )
   }
-  removeBase(type, component) {
+  removeBase(type, component, { removeFromEntities = true } = {}) {
+    if (removeFromEntities) {
+      this.entities.delete(component.id)
+    }
     // search each layer
     for (var i = 0; i < this.layers.length; i++) {
       if (this.layers[i][type].has(component.id)) {
@@ -113,17 +119,20 @@ export class Scene extends Component {
       `Attempted to remove non-existent component ${component.logMessageName()}`
     )
   }
-  removeStaticEntity(component) {
-    this.removeBase('static', component)
+  removeStaticEntity(component, { removeFromEntities = true } = {}) {
+    this.removeBase('static', component, { removeFromEntities })
   }
-  removeDynamicEntity(component) {
-    this.removeBase('dynamic', component)
+  removeDynamicEntity(component, { removeFromEntities = true } = {}) {
+    this.removeBase('dynamic', component, { removeFromEntities })
   }
-  removeControlledEntity(component) {
+  removeControlledEntity(component, { removeFromEntities = true } = {}) {
     if (component.states) {
-      this.removeDynamicEntity(component)
+      this.removeDynamicEntity(component, { removeFromEntities })
       this.controlledComponents.delete(component.id)
       component.destroy()
     }
+  }
+  removeControlledEntityFromScript(component) {
+    this.removeControlledEntity(component, { removeFromEntities: false })
   }
 }

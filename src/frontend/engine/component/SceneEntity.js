@@ -16,8 +16,15 @@ class SceneEntityOptions {
     isStatic = true,
     scaleX = 1,
     scaleY = 1,
+    texX = 1,
+    texY = 1,
   } = {}) {
     this.vertices = vertices
+    this.vertices[6] = this.vertices[10] = texX
+    this.vertices[11] = this.vertices[15] = texY
+    this.texX = texX
+    this.texY = texY
+
     this.indices = indices
     this.isStatic = isStatic
     this.scaleX = scaleX
@@ -109,6 +116,7 @@ class SceneEntity extends Component {
       id: this.id,
       pos: this.originalPos,
       ops: this.ops,
+      sceneZ: this.sceneZ,
     }
   }
   setPosition(x, y) {
@@ -119,16 +127,18 @@ class SceneEntity extends Component {
     this.createPhysicsProxy(this.scaleX, this.scaleY)
   }
   getTexCoordX() {
-    return this.renderable.vertices[6]
+    return this.ops.texX
   }
   getTexCoordY() {
-    return this.renderable.vertices[11]
+    return this.ops.texY
   }
   setTexCoordX(tx) {
+    this.ops.texX = tx
     this.renderable.vertices[6] = this.renderable.vertices[10] = tx
     this.renderable.bufferVertices()
   }
   setTexCoordY(ty) {
+    this.ops.texY = ty
     this.renderable.vertices[11] = this.renderable.vertices[15] = ty
     this.renderable.bufferVertices()
   }
@@ -159,7 +169,7 @@ export class StaticSceneEntity extends SceneEntity {
       global.context.game,
       global.gameWindow,
       pos,
-      obj.texture.frameTIme,
+      obj.texture.frameTime,
       obj.texture.urls,
       obj.ops
     )

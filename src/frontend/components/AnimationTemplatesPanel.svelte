@@ -114,6 +114,7 @@
 </script>
 
 <div class="grow shrink w-full h-full overflow-hidden flex flex-col">
+  <!--
   <div
     class="grow-0 shrink-0 flex flex-row border-b border-solid border-neutral-700 h-10"
   >
@@ -128,6 +129,7 @@
       <div class="w-5 h-5"><MagnifyingGlass /></div>
     </div>
   </div>
+  -->
 
   <div
     class="grow shrink p-4 w-full h-full overflow-x-hidden overflow-y-auto mac-pad-right-fix-scrollbar"
@@ -144,22 +146,21 @@
   >
     {#each dragItems as item (item.id)}
       <div
-        class="w-24 h-28 px-4 py-2 overflow-hidden inline-flex align-top flex-col items-center justify-center grow-0 shrink-0 hover:bg-neutral-800 focus:bg-neutral-700 transition-all rounded-md"
+        class="w-24 h-24 px-4 py-2 overflow-hidden inline-flex align-top flex-col items-center justify-center grow-0 shrink-0 hover:bg-neutral-800 focus:bg-neutral-700 transition-all rounded-md"
       >
         <div
-          class="w-16 h-16 grow-0 shrink-0 overflow-hidden flex flex-row items-center justify-center bg-neutral-800 border border-solid border-neutral-700"
-        >
-          <img
-            class="max-w-full max-h-full"
-            src={item.candidate.urls[item._frame]}
-            alt=""
-          />
-        </div>
+          class="w-16 h-16 grow-0 shrink-0 overflow-hidden flex flex-row items-center justify-center bg-neutral-800 border border-solid border-neutral-700 bg-contain bg-center"
+          style={`background-image: url(${
+            item.candidate.urls[item._frame]
+          }); image-rendering: pixelated;`}
+        />
+        <!--
         <div
           class="w-full overflow-hidden text-ellipsis whitespace-nowrap text-center mt-2"
         >
           {item.candidate.name}
         </div>
+        -->
       </div>
     {/each}
   </div>

@@ -92,8 +92,7 @@ export class EditorLayer extends Layer {
       }
       const fileData = await fileHandle.getFile()
       const text = await fileData.text()
-      const parsed = JSON.parse(text.replace('export default ', ''))
-      global.context.game.deserialize(parsed)
+      global.context.game.deserialize(text.replace('export default ', ''))
     }
   }
   onRender(e) {
@@ -178,6 +177,10 @@ export class EditorLayer extends Layer {
     return [tc[0], tc[1]]
   }
   onMouseDown(e) {
+    if (global.playState !== 'stop') {
+      return
+    }
+
     const [worldMouseX, worldMouseY] = this.getMouseWorldCoords(e.x, e.y)
 
     // check resize controls
@@ -265,7 +268,10 @@ export class EditorLayer extends Layer {
     }
   }
   onMouseMove(e) {
-    const [worldMouseX, worldMouseY] = this.getMouseWorldCoords(e.x, e.y)
+    if (global.playState !== 'stop') {
+      return
+    }
+
     if (
       global.playState === 'stop' &&
       this.selectedEntity &&
@@ -305,14 +311,19 @@ export class EditorLayer extends Layer {
           )
 
           if (this.window.inputCache.isKeyPressed('Shift')) {
-            this.selectedEntity.setTexCoordX(
+            let tx =
               (this.resizeStartTexX * this.selectedEntity.dim.x) /
-                this.resizeStartW
-            )
-            this.selectedEntity.setTexCoordY(
+              this.resizeStartW
+            let ty =
               (this.resizeStartTexY * this.selectedEntity.dim.y) /
-                this.resizeStartH
-            )
+              this.resizeStartH
+            if (!this.window.inputCache.isKeyPressed('Control')) {
+              tx = Math.max(1, Math.floor(tx))
+              ty = Math.max(1, Math.floor(ty))
+            }
+
+            this.selectedEntity.setTexCoordX(tx)
+            this.selectedEntity.setTexCoordY(ty)
           }
         }
       } else {

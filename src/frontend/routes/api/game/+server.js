@@ -4,6 +4,7 @@ import {
   updateGame,
   findGames,
   findGameById,
+  deleteGame,
 } from 'backend/functions/apiFunctions'
 import { validateSessionCookie } from 'backend/functions/authFunctions'
 
@@ -68,6 +69,30 @@ export async function POST({ request, cookies }) {
   return new Response(
     JSON.stringify({
       _id: game._id,
+    }),
+    {
+      'Content-Type': 'application/json',
+    }
+  )
+}
+
+export async function DELETE({ request, cookies }) {
+  const body = await request.json()
+
+  const session = validateSessionCookie(cookies)
+  if (!session) {
+    throw error(400, 'You must log in to delete a game')
+  }
+
+  if (body.gameId) {
+    await deleteGame(session, body.gameId)
+  } else {
+    throw new Error('Missing gameId')
+  }
+
+  return new Response(
+    JSON.stringify({
+      ok: true,
     }),
     {
       'Content-Type': 'application/json',

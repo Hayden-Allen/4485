@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import fetchJson from 'frontend/utils/fetchJson.js'
   import ArrowLeftOnRectangle from 'icons/24/outline/arrow-left-on-rectangle.svelte'
+  import Trash from 'icons/20/mini/trash.svelte'
   import { Context } from '%engine/Context.js'
   import { Game } from '%engine/Game.js'
   import { Scene } from '%component/Scene.js'
@@ -26,7 +27,6 @@
       return
     }
 
-    let created = false
     try {
       const game = new Game(new Context())
       game.setCurrentScene(new Scene())
@@ -40,21 +40,43 @@
           serializedContent,
         },
       })
-      created = true
     } catch (err) {
       console.error(err)
       window.alert('Unable to create new game')
+      return
     }
 
-    if (created) {
-      try {
-        await refreshGamesList()
-      } catch (err) {
-        console.error(err)
-        window.alert(
-          'Game created but unable to refresh games list. Please refresh the page.'
-        )
-      }
+    try {
+      await refreshGamesList()
+    } catch (err) {
+      console.error(err)
+      window.alert(
+        'Game created but unable to refresh games list. Please refresh the page.'
+      )
+    }
+  }
+
+  async function handleDeleteGame(gameId) {
+    try {
+      await fetchJson('/api/game', {
+        method: 'DELETE',
+        body: {
+          gameId,
+        },
+      })
+    } catch (err) {
+      console.error(err)
+      window.alert('Unable to delete game')
+      return
+    }
+
+    try {
+      await refreshGamesList()
+    } catch (err) {
+      console.error(err)
+      window.alert(
+        'Game deleted but unable to refresh games list. Please refresh the page.'
+      )
     }
   }
 
@@ -101,11 +123,22 @@
         class="flex flex-col w-full h-full grow shrink items-center text-xl font-bold text-neutral-100 p-8 overflow-x-hidden overflow-y-auto"
       >
         {#each gamesList as game, i}
-          <a
-            href={`/edit/${game._id}`}
-            class="w-[640px] p-4 mb-4 bg-neutral-700 hover:underline overflow-hidden text-overflow-ellipsis whitespace-nowrap"
-            >{game.name}</a
+          <div
+            class="flex flex-row w-[640px] p-4 mb-4 bg-neutral-700 w-full grow-0 shrink-0 items-center"
           >
+            <a
+              href={`/edit/${game._id}`}
+              class="w-full grow shrink overflow-hidden text-overflow-ellipsis whitespace-nowrap hover:underline"
+            >
+              {game.name}
+            </a>
+            <button
+              class="grow-0 shrink-0 w-5 h-5 ml-2"
+              on:click={() => handleDeleteGame(game._id)}
+            >
+              <Trash />
+            </button>
+          </div>
         {/each}
         <button
           on:click={handleNewGame}

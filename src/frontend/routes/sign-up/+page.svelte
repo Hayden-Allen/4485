@@ -11,18 +11,18 @@
     event.preventDefault()
     event.stopPropagation()
     try {
-      await fetchJson('/api/auth/login', {
+      await fetchJson('/api/user', {
         method: 'POST',
         body: {
           username,
           password,
         },
       })
-      window.location.pathname = '/my-profile'
+      window.location.pathname = '/sign-in'
     } catch (err) {
       console.error(err)
       window.alert(
-        'Unable to sign in. Please make sure you entered the correct username and password.'
+        'Unable to sign up. Username must contain at least 3 characters and password must contain at least 8. Try another username.'
       )
     }
   }
@@ -59,11 +59,11 @@
     <input
       class="bg-emerald-600 hover:bg-emerald-700 transition-all text-neutral-100 py-2 w-[320px] rounded-lg mb-4"
       type="submit"
-      value="Sign In"
+      value="Sign Up"
     />
     <div class="text-sm font-normal italic">
-      Don't have an account? <a href="/sign-up" class="text-emerald-500"
-        >Sign up</a
+      Already have an account? <a href="/sign-in" class="text-emerald-500"
+        >Sign in</a
       >
     </div>
   </form>

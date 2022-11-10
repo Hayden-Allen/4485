@@ -1,3 +1,4 @@
 Integer co-ordinates for tiling
 Scale to same aspect ratio
 ^^ both of these maybe only happen while holding Ctrl/Cmd ??
+Auto-saves every 10 seconds but you could lose data if you change anything in the last 10sec before closing the window

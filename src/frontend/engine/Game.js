@@ -14,12 +14,11 @@ export class Game {
     this.context = context
     context.addSystem(this.sceneManager)
   }
-  serialize(name) {
+  serialize() {
     /**
      * @HATODO what metadata?
      */
     return JSON.stringify({
-      name,
       gravity: this.physicsEngine.engine.gravity.scale,
       scenes: this.sceneManager.serialize(),
     })

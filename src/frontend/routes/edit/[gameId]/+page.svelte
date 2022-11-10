@@ -6,8 +6,27 @@
 
   export let data
 
-  let projectTitle = undefined
-  let firstLoadSerializedGameData = undefined
+  let firstLoadGameInfo = undefined
+  let lastSerializedContent = null
+
+  async function onSave(serializedContent) {
+    if (serializedContent === lastSerializedContent) {
+      return
+    }
+
+    try {
+      await fetchJson('/api/game', {
+        method: 'POST',
+        body: {
+          gameId: firstLoadGameInfo._id,
+          serializedContent,
+        },
+      })
+      lastSerializedContent = serializedContent
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   onMount(async () => {
     try {
@@ -21,10 +40,8 @@
           typeof gamesList[0].serializedContent === 'string' &&
           gamesList[0].canEdit === true
         ) {
-          firstLoadSerializedGameData = gamesList[0].serializedContent
-          projectTitle = gamesList[0].name
+          firstLoadGameInfo = gamesList[0]
         } else {
-          window.alert(JSON.stringify(gamesList[0]))
           throw new Error('Missing serializedContent or cannot edit')
         }
       } else {
@@ -38,14 +55,14 @@
 </script>
 
 <div class="flex flex-col w-full h-full bg-neutral-900 overflow-hidden">
-  {#if projectTitle}
+  {#if firstLoadGameInfo}
     <div
       class="relative flex flex-row items-center w-full grow-0 shrink-0 border-b border-solid border-neutral-700 text-neutral-100 overflow-hidden"
     >
       <div
         class="font-bold grow-0 shrink-0 absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] max-w-[50%] overflow-hidden text-overflow-ellipsis whitespace-nowrap"
       >
-        {projectTitle}
+        {firstLoadGameInfo.name}
       </div>
       <div class="grow-1 shrink-1 w-full h-full" />
       <a
@@ -59,8 +76,11 @@
     </div>
   {/if}
   <div class="w-full h-full grow shrink overflow-hidden">
-    {#if firstLoadSerializedGameData}
-      <Editor {firstLoadSerializedGameData} />
+    {#if firstLoadGameInfo && firstLoadGameInfo.serializedContent}
+      <Editor
+        firstLoadSerializedGameData={firstLoadGameInfo.serializedContent}
+        {onSave}
+      />
     {:else}
       <div
         class="flex flex-col w-full h-full grow shrink items-center justify-center text-xl font-bold text-neutral-500"

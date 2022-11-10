@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { dndzone } from 'svelte-dnd-action'
   import Viewport from 'components/Viewport.svelte'
   import Splitter from 'components/Splitter.svelte'
@@ -22,6 +22,7 @@
   import { Scene } from '%component/Scene.js'
 
   export let firstLoadSerializedGameData = undefined
+  export let onSave = undefined
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -319,6 +320,31 @@
     }
     return found
   }
+
+  const SAVE_MS = 10000
+  let saveTimeout = undefined
+  async function saveFn() {
+    if (global.context.game) {
+      const serializedContent = global.context.game.serialize()
+      try {
+        await onSave(serializedContent)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    saveTimeout = window.setTimeout(saveFn, SAVE_MS)
+  }
+  onMount(() => {
+    if (!saveTimeout) {
+      saveTimeout = window.setTimeout(saveFn, SAVE_MS)
+    }
+  })
+  onDestroy(() => {
+    if (saveTimeout) {
+      window.clearTimeout(saveTimeout)
+      saveTimeout = null
+    }
+  })
 </script>
 
 <svelte:window on:pointermove={onPointerMove} />

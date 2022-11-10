@@ -140,6 +140,8 @@ export async function updateGame(session, gameId, options) {
       `updateGame: incorrect permissions to update game ${game._id}: session.userId=${session.userId} and game.creatorId=${game.creatorId}`
     )
   }
+
+  return game
 }
 
 export async function deleteGame(session, gameId) {

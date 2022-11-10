@@ -30,7 +30,7 @@
     try {
       const game = new Game(new Context())
       game.setCurrentScene(new Scene())
-      const serializedContent = game.serialize(name)
+      const serializedContent = game.serialize()
 
       await fetchJson('/api/game', {
         method: 'POST',

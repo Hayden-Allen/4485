@@ -18,5 +18,7 @@ export async function POST({ request, cookies }) {
 
   setSessionCookie(cookies, createSessionToken(user))
 
-  return new Response('OK')
+  return new Response(JSON.stringify({ id: user._id }), {
+    'Content-Type': 'application/json',
+  })
 }

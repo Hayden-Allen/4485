@@ -1,5 +1,54 @@
 import { error } from '@sveltejs/kit'
-import { createUser, findUsers } from 'backend/functions/apiFunctions'
+import {
+  createUser,
+  findUsers,
+  findUserById,
+} from 'backend/functions/apiFunctions'
+import { validateSessionCookie } from 'backend/functions/authFunctions'
+
+export async function GET({ url, cookies }) {
+  const session = validateSessionCookie(cookies)
+
+  let users = []
+  const searchByUsername = url.searchParams.has('username')
+
+  if (url.searchParams.has('userId')) {
+    users = [await findUserById(session, url.searchParams.get('userId'))]
+  } else if (searchByUsername) {
+    users = await findUsers(session, {
+      username: url.searchParams.get('username'),
+    })
+  } else if (session) {
+    users = [await findUserById(session, session.userId)]
+  } else {
+    throw new Error('Must provide userId or username')
+  }
+
+  let exactMatch = null
+
+  for (let i = 0; i < users.length; ++i) {
+    users[i] = {
+      id: users[i]._id,
+      username: users[i].username,
+    }
+
+    if (
+      searchByUsername &&
+      users[i].username === url.searchParams.get('username')
+    ) {
+      exactMatch = i
+    }
+  }
+
+  if (exactMatch !== null) {
+    const user = users.splice(exactMatch, 1)
+    users = [user, ...users]
+  }
+
+  return new Response(JSON.stringify(users), {
+    'Content-Type': 'application/json',
+  })
+}
 
 export async function POST({ request }) {
   const body = await request.json()

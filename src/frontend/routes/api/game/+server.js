@@ -5,19 +5,19 @@ import {
   findGames,
   findGameById,
 } from 'backend/functions/apiFunctions'
-import { validateSessionCookie } from 'backend/helpers/authFunctions'
+import { validateSessionCookie } from 'backend/functions/authFunctions'
 
-export async function GET({ request, cookies }) {
-  const body = await request.json()
-
+export async function GET({ url, cookies }) {
   const session = validateSessionCookie(cookies)
 
   let games = null
 
-  if (body.gameId) {
-    games = [await findGameById(session, body.gameId)]
-  } else if (body.creatorId) {
-    games = await findGames(session, { creatorId: body.creatorId })
+  if (url.searchParams.has('gameId')) {
+    games = [await findGameById(session, url.searchParams.get('gameId'))]
+  } else if (url.searchParams.has('creatorId')) {
+    games = await findGames(session, {
+      creatorId: url.searchParams.get('creatorId'),
+    })
   } else {
     games = await findGames(
       session,
@@ -29,6 +29,11 @@ export async function GET({ request, cookies }) {
         limit: 10,
       }
     )
+  }
+
+  for (let i = 0; i < games.length; ++i) {
+    games[i] = games[i].toJSON()
+    games[i].canEdit = games[i].creatorId.equals(session.userId)
   }
 
   return new Response(JSON.stringify(games), {

@@ -20,7 +20,8 @@
   import Bolt from 'icons/20/mini/bolt.svelte'
   import WorldPropertiesPanel from './WorldPropertiesPanel.svelte'
   import { Scene } from '%component/Scene.js'
-  import { ControlledSceneEntity } from '%component/SceneEntity.js'
+
+  export let firstLoadSerializedGameData = undefined
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -54,7 +55,9 @@
     selectedEntity = undefined
     selectedState = undefined
 
-    global.context.game.deserialize(curProject)
+    if (curProject) {
+      global.context.game.deserialize(curProject)
+    }
 
     if (oldState.selectedEntity) {
       for (const layer of global.context.game.currentScene.layers) {
@@ -105,6 +108,8 @@
   }
 
   onMount(() => {
+    curProject = firstLoadSerializedGameData
+
     global.init(new Context())
     global.context.game.setCurrentScene(new Scene())
 

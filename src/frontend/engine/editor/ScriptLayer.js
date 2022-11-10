@@ -136,12 +136,13 @@ export class ScriptLayer extends Layer {
                   port.index,
                   this.selectedPort.index
                 )
-              else if (
-                !this.graphvis.graph.hasOutputEdgeAt(
-                  this.selectedPort.node,
-                  port.index
-                )
-              )
+              // else if (
+              //   !this.graphvis.graph.hasOutputEdgeAt(
+              //     this.selectedPort.node,
+              //     port.index
+              //   )
+              // )
+              else
                 this.selectedPort.node.attachAsOutput(
                   this.selectedPort.index,
                   port.node,

@@ -178,10 +178,7 @@ export class StaticSceneEntity extends SceneEntity {
 
 export class DynamicSceneEntity extends SceneEntity {
   constructor(game, gameWindow, pos, options = {}) {
-    super(game, gameWindow, pos, {
-      isStatic: false,
-      ...options,
-    })
+    super(game, gameWindow, pos, options)
     const v = options.vel || new Vec2(0, 0)
     Body.setVelocity(this.physicsProxy, { x: v.x, y: v.y })
     this.physicsCollapsed = false
@@ -262,6 +259,13 @@ export class ControlledSceneEntity extends DynamicSceneEntity {
     this.variables = options.variables || new Map()
     this.variablesCollapsed = false
     this.defaultStateName = currentStateName
+  }
+  setStatic(value) {
+    this.physicsProxy.isStatic = value
+    this.ops.isStatic = value
+  }
+  setVariable(name, value) {
+    this.variables.get(name).currentValue = value
   }
   runScripts(event, context) {
     /**

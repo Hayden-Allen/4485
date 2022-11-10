@@ -20,6 +20,7 @@
   import Bolt from 'icons/20/mini/bolt.svelte'
   import WorldPropertiesPanel from './WorldPropertiesPanel.svelte'
   import { Scene } from '%component/Scene.js'
+  import { StaticSceneEntity } from '%component/SceneEntity.js'
 
   let gameCanvas = undefined,
     uiCanvas = undefined
@@ -42,6 +43,7 @@
     beforePlaySelectedEntity = selectedEntity
     selectedEntity = undefined
     curProject = global.context.game.serialize()
+    global.context.game.deserialize(curProject)
   }
 
   function deserializeOnStop() {
@@ -483,7 +485,7 @@
           }}
         />
       {:else if selectedEntity}
-        {#if selectedEntity.ops.isStatic}
+        {#if selectedEntity instanceof StaticSceneEntity}
           <div
             class="flex flex-col items-center justify-center w-full h-full overflow-x-hidden overflow-y-auto"
           >

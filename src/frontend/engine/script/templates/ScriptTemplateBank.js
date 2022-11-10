@@ -20,6 +20,9 @@ import CameraFollow from '%script/templates/CameraFollow.js'
 import OnMouseScrollY from '%script/templates/OnMouseScrollY.js'
 import SetAnimationFromVelocityX from '%script/templates/SetAnimationFromVelocityX.js'
 import SetAnimationFromVelocityX2 from '%script/templates/SetAnimationFromVelocityX2.js'
+import PongMove from '%script/templates/PongMove.js'
+import PongScore from '%script/templates/PongScore.js'
+import PongBall from '%script/templates/PongBall.js'
 
 class ScriptTemplateInfo {
   constructor(description, script) {
@@ -69,6 +72,9 @@ export const scriptTemplateBank = global.alphabetSort([
     'Sets animation based on x velocity',
     SetAnimationFromVelocityX2
   ),
+  new ScriptTemplateInfo('Move up or down', PongMove),
+  new ScriptTemplateInfo('Score when the ball hits the back wall', PongScore),
+  new ScriptTemplateInfo('Bounce when hitting walls or players', PongBall),
 ])
 
 export const scriptTemplateIndex = lunr(function () {

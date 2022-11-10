@@ -137,11 +137,16 @@ export var global = {
     return [canvas.width * cx, canvas.height * cy]
   },
   transformCanvasToWorld: (canvas, cx, cy) => {
-    const tcx = (cx / canvas.width) * global.canvas.targetWidth
-    const tcy = (cy / canvas.height) * global.canvas.targetHeight
+    const wx = (cx / canvas.width) * global.canvas.targetWidth
+    const wy = (cy / canvas.height) * global.canvas.targetHeight
     return [
-      tcx - 0.5 * global.canvas.targetWidth,
-      0.5 * global.canvas.targetHeight - tcy,
+      wx - 0.5 * global.canvas.targetWidth,
+      0.5 * global.canvas.targetHeight - wy,
     ]
+  },
+  transformWorldToCanvas: (canvas, wx, wy) => {
+    const cx = (wx / global.canvas.targetWidth) * canvas.width
+    const cy = (wy / global.canvas.targetHeight) * canvas.height
+    return [cx + 0.5 * canvas.width, canvas.height * 0.5 - cy]
   },
 }

@@ -163,17 +163,24 @@ class ScriptNodeTemplateBank {
       [
         ['x', 'number'],
         ['y', 'number'],
+        ['size', 'number'],
+        ['color', 'string'],
       ],
-      [0, 0],
+      [0, 0, 64, '#0f0'],
       [],
       ([msg], { internal, ui }) => {
-        ui.drawText(
-          `${msg}`,
+        const [cx, cy] = global.transformWorldToCanvas(
+          ui.canvas,
           internal[0],
-          internal[1],
+          internal[1]
+        )
+        ui.drawCenteredText(
+          `${msg}`,
+          cx,
+          cy,
           'courier new',
-          32,
-          '#0f0'
+          (internal[2] * ui.canvas.width) / global.canvas.targetWidth,
+          internal[3]
         )
       }
     )
@@ -707,7 +714,7 @@ class ScriptNodeTemplateBank {
       'EntityHasVariable',
       [['entity', 'object']],
       [['variable', 'string']],
-      ['player'],
+      ['-'],
       [
         ['T', 'bool'],
         ['F', 'bool'],
@@ -721,6 +728,23 @@ class ScriptNodeTemplateBank {
           { value: !r, active: !r },
           { value: ~~r },
         ]
+      }
+    )
+    this.createInternal(
+      'entity',
+      'EntitySetVariable',
+      [
+        ['entity', 'object'],
+        ['value', 'int'],
+      ],
+      [['variable', 'string']],
+      ['-'],
+      [['value', 'int']],
+      ([entity, value], { internal }) => {
+        if (entity.variables && entity.variables.has(internal[0])) {
+          entity.setVariable(internal[0], value)
+        }
+        return [{ value }]
       }
     )
     this.create(
@@ -1014,25 +1038,10 @@ class ScriptNodeTemplateBank {
       ['-'],
       [['value', 'int']],
       ([entity], { internal }) => {
-        if (entity.variables) {
-          return [{ value: entity.variables.get(internal[0]) }]
+        if (entity.variables && entity.variables.has(internal[0])) {
+          return [{ value: entity.variables.get(internal[0]).currentValue }]
         }
-      }
-    )
-    this.createInternal(
-      'entity',
-      'SetEntityVariableInt',
-      [
-        ['entity', 'object'],
-        ['value', 'int'],
-      ],
-      [['name', 'string']],
-      ['-'],
-      [],
-      ([entity, value], { internal }) => {
-        if (entity.variables) {
-          entity.variables.set(internal[0], value)
-        }
+        return [{ value: 0 }]
       }
     )
   }

@@ -4,6 +4,7 @@
   import Plus from 'icons/24/outline/plus.svelte'
   import BoltSlash from 'icons/20/mini/bolt-slash.svelte'
   import FloatEditor from 'components/scriptPropertyEditors/FloatEditor.svelte'
+  import BoolEditor from 'components/scriptPropertyEditors/BoolEditor.svelte'
   import StatesPanelItem from 'components/StatesPanelItem.svelte'
   import VariablesPanel from './VariablesPanel.svelte'
   import ChevronRight from 'icons/20/mini/chevron-right.svelte'
@@ -38,6 +39,12 @@
       get: (entity) => entity.physicsProxy.friction,
       set: (entity, value) => (entity.physicsProxy.friction = value),
       type: 'float',
+    },
+    {
+      displayName: 'Movable',
+      get: (entity) => !entity.physicsProxy.isStatic,
+      set: (entity, value) => entity.setStatic(!value),
+      type: 'bool',
     },
   ]
 
@@ -117,6 +124,14 @@
           <div class="grow shrink w-full overflow-hidden">
             {#if prop.type === 'float'}
               <FloatEditor
+                currentValue={prop.get(selectedEntity)}
+                onApply={(value) => prop.set(selectedEntity, value)}
+                onFocus={() => (focusedGlobalProperty = prop)}
+                onBlur={() => (focusedGlobalProperty = undefined)}
+              />
+            {/if}
+            {#if prop.type === 'bool'}
+              <BoolEditor
                 currentValue={prop.get(selectedEntity)}
                 onApply={(value) => prop.set(selectedEntity, value)}
                 onFocus={() => (focusedGlobalProperty = prop)}

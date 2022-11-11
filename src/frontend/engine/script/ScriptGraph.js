@@ -1,11 +1,17 @@
 import { Component } from '%component/Component.js'
+import { scriptTemplateBank } from '%script/templates/ScriptTemplateBank.js'
 import { scriptNodeTemplateBank } from '%script/ScriptNodeTemplateBank.js'
 import { ScriptEdge, ScriptNodeEdgeList } from './ScriptEdge.js'
 
+/**
+ * @HATODO move these to scriptnodetemplatebank
+ */
 const EVENT_NODE_NAMES = new Set()
 EVENT_NODE_NAMES.add('OnTick')
+EVENT_NODE_NAMES.add('OnPostTick')
 EVENT_NODE_NAMES.add('OnCollide')
 EVENT_NODE_NAMES.add('OnSwitch')
+EVENT_NODE_NAMES.add('OnRender')
 
 class ExportNodeProxy {
   constructor(node) {
@@ -29,13 +35,14 @@ export class ScriptGraph extends Component {
   constructor(name, inputCache, pushErrorCallback, clearErrorsCallback) {
     super(name)
     this.inputCache = inputCache
-    this.pushErrorCallback = pushErrorCallback
-    this.clearErrorsCallback = clearErrorsCallback
+    this.pushErrorCallback = pushErrorCallback || (() => {})
+    this.clearErrorsCallback = clearErrorsCallback || (() => {})
     /**
      * @HATODO move this somewhere else??
      */
     this.collapsed = false
     this.firstRun = true
+    this.templateName = undefined
     this.reset()
   }
   isEmpty() {
@@ -57,6 +64,8 @@ export class ScriptGraph extends Component {
     this.firstRun = true
   }
   serialize() {
+    // if (this.templateName) return { templateName: this.templateName }
+
     let nodes = []
     // ScriptNodeEdgeLists need to convert ScriptNode references to an index for serialization
     let nodeIndex = new Map()
@@ -68,26 +77,35 @@ export class ScriptGraph extends Component {
     let edges = []
     this.edges.forEach((edgeList) => edges.push(edgeList.serialize(nodeIndex)))
 
-    const obj = {
+    return {
+      id: this.id,
       name: this.debugName,
       nodes,
       edges,
     }
-    return obj
   }
   deserialize(obj) {
+    /**
+     * @HATODO why is this here
+     */
+    // create a clone of the template
     obj = JSON.parse(JSON.stringify(obj))
+
+    if (obj.templateName) {
+      return this.deserialize(
+        scriptTemplateBank.find(
+          (template) => template.name === obj.templateName
+        )
+      )
+    }
 
     this.reset()
 
+    this.id = obj.id
     this.debugName = obj.name
     let nodeIndex = new Map()
     for (const node of obj.nodes) {
-      // const newNode = scriptNodeTemplateBank
-      //   .get(node.type)
-      //   .create(this, node.internalValues)
       const newNode = this.createNode(node.type, node.internalValues)
-
       this.nodes.set(newNode.id, newNode)
       nodeIndex.set(nodeIndex.size, newNode)
     }
@@ -140,6 +158,7 @@ export class ScriptGraph extends Component {
   }
   // internalValues only necessary when `name` specifies an InternalScriptNodeTemplate
   createNode(name, internalValues) {
+    this.templateName = undefined
     this.cachedCompile = undefined
 
     const node = scriptNodeTemplateBank
@@ -151,7 +170,9 @@ export class ScriptGraph extends Component {
     return node
   }
   removeNode(node) {
+    this.templateName = undefined
     this.cachedCompile = undefined
+
     // for each edge of this node, remove corresponding edge on connected node
     this.getEdges(node).in.forEach((edge) => {
       this.removeEdge(
@@ -174,12 +195,17 @@ export class ScriptGraph extends Component {
     this.edges.delete(node.id)
   }
   addEdge(outputNode, outputIndex, inputNode, inputIndex) {
+    this.templateName = undefined
     this.cachedCompile = undefined
+
     const edge = new ScriptEdge(outputNode, outputIndex, inputNode, inputIndex)
     this.edges.get(outputNode.id).out.push(edge)
     this.edges.get(inputNode.id).in.push(edge)
   }
   removeEdge(outputNode, outputIndex, inputNode, inputIndex) {
+    this.templateName = undefined
+    this.cachedCompile = undefined
+
     this.getEdges(outputNode).out = this.getEdges(outputNode).out.filter(
       (edge) =>
         !(
@@ -210,7 +236,13 @@ export class ScriptGraph extends Component {
   hasInputEdgeAt(node, inputIndex) {
     const edges = this.getEdges(node).in
     for (var i = 0; i < edges.length; i++)
-      if (edges[i].inputIndex === inputIndex) return true
+      if (edges[i].inputIndex === inputIndex) return edges[i]
+    return false
+  }
+  hasOutputEdgeAt(node, outputIndex) {
+    const edges = this.getEdges(node).out
+    for (var i = 0; i < edges.length; i++)
+      if (edges[i].outputIndex === outputIndex) return edges[i]
     return false
   }
   forceCompile() {
@@ -249,6 +281,7 @@ export class ScriptGraph extends Component {
     buildNodes.forEach((node) => this.traverse(node, visited, order))
 
     this.cachedCompile = order
+    // console.log(order)
     return order
   }
   // dfs
@@ -274,14 +307,14 @@ export class ScriptGraph extends Component {
     // add to order
     order.unshift(node)
   }
-  run(entity, eventName, ...eventData) {
+  run(eventName, context) {
     // only runs if necessary
     this.compile()
 
     // check if we need to run OnSwitch
     if (this.firstRun) {
       this.firstRun = false
-      this.run(entity, 'OnSwitch')
+      this.run('OnSwitch', context)
     }
 
     let startNode = this.eventNodes.get(eventName)
@@ -293,7 +326,7 @@ export class ScriptGraph extends Component {
     this.nodes.forEach((node) => (node.active = false))
     // activate given event node and set its outputs
     startNode.active = true
-    startNode.outputs = eventData
+    startNode.outputs = context.data || []
     // activate all non-event source nodes
     this.sourceNodes.forEach((node) => (node.active = true))
 
@@ -311,7 +344,7 @@ export class ScriptGraph extends Component {
           inputs[edge.inputIndex] = edge.outputNode.outputs[edge.outputIndex]
       })
 
-      node.run(inputs, entity, this.inputCache)
+      node.run(inputs, { ...context, inputCache: this.inputCache })
     })
 
     // errors generated on subsequent runs will be the same, so disable them to avoid spam

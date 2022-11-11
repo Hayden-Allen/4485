@@ -16,7 +16,7 @@ export class Renderer {
     gl.clearDepth(1)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   }
-  draw(renderable, camera, shaderProgram) {
+  draw(entity, camera, shaderProgram) {
     /**
      * @HATODO temporary hack (until camera is moved into EditorLayer)
      */
@@ -25,16 +25,9 @@ export class Renderer {
     let gl = this.gl
 
     let mvp = mat4.create()
-    mat4.mul(mvp, camera.matrix, renderable.transform)
+    mat4.mul(mvp, camera.matrix, entity.renderable.transform)
     gl.useProgram(shaderProgram.program)
     shaderProgram.uniformMatrix4fv(gl, 'u_mvp', mvp)
-    renderable.bind(gl, shaderProgram)
-    gl.drawElements(
-      gl.TRIANGLES,
-      renderable.elementCount,
-      // Uint16Array
-      gl.UNSIGNED_SHORT,
-      0
-    )
+    entity.renderable.draw(gl, shaderProgram, entity.getCurrentTexture())
   }
 }

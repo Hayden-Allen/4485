@@ -114,15 +114,15 @@
         bind:value={searchQuery}
         on:keydown={(e) => e.stopPropagation()}
         placeholder="Search..."
-        class="grow-1 shrink-1 p-2 pl-8 w-full min-w-0 border-0 outline-none bg-neutral-800"
+        class="grow shrink p-2 pl-8 w-full min-w-0 border-0 outline-none bg-neutral-800"
       />
       <div
         class="absolute w-8 h-10 flex items-center justify-center text-neutral-500 pointer-events-none"
       >
-        <MagnifyingGlass />
+        <div class="w-5 h-5"><MagnifyingGlass /></div>
       </div>
     </div>
-    <div class="flex flex-row grow-1 shrink-1 w-full h-full overflow-hidden">
+    <div class="flex flex-row grow shrink w-full h-full overflow-hidden">
       <div
         class="flex flex-col grow-0 shrink-0 w-[160px] h-full border-r border-solid border-neutral-700 overflow-x-hidden overflow-y-auto"
       >
@@ -145,7 +145,7 @@
         {/each}
       </div>
       <div
-        class="flex flex-col grow-1 shrink-1 w-full h-full flex flex-col overflow-x-hidden overflow-y-auto"
+        class="flex flex-col grow shrink w-full h-full flex flex-col overflow-x-hidden overflow-y-auto"
       >
         {#each categories as category}
           {#if category.name === selectedCategory}
@@ -162,7 +162,7 @@
                   style={`background-color: ${name.dotColor}`}
                 />
                 <div
-                  class="grow-1 shrink-1 overflow-hidden whitespace-nowrap text-ellipsis"
+                  class="grow shrink overflow-hidden whitespace-nowrap text-ellipsis"
                 >
                   {name.name}
                 </div>

@@ -56,3 +56,11 @@ body {
     opacity: 0;
   }
 }
+
+* {
+  user-select: none;
+}
+
+input {
+  user-select: auto;
+}

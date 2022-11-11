@@ -1,14 +1,15 @@
-import { Context } from '%engine/Context.js'
 import { VaryingController } from '%util/VaryingController.js'
-import { PhysicsEngine } from '%physics/PhysicsEngine.js'
 
 export var global = {
+  context: undefined,
   varyingController: undefined,
-  physicsEngine: undefined,
+  gl: undefined,
   fps: 60,
   mouseX: 0,
   mouseY: 0,
   epsilon: 10e-5,
+  playState: 'stop',
+  isEditor: undefined,
 
   canvas: {
     targetWidth: 1920,
@@ -21,9 +22,29 @@ export var global = {
     lastDelta: 0,
   },
 
-  init: () => {
-    global.context = new Context()
-    global.physicsEngine = new PhysicsEngine(-5)
+  init: (context) => {
+    async function registerAudioContext() {
+      window.removeEventListener('click', registerAudioContext)
+
+      if (!global.audioCtx) {
+        global.audioCtx = new (window.AudioContext ||
+          window.webkitAudioContext)()
+      }
+
+      if (!global.audioBufferBank) {
+        global.audioBufferBank = new Map()
+
+        for (const name of ['boink', 'cheer', 'jazz-lose', 'ta-da']) {
+          global.audioBufferBank.set(
+            name,
+            await global.decodeAudioData(`/sounds/${name}.mp3`)
+          )
+        }
+      }
+    }
+    window.addEventListener('click', registerAudioContext)
+
+    global.context = context
     global.varyingController = new VaryingController()
     global.context.addSystem(global.varyingController)
     window.oncontextmenu = (e) => {
@@ -90,5 +111,43 @@ export var global = {
     return arr.sort((a, b) =>
       a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
     )
+  },
+  decodeAudioData: (url) => {
+    return new Promise((resolve, reject) => {
+      ;(async () => {
+        const req = await window.fetch(url)
+        const res = await req.arrayBuffer()
+        global.audioCtx.decodeAudioData(
+          res,
+          (buffer) => resolve(buffer),
+          (err) => reject(err)
+        )
+      })()
+    })
+  },
+  playSound: (name) => {
+    const source = global.audioCtx.createBufferSource()
+    source.buffer = global.audioBufferBank.get(name)
+    source.connect(global.audioCtx.destination)
+    source.start()
+  },
+  transformDOMToCanvas: (canvas, dx, dy) => {
+    const rect = canvas.getBoundingClientRect()
+    const cx = (dx - rect.x) / rect.width
+    const cy = (dy - rect.y) / rect.height
+    return [canvas.width * cx, canvas.height * cy]
+  },
+  transformCanvasToWorld: (canvas, cx, cy) => {
+    const wx = (cx / canvas.width) * global.canvas.targetWidth
+    const wy = (cy / canvas.height) * global.canvas.targetHeight
+    return [
+      wx - 0.5 * global.canvas.targetWidth,
+      0.5 * global.canvas.targetHeight - wy,
+    ]
+  },
+  transformWorldToCanvas: (canvas, wx, wy) => {
+    const cx = (wx / global.canvas.targetWidth) * canvas.width
+    const cy = (wy / global.canvas.targetHeight) * canvas.height
+    return [cx + 0.5 * canvas.width, canvas.height * 0.5 - cy]
   },
 }

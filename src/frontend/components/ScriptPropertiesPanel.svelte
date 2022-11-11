@@ -6,6 +6,7 @@
 
   export let parentStateSelected = false
   export let states = undefined
+  export let variables = undefined
   export let scripts = undefined
   export let onRearrangeScripts = undefined
   export let onEditScript = undefined
@@ -42,15 +43,18 @@
 
 <div
   use:dndzone={{
-    items: dndItems,
+    type: 'Script',
     dragDisabled: dndItems.length === 0,
+    morphDisabled: true,
+    dropTargetStyle: '',
+    items: dndItems,
     flipDurationMs: 100,
   }}
   on:consider={handleConsider}
   on:finalize={handleFinalize}
   on:mouseenter={() => (hovered = true)}
   on:mouseleave={() => (hovered = false)}
-  class={`flex flex-col w-full h-full overflow-x-hidden overflow-y-auto -z-9999 ${
+  class={`flex flex-col w-full h-full overflow-x-hidden overflow-y-auto ${
     enforceMinHeight ? 'min-h-[192px]' : ''
   }`}
 >
@@ -64,6 +68,7 @@
       >
         <ScriptPropertiesGroup
           {states}
+          {variables}
           script={item.script}
           onEditScript={() => onEditScript(item.script)}
           onDelete={() => onDeleteScript(item.script)}

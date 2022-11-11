@@ -1,0 +1,6 @@
+Integer co-ordinates for tiling
+Scale to same aspect ratio
+^^ both of these maybe only happen while holding Ctrl/Cmd ??
+
+gravity serialization
+can't connect multiple node edges

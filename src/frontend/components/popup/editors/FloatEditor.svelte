@@ -39,13 +39,11 @@
   {bgColor}
   {fgColor}
   {onDestroyPopup}
-  width="96px"
+  width="128px"
   height="auto"
 >
   <input
     bind:this={inputEl}
-    type="number"
-    step="0.01"
     on:keydown={(event) => {
       if (event.key === 'Enter') {
         onDestroyPopup()
@@ -53,7 +51,7 @@
     }}
     bind:value={currentValue}
     placeholder={currentValue}
-    class="grow-1 shrink-1 p-2 w-full min-w-0 border-0 outline-none bg-inherit text-inherit"
+    class="grow shrink p-2 w-full min-w-0 border-0 outline-none bg-inherit text-inherit"
     style={`--placeholder-color: ${placeholderColor};`}
   />
 </EditorLayout>
@@ -61,17 +59,5 @@
 <style>
   ::placeholder {
     color: var(--placeholder-color);
-  }
-
-  input[type='number'] {
-    -moz-appearance: textfield;
-    appearance: textfield;
-    margin: 0;
-  }
-
-  input[type='number']::-webkit-inner-spin-button,
-  input[type='number']::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
   }
 </style>

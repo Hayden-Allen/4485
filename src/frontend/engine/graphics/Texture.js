@@ -51,9 +51,12 @@ export class Texture {
         )
       })
 
-      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+      // gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+      // gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.REPEAT)
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.REPEAT)
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+      gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
     }
 
     let loadCount = 0
@@ -76,6 +79,12 @@ export class Texture {
         images.push(img)
       }
     })
+
+    /**
+     * @HATODO move this ??
+     * needed by StatesPanelItemAnimation.svelte
+     */
+    this.urls = urls
   }
   createEmptyTexture(gl, w, h, d) {
     gl.texImage3D(
@@ -95,9 +104,6 @@ export class Texture {
     gl.activeTexture(gl.TEXTURE0 + slot)
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.texture)
 
-    /**
-     * @HATODO hacky?
-     */
     if (
       !global.context.paused &&
       this.frameCount > 1 &&
@@ -106,5 +112,21 @@ export class Texture {
       this.frame = (this.frame + 1) % this.frameCount
       this.lastSwitch = global.time.now
     }
+  }
+  reset() {
+    this.lastSwitch = global.time.now
+    this.frame = 0
+  }
+  serialize() {
+    return {
+      urls: this.urls,
+      frameTime: this.frameTime,
+    }
+  }
+  /**
+   * @HATODO
+   */
+  static deserialize(obj) {
+    return new Texture(global.gl, obj.frameTime, obj.urls)
   }
 }

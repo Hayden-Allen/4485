@@ -2,14 +2,11 @@ import { Layer } from '%window/Layer.js'
 
 export class GameLayer extends Layer {
   constructor(game) {
-    super('GameLayer')
+    super('EditorLayer')
     this.game = game
   }
-  onAppTick(e) {
-    this.game.update(e.deltaTime)
-    return false
-  }
   onRender(e) {
-    this.game.draw(e.renderer)
+    e.window.clear()
+    this.game.draw(e.window)
   }
 }

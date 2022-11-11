@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from 'svelte'
   import { global } from '%engine/Global.js'
 
   export let currentValue = undefined

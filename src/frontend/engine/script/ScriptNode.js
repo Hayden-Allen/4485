@@ -1,6 +1,7 @@
 import { validateScriptDataTypes } from './ScriptDataType.js'
 import { Component } from '%component/Component.js'
 import { ScriptDataTypeList } from './ScriptDataType.js'
+import { global } from '%engine/Global.js'
 
 export class ScriptNodePort {
   constructor(name, typename, editorTypename) {
@@ -84,19 +85,23 @@ export class ScriptNode extends Component {
     this.attachBase(inputNode, inputIndex)
     this.graph.addEdge(this, outputIndex, inputNode, inputIndex)
   }
-  run(inputs, entity, inputCache) {
+  run(inputs, context) {
     if (!validateScriptDataTypes(inputs, this.inputTypes.types)) {
       this.graph.pushError(`Invalid input to '${this.debugName}'`)
+      // console.log(inputs, this.inputTypes.types)
       return
     }
 
     const results =
       this.data.fn(inputs, {
-        entity,
+        ui: global.gameWindow.uiCanvas,
+        game: global.context.game,
+        entity: context.entity,
+        scene: context.entity.scene,
+        input: context.inputCache,
+        camera: context.camera,
         internal: this.internalValues,
-        input: inputCache,
         node: this,
-        scene: entity.scene,
       }) || []
 
     // store output values
@@ -113,9 +118,11 @@ export class ScriptNode extends Component {
         const { active } = results[edge.outputIndex]
         // activate child nodes if the result of running this node says so
         if (active || (!this.isSource && active === undefined)) {
+          //if (active || active === undefined) {
           // console.log(this.debugName, active)
           edge.inputNode.active = true
         }
+        if (active === false) edge.inputNode.active = false
       }
     }
   }

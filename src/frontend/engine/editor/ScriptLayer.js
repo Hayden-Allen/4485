@@ -9,16 +9,19 @@ import BoolPortEditor from 'components/popup/editors/BoolEditor.svelte'
 import FloatPortEditor from 'components/popup/editors/FloatEditor.svelte'
 import StatePortEditor from 'components/popup/editors/StateEditor.svelte'
 import StringPortEditor from 'components/popup/editors/StringEditor.svelte'
-import { PORT_COLOR } from './ScriptVisualizer.js'
-import { ScriptEdgeProxy } from './ScriptEdgeProxy'
+import VariablePortEditor from 'components/popup/editors/VariableEditor.svelte'
+import { PORT_COLOR } from '%editor/ScriptVisualizer.js'
+import { ScriptEdgeProxy } from '%editor/ScriptEdgeProxy.js'
+import { EntityVariable } from '%component/SceneEntity.js'
 
 export class ScriptLayer extends Layer {
-  constructor(input, controls, script, selectedEntityStates) {
+  constructor(input, controls, script, selectedEntity, onVariablesChanged) {
     super('ScriptLayer')
     this.input = input
     this.controls = controls
     this.script = script
-    this.selectedEntityStates = selectedEntityStates
+    this.selectedEntity = selectedEntity
+    this.onVariablesChanged = onVariablesChanged
     this.capturedLeftClick = false
     this.graphvis = undefined
     this.selected = undefined
@@ -121,12 +124,24 @@ export class ScriptLayer extends Layer {
           // if we already have a port selected and it can be connected to the new port, add an edge
           if (port && !port.internal) {
             if (this.selectedPort && this.selectedPort.in ^ port.in) {
-              if (this.selectedPort.in)
+              if (
+                this.selectedPort.in &&
+                !this.graphvis.graph.hasInputEdgeAt(
+                  this.selectedPort.node,
+                  port.index
+                )
+              )
                 this.selectedPort.node.attachAsInput(
                   port.node,
                   port.index,
                   this.selectedPort.index
                 )
+              // else if (
+              //   !this.graphvis.graph.hasOutputEdgeAt(
+              //     this.selectedPort.node,
+              //     port.index
+              //   )
+              // )
               else
                 this.selectedPort.node.attachAsOutput(
                   this.selectedPort.index,
@@ -421,8 +436,8 @@ export class ScriptLayer extends Layer {
       return {
         x,
         y,
-        width: width / window.devicePixelRatio,
-        height: height / window.devicePixelRatio,
+        width: width,
+        height: height,
         borderAlphaVarying: self.graphvis.outlineAlpha,
         computeReposition: (x, y) => {
           if (
@@ -451,6 +466,26 @@ export class ScriptLayer extends Layer {
         },
         onAddNode: (name) => {
           const node = self.graphvis.graph.createNode(name)
+          if (node.isExport) {
+            if (node.data.internalPorts[1].editorTypename === 'state') {
+              node.internalValues[1] = this.selectedEntity.defaultStateName
+            } else if (
+              node.data.internalPorts[1].editorTypename === 'variable'
+            ) {
+              if (this.selectedEntity.variables.size > 0) {
+                for (const [name] of this.selectedEntity.variables) {
+                  node.internalValues[1] = name
+                  break
+                }
+              } else {
+                this.selectedEntity.variables.set(
+                  'Variable 1',
+                  new EntityVariable('Variable 1', 0)
+                )
+                node.internalValues[1] = 'Variable 1'
+              }
+            }
+          }
           self.graphvis.recompile()
           const proxy = self.graphvis.proxies.get(node.id)
           const [x, y] = self.inverseTransformCoords(
@@ -477,6 +512,7 @@ export class ScriptLayer extends Layer {
       float: FloatPortEditor,
       number: FloatPortEditor,
       state: StatePortEditor,
+      variable: VariablePortEditor,
     }
     const type = typenameToEditor[port.port.editorTypename]
     const nodeProps = { proxy, port }
@@ -496,7 +532,9 @@ export class ScriptLayer extends Layer {
 
     let extra = {}
     if (type === StatePortEditor) {
-      extra = { states: this.selectedEntityStates }
+      extra = { states: this.selectedEntity.states }
+    } else if (type === VariablePortEditor) {
+      extra = { variables: this.selectedEntity.variables }
     }
 
     return {
@@ -507,7 +545,10 @@ export class ScriptLayer extends Layer {
       fgColor: PORT_COLOR[options.port.port.typename].editor.foreground,
       placeholderColor:
         PORT_COLOR[options.port.port.typename].editor.placeholder,
-      currentValue: options.proxy.node.internalValues[options.port.index],
+      currentValue:
+        type === IntPortEditor || type === FloatPortEditor
+          ? null
+          : options.proxy.node.internalValues[options.port.index],
       beforeDestroyPopup: (popup) => {
         if (!popup.validate || popup.validate()) {
           options.proxy.node.internalValues[options.port.index] =

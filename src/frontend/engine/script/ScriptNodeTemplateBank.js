@@ -174,11 +174,13 @@ class ScriptNodeTemplateBank {
           internal[0],
           internal[1]
         )
+        const systemFontFamily =
+          '-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif'
         ui.drawCenteredText(
           `${msg}`,
           cx,
           cy,
-          'courier new',
+          systemFontFamily,
           (internal[2] * ui.canvas.width) / global.canvas.targetWidth,
           internal[3]
         )

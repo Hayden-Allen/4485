@@ -9,6 +9,7 @@ export var global = {
   mouseY: 0,
   epsilon: 10e-5,
   playState: 'stop',
+  isEditor: undefined,
 
   canvas: {
     targetWidth: 1920,

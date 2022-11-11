@@ -121,6 +121,7 @@
   }
 
   onMount(() => {
+    global.isEditor = true
     curProject = firstLoadSerializedGameData
 
     global.init(new Context())

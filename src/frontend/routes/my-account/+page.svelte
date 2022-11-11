@@ -209,6 +209,7 @@
             class="flex flex-row w-[640px] p-4 mb-4 bg-neutral-700 w-full grow-0 shrink-0 items-center"
           >
             <a
+              data-sveltekit-reload
               href={`/edit/${game._id}`}
               class="w-full grow shrink overflow-hidden text-overflow-ellipsis whitespace-nowrap hover:underline"
             >

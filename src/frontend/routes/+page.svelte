@@ -59,6 +59,7 @@
             } bg-neutral-700 w-full grow-0 shrink-0 justify-center`}
           >
             <a
+              data-sveltekit-reload
               href={`/play/${game._id}`}
               class="w-full grow shrink overflow-hidden text-overflow-ellipsis whitespace-nowrap hover:underline mb-1"
             >

@@ -16,6 +16,7 @@
   import PlayIcon from 'icons/24/solid/play.svelte'
   import PauseIcon from 'icons/24/solid/pause.svelte'
   import StopIcon from 'icons/24/solid/stop.svelte'
+  import SaveIcon from 'icons/24/solid/arrow-up-tray.svelte'
   import { Context } from '%engine/Context.js'
   import Bolt from 'icons/20/mini/bolt.svelte'
   import WorldPropertiesPanel from './WorldPropertiesPanel.svelte'
@@ -408,7 +409,7 @@
           </div>
         </button>
         <button
-          class={`p-4 bg-neutral-700 rounded-b-lg ${
+          class={`p-4 bg-neutral-700 ${
             global.playState === 'stop'
               ? 'text-red-500'
               : 'text-neutral-100 hover:text-red-300'
@@ -417,6 +418,14 @@
         >
           <div class="w-6 h-6">
             <StopIcon />
+          </div>
+        </button>
+        <button
+          class={`p-4 bg-neutral-700 rounded-b-lg text-neutral-100 hover:text-green-300 transition-all`}
+          on:click={saveFn}
+        >
+          <div class="w-6 h-6">
+            <SaveIcon />
           </div>
         </button>
       </div>

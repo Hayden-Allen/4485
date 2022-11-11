@@ -5,6 +5,10 @@ import {
   findUserById,
 } from 'backend/functions/apiFunctions'
 import { validateSessionCookie } from 'backend/functions/authFunctions'
+import {
+  createSessionToken,
+  setSessionCookie,
+} from 'backend/functions/authFunctions'
 
 export async function GET({ url, cookies }) {
   const session = validateSessionCookie(cookies)
@@ -50,7 +54,7 @@ export async function GET({ url, cookies }) {
   })
 }
 
-export async function POST({ request }) {
+export async function POST({ request, cookies }) {
   const body = await request.json()
 
   const username = body.username.trim()
@@ -70,6 +74,7 @@ export async function POST({ request }) {
   }
 
   const user = await createUser({ username, password })
+  setSessionCookie(cookies, createSessionToken(user))
 
   return new Response(
     JSON.stringify({

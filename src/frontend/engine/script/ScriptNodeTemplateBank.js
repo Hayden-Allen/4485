@@ -34,6 +34,10 @@ export const NODE_CATEGORY_COLORS = {
     bgColor: '#22c55e',
     borderColor: '#15803d',
   },
+  audio: {
+    bgColor: '#22c55e',
+    borderColor: '#15803d',
+  },
 }
 
 class ScriptNodeTemplateBank {
@@ -53,7 +57,7 @@ class ScriptNodeTemplateBank {
       ([name, type, editorType]) => new ScriptNodePort(name, type, editorType)
     )
   }
-  create(category, name, inputs, outputs, fn, isExport = false) {
+  create(category, name, inputs, outputs, fn) {
     this.bank.set(
       name,
       new ScriptNodeTemplate(
@@ -61,8 +65,7 @@ class ScriptNodeTemplateBank {
         name,
         this.mapPorts(inputs),
         this.mapPorts(outputs),
-        fn,
-        isExport
+        fn
       )
     )
   }
@@ -79,8 +82,7 @@ class ScriptNodeTemplateBank {
     internals,
     defaultValues,
     outputs,
-    fn,
-    isExport = false
+    fn
   ) {
     this.bank.set(
       name,
@@ -91,28 +93,26 @@ class ScriptNodeTemplateBank {
         this.mapPorts(internals),
         defaultValues,
         this.mapPorts(outputs),
-        fn,
-        isExport
+        fn
       )
     )
   }
-  createConstant(category, name, ports, defaultValues, isExport = false) {
+  createConstant(category, name, ports, defaultValues) {
     this.bank.set(
       name,
       new ConstantScriptNodeTemplate(
         category,
         name,
         this.mapPorts(ports),
-        defaultValues,
-        isExport
+        defaultValues
       )
     )
   }
   createExport(
     category,
     name,
-    value,
     valueName,
+    value,
     valueType,
     {
       additionalPorts = [],
@@ -125,8 +125,8 @@ class ScriptNodeTemplateBank {
       new ExportNodeTemplate(
         category,
         name,
-        value,
         valueName,
+        value,
         valueType,
         valueEditorType,
         this.mapPorts(additionalPorts),
@@ -141,6 +141,7 @@ class ScriptNodeTemplateBank {
     this.createLogic()
     this.createMath()
     this.createExports()
+    this.createAudio()
     /**
      * @HATODO remove
      */
@@ -155,9 +156,41 @@ class ScriptNodeTemplateBank {
         entity.logInfo(internal[0])
       }
     )
+    this.createInternal(
+      'logic',
+      'DrawText',
+      [['msg', 'any']],
+      [
+        ['x', 'number'],
+        ['y', 'number'],
+        ['size', 'number'],
+        ['color', 'string'],
+      ],
+      [0, 0, 64, '#0f0'],
+      [],
+      ([msg], { internal, ui }) => {
+        const [cx, cy] = global.transformWorldToCanvas(
+          ui.canvas,
+          internal[0],
+          internal[1]
+        )
+        const systemFontFamily =
+          '-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif'
+        ui.drawCenteredText(
+          `${msg}`,
+          cx,
+          cy,
+          systemFontFamily,
+          (internal[2] * ui.canvas.width) / global.canvas.targetWidth,
+          internal[3]
+        )
+      }
+    )
+    this.createConstant('logic', 'ConstString', [['string', 'string']], [''])
   }
   createEvents() {
     this.createEvent('event', 'OnTick', [])
+    this.createEvent('event', 'OnRender', [])
     this.createEvent('event', 'OnCollide', [
       ['normal', 'object'],
       ['entity', 'object'],
@@ -203,10 +236,18 @@ class ScriptNodeTemplateBank {
         ]
       }
     )
+    this.create(
+      'input',
+      'MouseScroll',
+      [],
+      [['v', 'object']],
+      (_, { input }) => [{ value: input.mouseScroll }]
+    )
   }
   createMath() {
     // const
     this.createConstant('math', 'ConstInt', [['int', 'int']], [0])
+    this.createConstant('math', 'ConstFloat', [['float', 'float']], [0])
     // function
     this.create(
       'math',
@@ -308,6 +349,169 @@ class ScriptNodeTemplateBank {
       }
     )
 
+    // comparison
+    this.create(
+      'math',
+      'Greater',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a > b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'GreaterEquals',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a >= b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'Less',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a < b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'LessConst',
+      [['a', 'number']],
+      [['b', 'number']],
+      [0],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a], { internal }) => {
+        const r = a < internal[0]
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.createInternal(
+      'math',
+      'Less#',
+      [['a', 'number']],
+      [['b', 'number']],
+      [0],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a], { internal }) => {
+        const r = a < internal[0]
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'LessEquals',
+      [
+        ['a', 'number'],
+        ['b', 'number'],
+      ],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a, b]) => {
+        const r = a <= b
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'IsZero',
+      [['a', 'number']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a]) => {
+        const r = Math.abs(a) <= global.epsilon
+        // console.log(a)
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.create(
+      'math',
+      'IsNonZero',
+      [['a', 'number']],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([a]) => {
+        const r = Math.abs(a) > global.epsilon
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+
     // vector
     /**
      * @HATODO debug only
@@ -335,7 +539,9 @@ class ScriptNodeTemplateBank {
         ['x', 'number'],
         ['y', 'number'],
       ],
-      ([v]) => [{ value: v.x }, { value: v.y }]
+      ([v]) => {
+        return [{ value: v.x }, { value: v.y }]
+      }
     )
     this.create(
       'math',
@@ -499,10 +705,50 @@ class ScriptNodeTemplateBank {
         ['1', 'any'],
       ],
       [['out', 'any']],
-      ([index, a0, a1]) => [{ value: index ? a1 : a0 }]
+      ([index, a0, a1]) => {
+        return [{ value: index ? a1 : a0 }]
+      }
     )
   }
   createEntity() {
+    this.createInternal(
+      'entity',
+      'EntityHasVariable',
+      [['entity', 'object']],
+      [['variable', 'string']],
+      ['-'],
+      [
+        ['T', 'bool'],
+        ['F', 'bool'],
+        ['int', 'int'],
+      ],
+      ([entity], { internal }) => {
+        let r = false
+        if (entity.variables && entity.variables.has(internal[0])) r = true
+        return [
+          { value: r, active: r },
+          { value: !r, active: !r },
+          { value: ~~r },
+        ]
+      }
+    )
+    this.createInternal(
+      'entity',
+      'EntitySetVariable',
+      [
+        ['entity', 'object'],
+        ['value', 'int'],
+      ],
+      [['variable', 'string']],
+      ['-'],
+      [['value', 'int']],
+      ([entity, value], { internal }) => {
+        if (entity.variables && entity.variables.has(internal[0])) {
+          entity.setVariable(internal[0], value)
+        }
+        return [{ value }]
+      }
+    )
     this.create(
       'entity',
       'GetControlledEntity',
@@ -535,6 +781,7 @@ class ScriptNodeTemplateBank {
       ([entity, x]) => {
         if (entity.setVelocity) {
           entity.setVelocityX(x)
+          // console.log(entity.physicsProxy.velocity)
         }
       }
     )
@@ -570,8 +817,50 @@ class ScriptNodeTemplateBank {
       [['entity', 'object']],
       [['v', 'object']],
       ([entity]) => {
-        const { x, y } = entity.physicsProxy.velocity
+        const { x, y } = entity.getVelocity()
         return [{ value: new Vec2(x, y) }]
+      }
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocityX',
+      [['entity', 'object']],
+      [['x', 'number']],
+      ([entity]) => [{ value: entity.physicsProxy.velocity.x }]
+    )
+    this.create(
+      'entity',
+      'GetControlledEntityVelocityX',
+      [],
+      [['x', 'number']],
+      (_, { entity }) => [{ value: entity.physicsProxy.velocity.x }]
+    )
+    this.create(
+      'entity',
+      'ControlledVelX',
+      [],
+      [['x', 'number']],
+      (_, { entity }) => [{ value: entity.physicsProxy.velocity.x }]
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocityY',
+      [['entity', 'object']],
+      [['y', 'number']],
+      ([entity]) => [{ value: entity.physicsProxy.velocity.y }]
+    )
+    this.create(
+      'entity',
+      'GetEntityVelocityXY',
+      [['entity', 'object']],
+      [
+        ['x', 'number'],
+        ['y', 'number'],
+      ],
+      ([entity]) => {
+        const { x, y } = entity.getVelocity()
+        console.log(x, y)
+        return [{ value: x }, { value: y }]
       }
     )
     this.create(
@@ -579,11 +868,48 @@ class ScriptNodeTemplateBank {
       'SetEntityScale',
       [
         ['entity', 'object'],
+        ['scaleX', 'number'],
+        ['scaleY', 'number'],
+      ],
+      [],
+      ([entity, sx, sy]) => {
+        entity.setScale(sx, sy)
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScaleX',
+      [
+        ['entity', 'object'],
+        ['scaleX', 'number'],
+      ],
+      [],
+      ([entity, s]) => {
+        entity.setScale(s, entity.scaleY)
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScaleY',
+      [
+        ['entity', 'object'],
+        ['scaleY', 'number'],
+      ],
+      [],
+      ([entity, s]) => {
+        entity.setScale(entity.scaleX, s)
+      }
+    )
+    this.create(
+      'entity',
+      'SetEntityScaleXY',
+      [
+        ['entity', 'object'],
         ['scale', 'number'],
       ],
       [],
       ([entity, s]) => {
-        entity.setScale(s)
+        entity.setScale(s, s)
       }
     )
     this.create(
@@ -604,7 +930,120 @@ class ScriptNodeTemplateBank {
       [['entity', 'object']],
       [],
       ([entity], { scene }) => {
-        scene.removeControlledEntity(entity)
+        scene.removeControlledEntityFromScript(entity)
+      }
+    )
+    this.create(
+      'entity',
+      'GetEntityPosition',
+      [['entity', 'object']],
+      [['pos', 'object']],
+      ([entity]) => [{ value: entity.pos }]
+    )
+    this.create(
+      'entity',
+      'SetCameraPosition',
+      [['pos', 'object']],
+      [],
+      ([pos], { camera }) => {
+        camera.setPosition(pos)
+      }
+    )
+    this.create(
+      'entity',
+      'SetCameraZoom',
+      [['zoom', 'number']],
+      [],
+      ([zoom], { camera }) => {
+        camera.setZoom(zoom)
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetEntityAnimation',
+      [
+        ['entity', 'object'],
+        ['index', 'int'],
+      ],
+      [['reset', 'bool']],
+      [true],
+      [],
+      ([entity, index], { internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(index, internal[0])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetEntityAnimationConst',
+      [['entity', 'object']],
+      [
+        ['index', 'int'],
+        ['reset', 'bool'],
+      ],
+      [4, true],
+      [],
+      ([entity], { internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(internal[0], internal[1])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetControlledEntityAnimation',
+      [['index', 'int']],
+      [['reset', 'bool']],
+      [true],
+      [],
+      ([index], { entity, internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(index, internal[0])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetControlledEntityAnimationConst',
+      [],
+      [
+        ['index', 'int'],
+        ['reset', 'bool'],
+      ],
+      [4, true],
+      [],
+      (_, { entity, internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(internal[0], internal[1])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'SetControlledAnimation#',
+      [],
+      [['index', 'int']],
+      [4],
+      [],
+      (_, { entity, internal }) => {
+        if (entity.setAnimationIndex) {
+          entity.setAnimationIndex(internal[0])
+        }
+      }
+    )
+    this.createInternal(
+      'entity',
+      'GetEntityVariableInt',
+      [['entity', 'object']],
+      [['name', 'string']],
+      ['-'],
+      [['value', 'int']],
+      ([entity], { internal }) => {
+        if (entity.variables && entity.variables.has(internal[0])) {
+          return [{ value: entity.variables.get(internal[0]).currentValue }]
+        }
+        return [{ value: 0 }]
       }
     )
   }
@@ -618,23 +1057,30 @@ class ScriptNodeTemplateBank {
       additionalValues: [0, 10],
     })
     this.createExport('math', 'ExportFloat', 'value', 0, 'float')
-    this.createInternal(
-      'input',
-      'ExportKey',
-      [],
-      [
-        ['name', 'string'],
-        ['key', 'string', 'key'],
-      ],
-      ['export', 'A'],
-      [['key', 'string']],
-      (_, { internal }) => [{ value: internal[1] }],
-      true
-    )
+    this.createExport('input', 'ExportKey', 'key', 'A', 'string', {
+      valueEditorType: 'key',
+    })
 
     this.createExport('entity', 'ExportState', 'state', '---', 'string', {
       valueEditorType: 'state',
     })
+
+    this.createExport('entity', 'ExportVariable', 'var', '---', 'string', {
+      valueEditorType: 'variable',
+    })
+  }
+  createAudio() {
+    this.createInternal(
+      'audio',
+      'PlaySound',
+      [],
+      [['name', 'string']],
+      ['boink'],
+      [],
+      (_, { internal }) => {
+        global.playSound(internal[0])
+      }
+    )
   }
 }
 

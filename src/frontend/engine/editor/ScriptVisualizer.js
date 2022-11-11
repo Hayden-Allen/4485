@@ -87,10 +87,13 @@ export class ScriptVisualizer {
     this.drawStack = []
     this.window = window
 
-    this.outlineAlpha = new Varying(0.5, 1, -1, { step: 1.5 })
+    this.outlineAlpha = new Varying(0.5, 1, -1, {
+      step: 0.5,
+      fn: (x) => x * x * (3 - 2 * x),
+    })
     this.outlineColor = '#fff'
     this.edgeBlob = new Varying(0, 1, -1, {
-      step: 0.5,
+      step: 0.25,
       reset: true,
     })
   }

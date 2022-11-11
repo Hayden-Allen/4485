@@ -17,6 +17,7 @@ const config = {
       '%engine': 'src/frontend/engine',
       '%component': 'src/frontend/engine/component',
       '%editor': 'src/frontend/engine/editor',
+      '%game': 'src/frontend/engine/game',
       '%glMatrix': 'src/deps/glMatrix',
       '%graphics': 'src/frontend/engine/graphics',
       '%physics': 'src/frontend/engine/physics',

@@ -26,7 +26,7 @@
   {bgColor}
   {fgColor}
   {onDestroyPopup}
-  width="96px"
+  width="128px"
   height="auto"
 >
   <select
@@ -36,7 +36,7 @@
       onDestroyPopup()
     }}
     value={currentValue ? 'true' : 'false'}
-    class="grow-1 shrink-1 p-2 w-full min-w-0 border-0 outline-0 bg-inherit text-inherit"
+    class="grow shrink p-2 w-full min-w-0 border-0 outline-0 bg-inherit text-inherit"
     style={`--placeholder-color: ${placeholderColor};`}
   >
     <option value="true">True</option>

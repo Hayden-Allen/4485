@@ -16,6 +16,13 @@ import HitWall from '%script/templates/HitWall.js'
 import BounceWall from '%script/templates/BounceWall.js'
 import GoombaMove from '%script/templates/GoombaMove.js'
 import ChangeStateOnHitWall from '%script/templates/ChangeStateOnHitWall.js'
+import CameraFollow from '%script/templates/CameraFollow.js'
+import OnMouseScrollY from '%script/templates/OnMouseScrollY.js'
+import SetAnimationFromVelocityX from '%script/templates/SetAnimationFromVelocityX.js'
+import SetAnimationFromVelocityX2 from '%script/templates/SetAnimationFromVelocityX2.js'
+import PongMove from '%script/templates/PongMove.js'
+import PongScore from '%script/templates/PongScore.js'
+import PongBall from '%script/templates/PongBall.js'
 
 class ScriptTemplateInfo {
   constructor(description, script) {
@@ -52,6 +59,22 @@ export const scriptTemplateBank = global.alphabetSort([
     'Changes to given state when a wall is hit',
     ChangeStateOnHitWall
   ),
+  new ScriptTemplateInfo('Makes the camera follow this entity', CameraFollow),
+  new ScriptTemplateInfo(
+    'Runs when the mouse wheel is scrolled up or down',
+    OnMouseScrollY
+  ),
+  new ScriptTemplateInfo(
+    'Sets animation based on x velocity',
+    SetAnimationFromVelocityX
+  ),
+  new ScriptTemplateInfo(
+    'Sets animation based on x velocity',
+    SetAnimationFromVelocityX2
+  ),
+  new ScriptTemplateInfo('Move up or down', PongMove),
+  new ScriptTemplateInfo('Score when the ball hits the back wall', PongScore),
+  new ScriptTemplateInfo('Bounce when hitting walls or players', PongBall),
 ])
 
 export const scriptTemplateIndex = lunr(function () {

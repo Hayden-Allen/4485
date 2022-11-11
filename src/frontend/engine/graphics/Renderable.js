@@ -1,5 +1,4 @@
 import * as mat4 from '%glMatrix/mat4.js'
-import { Texture } from './Texture.js'
 
 export class Renderable {
   constructor(
@@ -8,27 +7,37 @@ export class Renderable {
     program,
     vertices,
     indices,
-    frameTime,
-    urls,
-    { scale = 1 } = {}
+    { scaleX = 1, scaleY = 1 } = {}
   ) {
+    this.vertices = vertices
     this.vertexArray = undefined
     this.vertexBuffer = undefined
     this.indexBuffer = undefined
     this.init(gl, program, vertices, indices)
     this.elementCount = indices.length
     this.transform = mat4.create()
-    this.scale = scale
+    this.scaleX = scaleX
+    this.scaleY = scaleY
     this.setTransform(pos)
-    this.texture = new Texture(gl, frameTime, urls)
+    this.gl = gl
   }
   setTransform(pos) {
     mat4.fromTranslation(this.transform, [pos.x, pos.y, 0])
-    this.setScale(this.scale)
+    this.setScale(this.scaleX, this.scaleY)
   }
-  setScale(scale) {
-    this.scale = scale
-    this.transform[0] = this.transform[5] = this.scale
+  setScale(sx, sy) {
+    this.scaleX = sx
+    this.scaleY = sy
+    this.transform[0] = this.scaleX
+    this.transform[5] = this.scaleY
+  }
+  bufferVertices() {
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer)
+    this.gl.bufferData(
+      this.gl.ARRAY_BUFFER,
+      new Float32Array(this.vertices),
+      this.gl.STATIC_DRAW
+    )
   }
   init(gl, program, vertices, indices) {
     this.vertexArray = gl.createVertexArray()
@@ -54,10 +63,20 @@ export class Renderable {
       gl.STATIC_DRAW
     )
   }
-  bind(gl, shaderProgram) {
+  bind(gl, shaderProgram, texture) {
     gl.bindVertexArray(this.vertexArray)
-    this.texture.bind(gl, 0)
+    texture.bind(gl, 0)
     shaderProgram.uniform1i(gl, 'u_texture', 0)
-    shaderProgram.uniform1i(gl, 'u_frame', this.texture.frame)
+    shaderProgram.uniform1i(gl, 'u_frame', texture.frame)
+  }
+  draw(gl, shaderProgram, texture) {
+    this.bind(gl, shaderProgram, texture)
+    gl.drawElements(
+      gl.TRIANGLES,
+      this.elementCount,
+      // Uint16Array
+      gl.UNSIGNED_SHORT,
+      0
+    )
   }
 }

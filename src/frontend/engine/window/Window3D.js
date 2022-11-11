@@ -1,10 +1,9 @@
 import { Renderer } from '%graphics/Renderer.js'
 import { Window } from './Window.js'
 import { Window2D } from './Window2D.js'
-import { Camera } from '%graphics/Camera.js'
 import { ShaderProgram } from '%graphics/ShaderProgram.js'
-import * as vec4 from '%glMatrix/vec4.js'
 import { global } from '%engine/Global.js'
+import * as vec4 from '%glMatrix/vec4.js'
 
 const VERTEX_SOURCE = `#version 300 es 
   precision highp float;
@@ -45,23 +44,22 @@ export class Window3D extends Window {
     /**
      * @HATODO move into EditorLayer
      */
-    this.camera = new Camera(
-      [0, 0, 0],
-      -global.canvas.targetWidth / 2,
-      global.canvas.targetWidth / 2,
-      -global.canvas.targetHeight / 2,
-      global.canvas.targetHeight / 2
-    )
     this.shaderProgram = new ShaderProgram(
       this.gl,
       VERTEX_SOURCE,
       FRAGMENT_SOURCE
     )
     // performance tracking
-    this.fpsElement = document.getElementById('fps')
+    this.fpsAvg = undefined
     this.fpsSamples = new Array(100).fill(0)
+    this.numValidFpsSamples = 0
     // debug draw
     this.uiCanvas = new Window2D(uiCanvas, undefined, { doScaling: false })
+    /**
+     * @HATODO hack
+     */
+    global.gameWindow = this
+    global.gl = this.gl
   }
   setCanvas(canvas) {
     super.setCanvas(canvas)
@@ -82,24 +80,54 @@ export class Window3D extends Window {
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     super.propagateResizeEvent()
   }
-  draw(renderable) {
-    this.renderer.draw(renderable, this.camera, this.shaderProgram)
+  draw(entity, camera) {
+    this.renderer.draw(entity, camera, this.shaderProgram)
+
+    if (global.isEditor && this.fpsAvg && !global.context.paused) {
+      const systemFontFamily =
+        '-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif'
+      const metrics = this.uiCanvas.textMetrics(
+        Math.round(this.fpsAvg),
+        systemFontFamily,
+        36,
+        'bold'
+      )
+      const x = this.canvas.width - metrics.width - 20
+      const y = 20
+      this.uiCanvas.drawText(
+        Math.round(this.fpsAvg),
+        x,
+        y,
+        systemFontFamily,
+        36,
+        'white',
+        'bold'
+      )
+      const subMetrics = this.uiCanvas.textMetrics('FPS', systemFontFamily, 20)
+      const subX = x + metrics.width * 0.5 - subMetrics.width * 0.5
+      const subY =
+        y +
+        Math.abs(metrics.actualBoundingBoxAscent) +
+        Math.abs(metrics.actualBoundingBoxDescent) +
+        8
+      this.uiCanvas.drawText('FPS', subX, subY, systemFontFamily, 20, 'white')
+    }
   }
   update(deltaTime) {
     super.update(deltaTime)
 
     this.fpsSamples.shift()
     this.fpsSamples.push(1000 / deltaTime)
-    let avg =
-      this.fpsSamples.reduce((s, c) => (s += c)) / this.fpsSamples.length
-    this.fpsElement.innerText = `${avg.toLocaleString(undefined, {
-      maximumFractionDigits: 0,
-      minimumIntegerDigits: 3,
-    })} fps`
+    if (this.numValidFpsSamples < this.fpsSamples.length) {
+      ++this.numValidFpsSamples
+    } else {
+      this.fpsAvg =
+        this.fpsSamples.reduce((s, c) => (s += c)) / this.fpsSamples.length
+    }
   }
-  strokeRect(x, y, w, h, color, width) {
+  strokeRect(camera, x, y, w, h, color, width) {
     // world->NDC matrix
-    let mvp = this.camera.matrix
+    let mvp = camera.matrix
     // position of top left corner
     let pos = vec4.fromValues(x, y, -1, 1)
     vec4.transformMat4(pos, pos, mvp)
@@ -116,5 +144,25 @@ export class Window3D extends Window {
 
     // console.log(sx, sy, sw, sh)
     this.uiCanvas.strokeRect(sx, sy, sw, sh, color, width)
+  }
+  drawRect(camera, x, y, w, h, color) {
+    // world->NDC matrix
+    let mvp = camera.matrix
+    // position of top left corner
+    let pos = vec4.fromValues(x, y, -1, 1)
+    vec4.transformMat4(pos, pos, mvp)
+    // NDC->pixel
+    const sx = ((pos[0] + 1) / 2) * this.canvas.width,
+      sy = ((1 - pos[1]) / 2) * this.canvas.height
+
+    // dim (0 because it's a vector)
+    let dim = vec4.fromValues(w, h, -1, 0)
+    vec4.transformMat4(dim, dim, mvp)
+    // NDC->pixel
+    const sw = (dim[0] * this.canvas.width) / 2,
+      sh = (dim[1] * this.canvas.height) / 2
+
+    // console.log(sx, sy, sw, sh)
+    this.uiCanvas.drawRect(sx, sy, sw, sh, color)
   }
 }

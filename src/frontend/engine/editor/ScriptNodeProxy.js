@@ -4,6 +4,12 @@ import { global } from '%engine/Global.js'
 
 const LINE_WIDTH = [2, 4]
 const COLORS = {
+  audio: {
+    shadow: '#0007',
+    node: '#262626',
+    title: '#262626',
+    outline: ['#737373', '#d4d4d4'],
+  },
   entity: {
     shadow: '#0007',
     node: '#262626',
@@ -109,12 +115,11 @@ export class ScriptNodeProxy extends UIElement {
       ) + WIDTH_PADDING
   }
   init(window) {
+    /**
+     * @HATODO hack hardcoded strings for consistent heights
+     */
     // compute name height
-    let text = window.textMetrics(
-      this.node.debugName,
-      FONT_FAMILY,
-      NAME_FONT_SIZE
-    )
+    let text = window.textMetrics('XXX', FONT_FAMILY, NAME_FONT_SIZE)
     this.nameHeight =
       (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent) * 2
 
@@ -122,7 +127,7 @@ export class ScriptNodeProxy extends UIElement {
     this.computeNodeWidth(window)
 
     // compute port height
-    text = window.textMetrics(this.node.debugName, FONT_FAMILY, PORT_FONT_SIZE)
+    text = window.textMetrics('XXX', FONT_FAMILY, PORT_FONT_SIZE)
     this.portHeight =
       (text.actualBoundingBoxDescent + text.actualBoundingBoxAscent) * 2
 
@@ -404,7 +409,7 @@ export class ScriptNodeProxy extends UIElement {
       x,
       y,
       data.internalPorts,
-      () => this.x + PORT_NAME_PADDING_X,
+      () => this.x + PORT_NAME_PADDING_X + this.maxInputWidth,
       (port, i) => `${port.name}: ${this.getInternalValueDisplayStr(i)}`,
       false,
       true

@@ -325,10 +325,8 @@
     return found
   }
 
-  const SAVE_MS = 10000
-  let saveTimeout = undefined
   async function saveFn() {
-    if (global.context.game) {
+    if (global.context.game && global.playState === 'stop') {
       const serializedContent = global.context.game.serialize()
       try {
         await onSave(serializedContent)
@@ -336,11 +334,16 @@
         console.error(err)
       }
     }
-    saveTimeout = window.setTimeout(saveFn, SAVE_MS)
+  }
+  const SAVE_MS = 1000
+  let saveTimeout = undefined
+  async function saveTimeoutFn() {
+    await saveFn()
+    saveTimeout = window.setTimeout(saveTimeoutFn, SAVE_MS)
   }
   onMount(() => {
     if (!saveTimeout) {
-      saveTimeout = window.setTimeout(saveFn, SAVE_MS)
+      saveTimeout = window.setTimeout(saveTimeoutFn, SAVE_MS)
     }
   })
   onDestroy(() => {
@@ -421,8 +424,9 @@
           </div>
         </button>
         <button
-          class={`p-4 bg-neutral-700 rounded-b-lg text-neutral-100 hover:text-green-300 transition-all`}
+          class={`p-4 bg-neutral-700 rounded-b-lg text-neutral-100 hover:text-green-300 disabled:text-neutral-500 disabled:hover:text-neutral-500 disabled:pointer-events-none transition-all`}
           on:click={saveFn}
+          disabled={global.playState !== 'stop'}
         >
           <div class="w-6 h-6">
             <SaveIcon />

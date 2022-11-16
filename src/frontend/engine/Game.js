@@ -8,7 +8,7 @@ import {
 
 export class Game {
   constructor(context) {
-    this.physicsEngine = new PhysicsEngine(this, -0.001)
+    this.physicsEngine = new PhysicsEngine(this, -0.005)
     this.currentScene = undefined
     this.sceneManager = new SceneManager()
     this.context = context
@@ -72,6 +72,7 @@ export class Game {
       currentStateName,
       options
     )
+    newEntity.setStatic(false)
     this.currentScene.addControlledEntity(newEntity, z)
     return newEntity
   }

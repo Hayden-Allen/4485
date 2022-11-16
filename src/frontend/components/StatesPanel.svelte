@@ -29,21 +29,12 @@
 
   const entityGlobalProperties = [
     {
-      displayName: 'Default Mass',
-      get: (entity) => entity.physicsProxy.mass,
-      set: (entity, value) => entity.setMass(value),
-      type: 'float',
-    },
-    {
-      displayName: 'Default Friction',
-      get: (entity) => entity.physicsProxy.friction,
-      set: (entity, value) => (entity.physicsProxy.friction = value),
-      type: 'float',
-    },
-    {
       displayName: 'Movable',
       get: (entity) => !entity.physicsProxy.isStatic,
-      set: (entity, value) => entity.setStatic(!value),
+      set: (entity, value) => {
+        entity.setStatic(!value)
+        selectedEntity = selectedEntity
+      },
       type: 'bool',
     },
   ]

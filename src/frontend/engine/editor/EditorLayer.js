@@ -136,8 +136,8 @@ export class EditorLayer extends Layer {
       const [dimx, dimy] = this.getSelectedEntityEffectiveDims()
       e.window.strokeRect(
         this.camera,
-        ex + this.borderSize * 2,
-        ey - this.borderSize * 2,
+        ex + (this.borderSize * 2) / this.cameraZoom,
+        ey - (this.borderSize * 2) / this.cameraZoom,
         dimx,
         dimy,
         '#fff',
@@ -386,14 +386,18 @@ export class EditorLayer extends Layer {
   }
   getSelectedEntityBaseCoords() {
     return [
-      this.selectedEntity.pos.x - this.selectedEntity.dim.x / 2,
-      this.selectedEntity.pos.y + this.selectedEntity.dim.y / 2,
+      this.selectedEntity.pos.x -
+        this.selectedEntity.dim.x / 2 -
+        this.borderSize / this.cameraZoom,
+      this.selectedEntity.pos.y +
+        this.selectedEntity.dim.y / 2 -
+        this.borderSize / this.cameraZoom,
     ]
   }
   getSelectedEntityEffectiveDims() {
     return [
-      this.selectedEntity.dim.x + this.borderSize * 2,
-      this.selectedEntity.dim.y + this.borderSize * 2,
+      this.selectedEntity.dim.x + (this.borderSize * 2) / this.cameraZoom,
+      this.selectedEntity.dim.y + (this.borderSize * 2) / this.cameraZoom,
     ]
   }
   getResizeDotCoords(i) {

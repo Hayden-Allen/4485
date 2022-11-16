@@ -21,28 +21,24 @@ export var global = {
     delta: 0,
     lastDelta: 0,
   },
+  soundNames: ['boing', 'cheer', 'coin', 'jazz-lose', 'ta-da'],
+  attemptedAudioCtxCreate: false,
 
+  setPlayState: (playState) => {
+    global.playState = playState
+    if (global.playState === 'stop') {
+      global.resetAudioContext()
+    }
+  },
   init: (context) => {
-    async function registerAudioContext() {
-      window.removeEventListener('click', registerAudioContext)
-
-      if (!global.audioCtx) {
-        global.audioCtx = new (window.AudioContext ||
-          window.webkitAudioContext)()
-      }
-
-      if (!global.audioBufferBank) {
-        global.audioBufferBank = new Map()
-
-        for (const name of ['boink', 'cheer', 'jazz-lose', 'ta-da']) {
-          global.audioBufferBank.set(
-            name,
-            await global.decodeAudioData(`/sounds/${name}.mp3`)
-          )
-        }
+    function createAudioOnClick() {
+      if (!global.attemptedAudioCtxCreate) {
+        global.attemptedAudioCtxCreate = true
+        window.removeEventListener('click', createAudioOnClick)
+        global.createAudioContext()
       }
     }
-    window.addEventListener('click', registerAudioContext)
+    window.addEventListener('click', createAudioOnClick)
 
     global.context = context
     global.varyingController = new VaryingController()
@@ -126,10 +122,41 @@ export var global = {
     })
   },
   playSound: (name) => {
-    const source = global.audioCtx.createBufferSource()
-    source.buffer = global.audioBufferBank.get(name)
-    source.connect(global.audioCtx.destination)
-    source.start()
+    if (global.audioBufferBank.has(name)) {
+      const source = global.audioCtx.createBufferSource()
+      source.buffer = global.audioBufferBank.get(name)
+      source.connect(global.audioCtx.destination)
+      source.start()
+    } else {
+      console.warn(`Tried to play non-existent sound: ${name}`)
+    }
+  },
+  resetAudioContext: async () => {
+    const oldCtx = global.audioCtx
+    if (!oldCtx) {
+      return
+    }
+    global.audioCtx = null
+    await oldCtx.close()
+    global.createAudioContext()
+  },
+  createAudioContext: async () => {
+    if (global.audioCtx) {
+      console.warn('Audio context already exists')
+      return
+    }
+
+    global.audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+
+    if (!global.audioBufferBank) {
+      global.audioBufferBank = new Map()
+      for (const name of global.soundNames) {
+        global.audioBufferBank.set(
+          name,
+          await global.decodeAudioData(`/sounds/${name}.mp3`)
+        )
+      }
+    }
   },
   transformDOMToCanvas: (canvas, dx, dy) => {
     const rect = canvas.getBoundingClientRect()

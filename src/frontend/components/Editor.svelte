@@ -21,7 +21,10 @@
   import Bolt from 'icons/20/mini/bolt.svelte'
   import WorldPropertiesPanel from './WorldPropertiesPanel.svelte'
   import { Scene } from '%component/Scene.js'
-  import { StaticSceneEntity } from '%component/SceneEntity.js'
+  import {
+    StaticSceneEntity,
+    ControlledSceneEntity,
+  } from '%component/SceneEntity.js'
 
   export let firstLoadSerializedGameData = undefined
   export let onSave = undefined
@@ -133,11 +136,11 @@
 
     editorLayer = new EditorLayer(global.context.game, (e) => {
       selectedEntity = e
-      if (!selectedEntity) {
-        graphEditorScript = undefined
-        selectedState = undefined
-      } else {
+      graphEditorScript = undefined
+      if (selectedEntity && selectedEntity instanceof ControlledSceneEntity) {
         selectedState = selectedEntity.currentState
+      } else {
+        selectedState = undefined
       }
     })
     gameWindow.pushLayer(editorLayer)
@@ -214,7 +217,7 @@
       e.clientX,
       e.clientY
     )
-    const [wx, wy] = global.transformCanvasToWorld(gameWindow.canvas, cx, cy)
+    const [wx, wy] = editorLayer.getMouseWorldCoords(cx, cy)
     dropX = wx
     dropY = wy
   }
@@ -266,6 +269,14 @@
   }
 
   function handleMakeStaticEntity() {
+    if (
+      !window.confirm(
+        'Converting to a static entity will remove all states, scripts, and animations. Are you sure you want to continue?'
+      )
+    ) {
+      return
+    }
+
     global.context.game.removeControlledSceneEntity(selectedEntity)
     selectedEntity.destroy()
 
@@ -301,7 +312,7 @@
       global.context.paused = true
       deserializeOnStop()
     }
-    global.playState = newPlayState
+    global.setPlayState(newPlayState)
   }
 
   function isStateReferenced(name) {

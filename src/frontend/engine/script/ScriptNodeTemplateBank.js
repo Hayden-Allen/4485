@@ -1068,19 +1068,15 @@ class ScriptNodeTemplateBank {
     this.createExport('entity', 'ExportVariable', 'var', '---', 'string', {
       valueEditorType: 'variable',
     })
+
+    this.createExport('audio', 'ExportSound', 'sound', 'boing', 'string', {
+      valueEditorType: 'sound',
+    })
   }
   createAudio() {
-    this.createInternal(
-      'audio',
-      'PlaySound',
-      [],
-      [['name', 'string']],
-      ['boink'],
-      [],
-      (_, { internal }) => {
-        global.playSound(internal[0])
-      }
-    )
+    this.create('audio', 'PlaySound', [['sound', 'string']], [], ([sound]) => {
+      global.playSound(sound)
+    })
   }
 }
 

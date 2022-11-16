@@ -26,7 +26,7 @@
     global.context.windows.push(gameWindow)
 
     global.context.game.deserialize(firstLoadSerializedGameData)
-    global.playState = 'play'
+    global.setPlayState('play')
     gameCanvas.focus()
     global.context.paused = false
 

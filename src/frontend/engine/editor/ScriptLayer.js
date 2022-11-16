@@ -10,6 +10,7 @@ import FloatPortEditor from 'components/popup/editors/FloatEditor.svelte'
 import StatePortEditor from 'components/popup/editors/StateEditor.svelte'
 import StringPortEditor from 'components/popup/editors/StringEditor.svelte'
 import VariablePortEditor from 'components/popup/editors/VariableEditor.svelte'
+import SoundPortEditor from 'components/popup/editors/SoundEditor.svelte'
 import { PORT_COLOR } from '%editor/ScriptVisualizer.js'
 import { ScriptEdgeProxy } from '%editor/ScriptEdgeProxy.js'
 import { EntityVariable } from '%component/SceneEntity.js'
@@ -513,6 +514,7 @@ export class ScriptLayer extends Layer {
       number: FloatPortEditor,
       state: StatePortEditor,
       variable: VariablePortEditor,
+      sound: SoundPortEditor,
     }
     const type = typenameToEditor[port.port.editorTypename]
     const nodeProps = { proxy, port }

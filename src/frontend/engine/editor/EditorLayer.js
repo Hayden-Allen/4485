@@ -30,6 +30,14 @@ export class EditorLayer extends Layer {
       -global.canvas.targetHeight / 2,
       global.canvas.targetHeight / 2
     )
+    this.dragStartX = 0
+    this.dragStartY = 0
+    this.dragStartCameraX = 0
+    this.dragStartCameraY = 0
+    this.cameraMoveSpeed = 5
+    this.cameraZoom = 1
+    this.cameraZoomMin = 0.1
+    this.cameraZoomMax = 10
   }
   deleteSelectedEntity() {
     if (this.selectedEntity) {
@@ -97,7 +105,11 @@ export class EditorLayer extends Layer {
   }
   onRender(e) {
     e.window.clear()
-    this.game.draw(e.window)
+    if (global.playState === 'stop') {
+      this.game.drawFromPerspective(e.window, this.camera)
+    } else {
+      this.game.draw(e.window)
+    }
 
     // {
     //   const mouseX =
@@ -140,8 +152,8 @@ export class EditorLayer extends Layer {
             this.camera,
             dx,
             dy,
-            this.dotSize,
-            this.dotSize,
+            this.dotSize / this.cameraZoom,
+            this.dotSize / this.cameraZoom,
             '#f00'
           )
         }
@@ -182,6 +194,12 @@ export class EditorLayer extends Layer {
     }
 
     const [worldMouseX, worldMouseY] = this.getMouseWorldCoords(e.x, e.y)
+    if (e.button === 2) {
+      this.dragStartX = e.x
+      this.dragStartY = e.y
+      this.dragStartCameraX = this.camera.pos[0]
+      this.dragStartCameraY = this.camera.pos[1]
+    }
 
     // check resize controls
     if (this.selectedEntity) {
@@ -192,9 +210,9 @@ export class EditorLayer extends Layer {
             worldMouseX,
             worldMouseY,
             dx,
-            dy - this.dotSize,
-            this.dotSize,
-            this.dotSize
+            dy - this.dotSize / this.cameraZoom,
+            this.dotSize / this.cameraZoom,
+            this.dotSize / this.cameraZoom
           )
         ) {
           this.resizeCorner = i
@@ -272,6 +290,25 @@ export class EditorLayer extends Layer {
       return
     }
 
+    if (this.window.inputCache.isMouseRight()) {
+      const dx = e.x - this.dragStartX
+      const dy = this.dragStartY - e.y
+      this.camera.setPosition({
+        x: -(
+          this.dragStartCameraX +
+          (dx * global.canvas.targetWidth) /
+            this.window.canvas.width /
+            this.cameraZoom
+        ),
+        y: -(
+          this.dragStartCameraY +
+          (dy * global.canvas.targetHeight) /
+            this.window.canvas.height /
+            this.cameraZoom
+        ),
+      })
+    }
+
     if (
       global.playState === 'stop' &&
       this.selectedEntity &&
@@ -280,8 +317,10 @@ export class EditorLayer extends Layer {
       if (this.resizeStartX) {
         const sox = [-1, 1, 1, -1]
         const soy = [1, 1, -1, -1]
-        const ox = (e.x - this.resizeStartX) * sox[this.resizeCorner]
-        const oy = (this.resizeStartY - e.y) * soy[this.resizeCorner]
+        const ox =
+          ((e.x - this.resizeStartX) / this.cameraZoom) * sox[this.resizeCorner]
+        const oy =
+          ((this.resizeStartY - e.y) / this.cameraZoom) * soy[this.resizeCorner]
         if (
           this.resizeStartScaleX + ox >= 16 &&
           this.resizeStartScaleY + oy >= 16
@@ -327,16 +366,22 @@ export class EditorLayer extends Layer {
           }
         }
       } else {
-        const [wx, wy] = global.transformCanvasToWorld(
-          this.window.canvas,
-          e.x,
-          e.y
-        )
+        const [wx, wy] = this.getMouseWorldCoords(e.x, e.y)
         this.selectedEntity.setPositionFromEditor(
           wx - this.selectedEntityOffset.x,
           wy - this.selectedEntityOffset.y
         )
       }
+    }
+  }
+  onMouseScroll(e) {
+    if (global.playState === 'stop') {
+      this.cameraZoom = global.clamp(
+        this.cameraZoom - e.y * this.cameraZoom * 0.001,
+        this.cameraZoomMin,
+        this.cameraZoomMax
+      )
+      this.camera.setZoomFromEditor(this.cameraZoom)
     }
   }
   getSelectedEntityBaseCoords() {
@@ -355,8 +400,12 @@ export class EditorLayer extends Layer {
     const [ex, ey] = this.getSelectedEntityBaseCoords()
     const [dimx, dimy] = this.getSelectedEntityEffectiveDims()
     return [
-      ex + this.dotXOffset[i] * dimx - this.dotSize / 2 - this.borderSize,
-      ey + this.dotYOffset[i] * dimy + this.dotSize / 2 + this.borderSize,
+      ex +
+        this.dotXOffset[i] * dimx -
+        (this.dotSize / 2 - this.borderSize) / this.cameraZoom,
+      ey +
+        this.dotYOffset[i] * dimy +
+        (this.dotSize / 2 + this.borderSize) / this.cameraZoom,
     ]
   }
 }

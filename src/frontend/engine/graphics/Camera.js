@@ -45,7 +45,7 @@ export class Camera {
   }
   setPosition(vec2) {
     this.pos = [-vec2.x, -vec2.y, 0]
-    this.init()
+    this.init(this.originalZoom)
   }
   setPositionFromEditor(vec2) {
     this.originalPos = [-vec2.x, -vec2.y, 0]

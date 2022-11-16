@@ -1,3 +1,5 @@
+import { global } from '%engine/Global.js'
+
 export class SceneLayer {
   constructor() {
     this.static = new Map()
@@ -23,7 +25,8 @@ export class SceneLayer {
   draw(window, camera) {
     this.static.forEach((entity) => window.draw(entity, camera))
     this.dynamic.forEach((entity) => {
-      if (entity.states) entity.runScripts('OnRender')
+      if (entity.states && global.playState === 'play')
+        entity.runScripts('OnRender')
       window.draw(entity, camera)
     })
   }

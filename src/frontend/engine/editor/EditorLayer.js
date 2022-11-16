@@ -105,6 +105,7 @@ export class EditorLayer extends Layer {
   }
   onRender(e) {
     e.window.clear()
+    e.window.drawFps()
     if (global.playState === 'stop') {
       this.game.drawFromPerspective(e.window, this.camera)
     } else {

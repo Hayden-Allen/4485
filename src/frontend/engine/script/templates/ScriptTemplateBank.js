@@ -3,7 +3,6 @@ import { global } from '%engine/Global.js'
 import BlankScript from '%script/templates/BlankScript.js'
 import TopDownMove from '%script/templates/TopDownMove.js'
 import PlatformerMove from '%script/templates/PlatformerMove.js'
-import PlatformerMove2 from '%script/templates/PlatformerMove2.js'
 import PlatformerJump from '%script/templates/PlatformerJump.js'
 import ChangeStateOnKey from '%script/templates/ChangeStateOnKey.js'
 import MaxSpeedX from '%script/templates/MaxSpeedX.js'
@@ -12,17 +11,21 @@ import MinVelocityX from '%script/templates/MinVelocityX.js'
 import MaxVelocityX from '%script/templates/MaxVelocityX.js'
 import MinVelocityY from '%script/templates/MinVelocityY.js'
 import MaxVelocityY from '%script/templates/MaxVelocityY.js'
-import HitWall from '%script/templates/HitWall.js'
-import BounceWall from '%script/templates/BounceWall.js'
-import GoombaMove from '%script/templates/GoombaMove.js'
-import ChangeStateOnHitWall from '%script/templates/ChangeStateOnHitWall.js'
+import ConstantVelocityX from '%script/templates/ConstantVelocityX.js'
+import ChangeStateOnCollideX from '%script/templates/ChangeStateOnCollideX.js'
 import CameraFollow from '%script/templates/CameraFollow.js'
-import OnMouseScrollY from '%script/templates/OnMouseScrollY.js'
 import SetAnimationFromVelocityX from '%script/templates/SetAnimationFromVelocityX.js'
-import SetAnimationFromVelocityX2 from '%script/templates/SetAnimationFromVelocityX2.js'
+import Pickup from '%script/templates/Pickup.js'
+import ChangeStateAfterTime from '%script/templates/ChangeStateAfterTime.js'
+import DestroySelfOnSwitch from '%script/templates/DestroySelfOnSwitch.js'
+import SetTimeOnSwitch from '%script/templates/SetTimeOnSwitch.js'
+import PlaySoundOnSwitch from '%script/templates/PlaySoundOnSwitch.js'
+import CircularMove from '%script/templates/CircularMove.js'
+/*
 import PongMove from '%script/templates/PongMove.js'
 import PongScore from '%script/templates/PongScore.js'
 import PongBall from '%script/templates/PongBall.js'
+*/
 
 class ScriptTemplateInfo {
   constructor(description, script) {
@@ -44,7 +47,6 @@ export const scriptTemplateBank = global.alphabetSort([
   ),
   new ScriptTemplateInfo('Jumps', PlatformerJump),
   new ScriptTemplateInfo('Moves your character with AD', PlatformerMove),
-  new ScriptTemplateInfo('Moves your character with AD', PlatformerMove2),
   new ScriptTemplateInfo('Moves your character with WASD', TopDownMove),
   new ScriptTemplateInfo('Sets maximum x-axis speed', MaxSpeedX),
   new ScriptTemplateInfo('Sets maximum y-axis speed', MaxSpeedY),
@@ -52,29 +54,45 @@ export const scriptTemplateBank = global.alphabetSort([
   new ScriptTemplateInfo('Sets maximum right x-axis velocity', MaxVelocityX),
   new ScriptTemplateInfo('Sets maximum downward y-axis velocity', MinVelocityY),
   new ScriptTemplateInfo('Sets maximum upward y-axis velocity', MaxVelocityY),
-  new ScriptTemplateInfo('Does something when a wall is hit', HitWall),
-  new ScriptTemplateInfo('Bounces when a wall is hit', BounceWall),
-  new ScriptTemplateInfo('Moves like a goomba', GoombaMove),
   new ScriptTemplateInfo(
-    'Changes to given state when a wall is hit',
-    ChangeStateOnHitWall
+    'Sets X velocity to a constant value',
+    ConstantVelocityX
+  ),
+  new ScriptTemplateInfo(
+    'Changes to given state when entity collides on the X axis (useful for bouncing between walls)',
+    ChangeStateOnCollideX
   ),
   new ScriptTemplateInfo('Makes the camera follow this entity', CameraFollow),
-  new ScriptTemplateInfo(
-    'Runs when the mouse wheel is scrolled up or down',
-    OnMouseScrollY
-  ),
   new ScriptTemplateInfo(
     'Sets animation based on x velocity',
     SetAnimationFromVelocityX
   ),
   new ScriptTemplateInfo(
-    'Sets animation based on x velocity',
-    SetAnimationFromVelocityX2
+    'Destroy an item and play a sound when collected',
+    Pickup
   ),
+  new ScriptTemplateInfo(
+    'Destroys this entity when it switches to the attached state',
+    DestroySelfOnSwitch
+  ),
+  new ScriptTemplateInfo(
+    'Sets a variable to the current time when this entity switches to the attached state',
+    SetTimeOnSwitch
+  ),
+  new ScriptTemplateInfo(
+    'Changes to another state after specified duration',
+    ChangeStateAfterTime
+  ),
+  new ScriptTemplateInfo(
+    'Plays a sound when this entity switches to the attached state',
+    PlaySoundOnSwitch
+  ),
+  new ScriptTemplateInfo('Move in a circle at a fixed speed', CircularMove),
+  /*
   new ScriptTemplateInfo('Move up or down', PongMove),
   new ScriptTemplateInfo('Score when the ball hits the back wall', PongScore),
   new ScriptTemplateInfo('Bounce when hitting walls or players', PongBall),
+  */
 ])
 
 export const scriptTemplateIndex = lunr(function () {

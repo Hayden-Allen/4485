@@ -303,7 +303,9 @@
 
   function setPlayState(newPlayState) {
     if (newPlayState === 'play') {
-      serializeOnPlay()
+      if (global.playState === 'stop') {
+        serializeOnPlay()
+      }
       gameCanvas.focus()
       global.context.paused = false
     } else if (newPlayState === 'pause') {
@@ -336,11 +338,14 @@
     return found
   }
 
-  async function saveFn() {
+  async function saveFn(showAlert) {
     if (global.context.game && global.playState === 'stop') {
       const serializedContent = global.context.game.serialize()
       try {
         await onSave(serializedContent)
+        if (showAlert) {
+          window.alert('Saved!')
+        }
       } catch (err) {
         console.error(err)
       }
@@ -363,9 +368,15 @@
       saveTimeout = null
     }
   })
+
+  function onKeyDown(event) {
+    if (event.key.toLowerCase() === 's' && (event.ctrlKey || event.metaKey)) {
+      saveFn(false)
+    }
+  }
 </script>
 
-<svelte:window on:pointermove={onPointerMove} />
+<svelte:window on:pointermove={onPointerMove} on:keydown={onKeyDown} />
 
 <div
   class="w-full h-full flex flex-col bg-neutral-800 text-neutral-300 overflow-hidden"
@@ -436,7 +447,7 @@
         </button>
         <button
           class={`p-4 bg-neutral-700 rounded-b-lg text-neutral-100 hover:text-green-300 disabled:text-neutral-500 disabled:hover:text-neutral-500 disabled:pointer-events-none transition-all`}
-          on:click={saveFn}
+          on:click={() => saveFn(true)}
           disabled={global.playState !== 'stop'}
         >
           <div class="w-6 h-6">

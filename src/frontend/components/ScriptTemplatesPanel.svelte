@@ -12,12 +12,7 @@
 
   let searchQuery = ''
   let candidates = null
-  let selectedTemplate = null,
-    hoveredTemplate = null
-
-  function handleSelectTemplate(template) {
-    selectedTemplate = template
-  }
+  let hoveredTemplate = null
 
   function handleHoverTemplate(template) {
     hoveredTemplate = template
@@ -34,19 +29,10 @@
       for (const result of scriptTemplateIndex.search(`*${q}*`)) {
         candidates.push(scriptTemplateBank[parseInt(result.ref)])
       }
-      if (candidates.indexOf(selectedTemplate) === -1) {
-        if (candidates.length > 0) {
-          selectedTemplate = candidates[0]
-        } else {
-          selectedTemplate = null
-        }
-      }
     } else {
       candidates = [blankScriptTemplate, ...scriptTemplateBank]
-      if (selectedTemplate === null) {
-        selectedTemplate = candidates[0]
-      }
     }
+    hoveredTemplate = null
   }
 </script>
 
@@ -74,12 +60,7 @@
         <button
           on:mouseenter={() => handleHoverTemplate(template)}
           on:mouseleave={handleUnhoverTemplate}
-          on:click={() => handleSelectTemplate(template)}
-          class={`grow-0 shrink-0 flex flex-row items-center justify-center p-2 cursor-pointer focus:bg-neutral-700 transition-all outline-0 text-left h-12 ${
-            template === selectedTemplate
-              ? 'bg-neutral-700'
-              : 'hover:bg-neutral-800'
-          } ${
+          class={`grow-0 shrink-0 flex flex-row items-center justify-center p-2 cursor-pointer transition-all outline-0 text-left h-12 hover:bg-neutral-800 ${
             i < candidates.length - 1
               ? 'border-b border-solid border-neutral-700'
               : ''
@@ -103,16 +84,16 @@
       {/each}
     </div>
     <div class="grow shrink flex flex-col w-full h-full p-4 overflow-hidden">
-      {#if selectedTemplate}
+      {#if hoveredTemplate}
         <div
           class="grow shrink w-full font-bold text-2xl overflow-hidden whitespace-nowrap text-ellipsis select-text"
         >
-          {selectedTemplate.name}
+          {hoveredTemplate.name}
         </div>
         <div
           class="grow shrink w-full h-full overflow-hidden text-ellipsis mt-4 select-text"
         >
-          {selectedTemplate.description}
+          {hoveredTemplate.description}
         </div>
       {/if}
     </div>

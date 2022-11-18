@@ -17,15 +17,6 @@
       currentValue = initialValue
     }
   }
-
-  $: {
-    if (currentValue !== '') {
-      const x = parseFloat(currentValue)
-      if (!isNaN(x)) {
-        currentValue = x
-      }
-    }
-  }
 </script>
 
 <input

@@ -46,6 +46,7 @@
     class="flex flex-col w-full h-full items-center justify-center text-xl font-bold text-neutral-100 bg-neutral-900"
   >
     <input
+      autofocus
       class="bg-neutral-800 border border-solid border-neutral-700 rounded-md px-2 py-1 mb-2 text-inherit min-w-0 w-[320px]"
       placeholder="Username"
       bind:value={username}

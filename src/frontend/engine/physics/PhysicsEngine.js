@@ -19,15 +19,19 @@ export class PhysicsEngine {
         const normalA = normalB.scale(-1)
 
         if (pair.bodyA._owner.states)
-          pair.bodyA._owner.runScripts('OnCollide', {
-            camera: game.currentScene.camera,
-            data: [normalA, pair.bodyB._owner],
-          })
+          window.setTimeout(() => {
+            pair.bodyA._owner.runScripts('OnCollide', {
+              camera: game.currentScene.camera,
+              data: [normalA, pair.bodyB._owner],
+            })
+          }, 0)
         if (pair.bodyB._owner.states)
-          pair.bodyB._owner.runScripts('OnCollide', {
-            camera: game.currentScene.camera,
-            data: [normalB, pair.bodyA._owner],
-          })
+          window.setTimeout(() => {
+            pair.bodyB._owner.runScripts('OnCollide', {
+              camera: game.currentScene.camera,
+              data: [normalB, pair.bodyA._owner],
+            })
+          }, 0)
       })
     })
 

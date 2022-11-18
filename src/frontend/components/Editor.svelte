@@ -21,7 +21,10 @@
   import Bolt from 'icons/20/mini/bolt.svelte'
   import WorldPropertiesPanel from './WorldPropertiesPanel.svelte'
   import { Scene } from '%component/Scene.js'
-  import { StaticSceneEntity } from '%component/SceneEntity.js'
+  import {
+    StaticSceneEntity,
+    ControlledSceneEntity,
+  } from '%component/SceneEntity.js'
 
   export let firstLoadSerializedGameData = undefined
   export let onSave = undefined
@@ -133,11 +136,11 @@
 
     editorLayer = new EditorLayer(global.context.game, (e) => {
       selectedEntity = e
-      if (!selectedEntity) {
-        graphEditorScript = undefined
-        selectedState = undefined
-      } else {
+      graphEditorScript = undefined
+      if (selectedEntity && selectedEntity instanceof ControlledSceneEntity) {
         selectedState = selectedEntity.currentState
+      } else {
+        selectedState = undefined
       }
     })
     gameWindow.pushLayer(editorLayer)
@@ -214,7 +217,7 @@
       e.clientX,
       e.clientY
     )
-    const [wx, wy] = global.transformCanvasToWorld(gameWindow.canvas, cx, cy)
+    const [wx, wy] = editorLayer.getMouseWorldCoords(cx, cy)
     dropX = wx
     dropY = wy
   }
@@ -266,6 +269,14 @@
   }
 
   function handleMakeStaticEntity() {
+    if (
+      !window.confirm(
+        'Converting to a static entity will remove all states, scripts, and animations. Are you sure you want to continue?'
+      )
+    ) {
+      return
+    }
+
     global.context.game.removeControlledSceneEntity(selectedEntity)
     selectedEntity.destroy()
 
@@ -292,7 +303,9 @@
 
   function setPlayState(newPlayState) {
     if (newPlayState === 'play') {
-      serializeOnPlay()
+      if (global.playState === 'stop') {
+        serializeOnPlay()
+      }
       gameCanvas.focus()
       global.context.paused = false
     } else if (newPlayState === 'pause') {
@@ -301,7 +314,7 @@
       global.context.paused = true
       deserializeOnStop()
     }
-    global.playState = newPlayState
+    global.setPlayState(newPlayState)
   }
 
   function isStateReferenced(name) {
@@ -325,22 +338,28 @@
     return found
   }
 
-  const SAVE_MS = 10000
-  let saveTimeout = undefined
-  async function saveFn() {
-    if (global.context.game) {
+  async function saveFn(showAlert) {
+    if (global.context.game && global.playState === 'stop') {
       const serializedContent = global.context.game.serialize()
       try {
         await onSave(serializedContent)
+        if (showAlert) {
+          window.alert('Saved!')
+        }
       } catch (err) {
         console.error(err)
       }
     }
-    saveTimeout = window.setTimeout(saveFn, SAVE_MS)
+  }
+  const SAVE_MS = 1000
+  let saveTimeout = undefined
+  async function saveTimeoutFn() {
+    await saveFn()
+    saveTimeout = window.setTimeout(saveTimeoutFn, SAVE_MS)
   }
   onMount(() => {
     if (!saveTimeout) {
-      saveTimeout = window.setTimeout(saveFn, SAVE_MS)
+      saveTimeout = window.setTimeout(saveTimeoutFn, SAVE_MS)
     }
   })
   onDestroy(() => {
@@ -349,9 +368,15 @@
       saveTimeout = null
     }
   })
+
+  function onKeyDown(event) {
+    if (event.key.toLowerCase() === 's' && (event.ctrlKey || event.metaKey)) {
+      saveFn(false)
+    }
+  }
 </script>
 
-<svelte:window on:pointermove={onPointerMove} />
+<svelte:window on:pointermove={onPointerMove} on:keydown={onKeyDown} />
 
 <div
   class="w-full h-full flex flex-col bg-neutral-800 text-neutral-300 overflow-hidden"
@@ -421,8 +446,9 @@
           </div>
         </button>
         <button
-          class={`p-4 bg-neutral-700 rounded-b-lg text-neutral-100 hover:text-green-300 transition-all`}
-          on:click={saveFn}
+          class={`p-4 bg-neutral-700 rounded-b-lg text-neutral-100 hover:text-green-300 disabled:text-neutral-500 disabled:hover:text-neutral-500 disabled:pointer-events-none transition-all`}
+          on:click={() => saveFn(true)}
+          disabled={global.playState !== 'stop'}
         >
           <div class="w-6 h-6">
             <SaveIcon />

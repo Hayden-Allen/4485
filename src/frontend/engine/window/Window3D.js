@@ -80,9 +80,7 @@ export class Window3D extends Window {
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
     super.propagateResizeEvent()
   }
-  draw(entity, camera) {
-    this.renderer.draw(entity, camera, this.shaderProgram)
-
+  drawFps() {
     if (global.isEditor && this.fpsAvg && !global.context.paused) {
       const systemFontFamily =
         '-apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif'
@@ -112,6 +110,9 @@ export class Window3D extends Window {
         8
       this.uiCanvas.drawText('FPS', subX, subY, systemFontFamily, 20, 'white')
     }
+  }
+  draw(entity, camera) {
+    this.renderer.draw(entity, camera, this.shaderProgram)
   }
   update(deltaTime) {
     super.update(deltaTime)

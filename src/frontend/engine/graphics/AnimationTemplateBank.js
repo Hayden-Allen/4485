@@ -12,7 +12,10 @@ class AnimationTemplateInfo {
 export const animationTemplateBank = [
   new AnimationTemplateInfo('Blank', 0, ['/MissingTexture.svg']),
   ...global.alphabetSort([
-    new AnimationTemplateInfo('c_green', 150, [
+    new AnimationTemplateInfo('c_green', 0, [
+      '/sprites/kenney/pixel-platformer/characters/character_0000_r.png',
+    ]),
+    new AnimationTemplateInfo('c_green_l', 150, [
       '/sprites/kenney/pixel-platformer/characters/character_0000.png',
       '/sprites/kenney/pixel-platformer/characters/character_0001.png',
     ]),
@@ -20,7 +23,10 @@ export const animationTemplateBank = [
       '/sprites/kenney/pixel-platformer/characters/character_0000_r.png',
       '/sprites/kenney/pixel-platformer/characters/character_0001_r.png',
     ]),
-    new AnimationTemplateInfo('c_blue', 150, [
+    new AnimationTemplateInfo('c_blue', 0, [
+      '/sprites/kenney/pixel-platformer/characters/character_0002_r.png',
+    ]),
+    new AnimationTemplateInfo('c_blue_l', 150, [
       '/sprites/kenney/pixel-platformer/characters/character_0002.png',
       '/sprites/kenney/pixel-platformer/characters/character_0003.png',
     ]),
@@ -28,7 +34,10 @@ export const animationTemplateBank = [
       '/sprites/kenney/pixel-platformer/characters/character_0002_r.png',
       '/sprites/kenney/pixel-platformer/characters/character_0003_r.png',
     ]),
-    new AnimationTemplateInfo('c_red', 150, [
+    new AnimationTemplateInfo('c_red', 0, [
+      '/sprites/kenney/pixel-platformer/characters/character_0004_r.png',
+    ]),
+    new AnimationTemplateInfo('c_red_l', 150, [
       '/sprites/kenney/pixel-platformer/characters/character_0004.png',
       '/sprites/kenney/pixel-platformer/characters/character_0005.png',
     ]),
@@ -36,7 +45,10 @@ export const animationTemplateBank = [
       '/sprites/kenney/pixel-platformer/characters/character_0004_r.png',
       '/sprites/kenney/pixel-platformer/characters/character_0005_r.png',
     ]),
-    new AnimationTemplateInfo('c_yellow', 150, [
+    new AnimationTemplateInfo('c_yellow', 0, [
+      '/sprites/kenney/pixel-platformer/characters/character_0006_r.png',
+    ]),
+    new AnimationTemplateInfo('c_yellow_l', 150, [
       '/sprites/kenney/pixel-platformer/characters/character_0006.png',
       '/sprites/kenney/pixel-platformer/characters/character_0007.png',
     ]),
@@ -44,11 +56,10 @@ export const animationTemplateBank = [
       '/sprites/kenney/pixel-platformer/characters/character_0006_r.png',
       '/sprites/kenney/pixel-platformer/characters/character_0007_r.png',
     ]),
-    new AnimationTemplateInfo('c_peach_r', 150, [
+    new AnimationTemplateInfo('c_peach', 0, [
       '/sprites/kenney/pixel-platformer/characters/character_0009_r.png',
-      '/sprites/kenney/pixel-platformer/characters/character_0010_r.png',
     ]),
-    new AnimationTemplateInfo('c_peach', 150, [
+    new AnimationTemplateInfo('c_peach_l', 150, [
       '/sprites/kenney/pixel-platformer/characters/character_0009.png',
       '/sprites/kenney/pixel-platformer/characters/character_0010.png',
     ]),

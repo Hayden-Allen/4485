@@ -8,6 +8,7 @@
   import VariableEditor from 'components/scriptPropertyEditors/VariableEditor.svelte'
   import BoolEditor from 'components/scriptPropertyEditors/BoolEditor.svelte'
   import StringEditor from 'components/scriptPropertyEditors/StringEditor.svelte'
+  import SoundEditor from 'components/scriptPropertyEditors/SoundEditor.svelte'
   import ChevronRight from 'icons/20/mini/chevron-right.svelte'
   import Pencil from 'icons/20/mini/pencil.svelte'
   import Trash from 'icons/20/mini/trash.svelte'
@@ -143,6 +144,13 @@
               />
             {:else if exportNode.editorType === 'bool'}
               <BoolEditor
+                currentValue={exportNode.value}
+                onApply={(value) => exportNode.setValue(value)}
+                onFocus={() => (focusedNode = exportNode)}
+                onBlur={() => (focusedNode = undefined)}
+              />
+            {:else if exportNode.editorType === 'sound'}
+              <SoundEditor
                 currentValue={exportNode.value}
                 onApply={(value) => exportNode.setValue(value)}
                 onFocus={() => (focusedNode = exportNode)}

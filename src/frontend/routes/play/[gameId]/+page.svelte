@@ -57,7 +57,7 @@
       </a>
     </div>
   {/if}
-  <div class="w-full h-full grow shrink overflow-hidden">
+  <div class="relative w-full h-full grow shrink overflow-hidden">
     {#if firstLoadGameInfo && firstLoadGameInfo.serializedContent}
       <Player
         firstLoadSerializedGameData={firstLoadGameInfo.serializedContent}

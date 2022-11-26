@@ -11,7 +11,7 @@
 
   function validateAndApply() {
     if (validate()) {
-      onApply(currentValue)
+      onApply(parseFloat(currentValue))
       initialValue = currentValue
     } else {
       currentValue = initialValue

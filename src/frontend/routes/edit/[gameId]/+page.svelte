@@ -29,28 +29,28 @@
   }
 
   onMount(async () => {
-    try {
-      const gamesList = await fetchJson('/api/game', {
-        query: {
-          gameId: data.gameId,
-        },
-      })
-      if (gamesList.length === 1 && !!gamesList[0]) {
-        if (
-          typeof gamesList[0].serializedContent === 'string' &&
-          gamesList[0].canEdit === true
-        ) {
-          firstLoadGameInfo = gamesList[0]
-        } else {
-          throw new Error('Missing serializedContent or cannot edit')
-        }
-      } else {
-        throw new Error('gamesList.length !== 1')
-      }
-    } catch (err) {
-      console.error(err)
-      window.location.pathname = '/my-account'
-    }
+    // try {
+    //   const gamesList = await fetchJson('/api/game', {
+    //     query: {
+    //       gameId: data.gameId,
+    //     },
+    //   })
+    //   if (gamesList.length === 1 && !!gamesList[0]) {
+    //     if (
+    //       typeof gamesList[0].serializedContent === 'string' &&
+    //       gamesList[0].canEdit === true
+    //     ) {
+    //       firstLoadGameInfo = gamesList[0]
+    //     } else {
+    //       throw new Error('Missing serializedContent or cannot edit')
+    //     }
+    //   } else {
+    //     throw new Error('gamesList.length !== 1')
+    //   }
+    // } catch (err) {
+    //   console.error(err)
+    //   window.location.pathname = '/my-account'
+    // }
   })
 </script>
 
@@ -79,17 +79,9 @@
     </div>
   {/if}
   <div class="w-full h-full grow shrink overflow-hidden">
-    {#if firstLoadGameInfo && firstLoadGameInfo.serializedContent}
-      <Editor
-        firstLoadSerializedGameData={firstLoadGameInfo.serializedContent}
-        {onSave}
-      />
-    {:else}
-      <div
-        class="flex flex-col w-full h-full grow shrink items-center justify-center text-xl font-bold text-neutral-500"
-      >
-        <div>Loading...</div>
-      </div>
-    {/if}
+    <Editor
+      firstLoadSerializedGameData={firstLoadGameInfo.serializedContent}
+      onSave={() => undefined}
+    />
   </div>
 </div>

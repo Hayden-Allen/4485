@@ -3,6 +3,8 @@
 
   import 'tailwind/app.css'
 
+  export const prerender = true
+
   let padRight = false
 
   onMount(() => {
